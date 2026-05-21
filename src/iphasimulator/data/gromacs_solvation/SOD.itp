@@ -1,0 +1,11 @@
+;;
+;; Sodium ion topology for the standard GROMACS solvate/genion route.
+;;
+
+[ moleculetype ]
+; name  nrexcl
+SOD     1
+
+[ atoms ]
+; nr  type  resnr  residu  atom  cgnr  charge  mass
+1     SOD   1      SOD     SOD   1     1.000   22.98977

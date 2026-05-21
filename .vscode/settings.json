@@ -1,0 +1,6 @@
+{
+    "editor.fontSize": 12,
+    "python.defaultInterpreterPath": "/opt/homebrew/Caskroom/miniconda/base/envs/ipha_clean/bin/python",
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda"
+}

@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Generated tutorial and workflow outputs.
+examples/output/
+notebooks/.ipynb_checkpoints/

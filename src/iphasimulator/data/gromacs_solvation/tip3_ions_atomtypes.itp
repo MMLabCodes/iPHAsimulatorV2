@@ -1,0 +1,11 @@
+; Atom types required by the packaged TIP3/SOD/POT/CLA molecule files.
+; These values mirror the CHARMM-GUI/GROMACS TIP3P, sodium, potassium, and chloride
+; nonbonded parameters used by the uploaded topology snippets.
+
+[ atomtypes ]
+; name  at.num  mass       charge   ptype  sigma          epsilon
+HT      1       1.008000   0.417    A      0.040001352445 0.1924640
+OT      8       15.999400 -0.834    A      0.315057422683 0.6363864
+SOD     11      22.989770  1.000    A      0.243928069026 0.3658460
+POT     19      39.098300  1.000    A      0.314264522824 0.3640080
+CLA     17      35.450000 -1.000    A      0.404468018036 0.6276000

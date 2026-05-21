@@ -1,0 +1,41 @@
+[project]
+name = "iphasimulator"
+version = "0.1.0"
+description = "PHA-specific polymer builder and simulation preparation toolkit"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "networkx",
+    "pandas",
+    "pyyaml",
+    "rdkit"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "jupyterlab"
+]
+md = [
+    "openmm",
+    "parmed",
+    "mdtraj"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+iphasimulator = [
+    "data/gromacs_mdp/*.mdp",
+    "data/gromacs_solvation/*.itp",
+    "data/gromacs_solvation/*.mdp",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
