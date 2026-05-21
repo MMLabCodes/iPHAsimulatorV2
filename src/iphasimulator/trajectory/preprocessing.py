@@ -16,9 +16,6 @@ class TrajectoryPreprocessingOutputs:
     """Files created by the standard preprocessing workflow."""
 
     system_dir: Path
-    raw_dir: Path
-    processed_dir: Path
-    analysis_ready_dir: Path
     center_index: CenterIndexResult
     raw_trajectory_path: Path
     structure_path: Path
@@ -34,24 +31,12 @@ class TrajectoryPreprocessingOutputs:
         return self.fitted_trajectory_path or self.centered_trajectory_path
 
 
-def _resolve_existing_path(system_dir: Path, raw_dir: Path, filename: str | Path) -> Path:
+def _resolve_existing_path(system_dir: Path, filename: str | Path) -> Path:
     path = Path(filename)
     if path.is_absolute():
         return path
 
-    raw_path = raw_dir / path
-    root_path = system_dir / path
-    if raw_path.exists():
-        return raw_path
-    return root_path
-
-
-def _default_centered_name(trajectory_path: Path) -> str:
-    return trajectory_path.name.replace("_production", "_centered")
-
-
-def _default_fitted_name(trajectory_path: Path) -> str:
-    return trajectory_path.name.replace("_production", "_fitted").replace("_centered", "_fitted")
+    return system_dir / path
 
 
 def preprocess_gromacs_trajectory(
@@ -62,7 +47,7 @@ def preprocess_gromacs_trajectory(
     index: str | Path = "index.ndx",
     workflow_type: str = "polymer",
     source_groups: tuple[str, ...] | list[str] | None = None,
-    fit: bool = True,
+    fit: bool = False,
     extract_representative_frame: bool = True,
     gmx_command: str = "gmx",
     runner: Runner = subprocess.run,
@@ -75,14 +60,8 @@ def preprocess_gromacs_trajectory(
     """
 
     system_path = Path(system_dir)
-    raw_dir = system_path / "raw"
-    processed_dir = system_path / "processed"
-    analysis_ready_dir = system_path / "analysis_ready"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    processed_dir.mkdir(parents=True, exist_ok=True)
-    analysis_ready_dir.mkdir(parents=True, exist_ok=True)
 
-    source_index = _resolve_existing_path(system_path, raw_dir, index)
+    source_index = _resolve_existing_path(system_path, index)
     center_index = ensure_center_index(
         source_index,
         system_path / "center.ndx",
@@ -90,18 +69,15 @@ def preprocess_gromacs_trajectory(
         source_groups=source_groups,
     )
 
-    raw_trajectory_path = _resolve_existing_path(system_path, raw_dir, trajectory)
-    structure_path = _resolve_existing_path(system_path, raw_dir, structure)
-    centered_path = processed_dir / _default_centered_name(raw_trajectory_path)
-    fitted_path = analysis_ready_dir / _default_fitted_name(raw_trajectory_path)
-    frame_path = analysis_ready_dir / "representative_frame.gro"
+    raw_trajectory_path = _resolve_existing_path(system_path, trajectory)
+    structure_path = _resolve_existing_path(system_path, structure)
+    centered_path = system_path / "step7_centered.xtc"
+    fitted_path = system_path / "step7_fitted.xtc"
+    frame_path = system_path / "representative_frame.gro"
 
     if dry_run:
         return TrajectoryPreprocessingOutputs(
             system_dir=system_path,
-            raw_dir=raw_dir,
-            processed_dir=processed_dir,
-            analysis_ready_dir=analysis_ready_dir,
             center_index=center_index,
             raw_trajectory_path=raw_trajectory_path,
             structure_path=structure_path,
@@ -167,9 +143,6 @@ def preprocess_gromacs_trajectory(
 
     return TrajectoryPreprocessingOutputs(
         system_dir=system_path,
-        raw_dir=raw_dir,
-        processed_dir=processed_dir,
-        analysis_ready_dir=analysis_ready_dir,
         center_index=center_index,
         raw_trajectory_path=raw_trajectory_path,
         structure_path=structure_path,

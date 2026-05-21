@@ -23,8 +23,8 @@ The 06-series notebooks are workflow-oriented:
 - `06C`: explicit-solvent GROMACS preparation with box, water, ions, PME, and NVT/NPT/production scripts.
 - `06D`: explicit-solvent OpenMM setup template.
 - `07`: HPC execution, SLURM submission, restart continuation, benchmarking, and performance tuning.
-- `08`: GROMACS trajectory preprocessing with reusable `[ center ]` index groups, PBC reconstruction, compact wrapping, fitting, and representative frame extraction.
-- `09_basic_polymer_analysis`: analysis entry point that uses only `processed/` and `analysis_ready/` trajectories.
+- `08`: GROMACS trajectory preprocessing with reusable `[ center ]` index groups, PBC reconstruction, compact wrapping, optional fitting, and representative frame extraction.
+- `09_basic_polymer_analysis`: analysis entry point that uses the centered trajectory by default.
 
 Workflow map:
 

@@ -141,14 +141,20 @@ def test_preprocess_gromacs_trajectory_dry_run_builds_expected_paths(tmp_path):
 
     outputs = preprocess_gromacs_trajectory(tmp_path, dry_run=True)
 
-    assert outputs.raw_dir == tmp_path / "raw"
-    assert outputs.processed_dir == tmp_path / "processed"
-    assert outputs.analysis_ready_dir == tmp_path / "analysis_ready"
+    assert not (tmp_path / "raw").exists()
+    assert not (tmp_path / "processed").exists()
+    assert not (tmp_path / "analysis_ready").exists()
     assert outputs.center_index.index_path == tmp_path / "center.ndx"
-    assert outputs.centered_trajectory_path == tmp_path / "processed" / "step7_centered.xtc"
-    assert outputs.fitted_trajectory_path == tmp_path / "analysis_ready" / "step7_fitted.xtc"
-    assert outputs.analysis_trajectory_path == tmp_path / "analysis_ready" / "step7_fitted.xtc"
+    assert outputs.centered_trajectory_path == tmp_path / "step7_centered.xtc"
+    assert outputs.fitted_trajectory_path is None
+    assert outputs.analysis_trajectory_path == tmp_path / "step7_centered.xtc"
+    assert outputs.representative_frame_path == tmp_path / "representative_frame.gro"
     assert read_index(tmp_path / "center.ndx").group("center") == (1, 2, 3)
+
+    fit_outputs = preprocess_gromacs_trajectory(tmp_path, fit=True, dry_run=True)
+
+    assert fit_outputs.fitted_trajectory_path == tmp_path / "step7_fitted.xtc"
+    assert fit_outputs.analysis_trajectory_path == tmp_path / "step7_fitted.xtc"
 
 
 def test_preprocess_gromacs_trajectory_reports_missing_inputs(tmp_path):
