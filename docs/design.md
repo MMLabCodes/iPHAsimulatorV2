@@ -90,7 +90,13 @@ realistic PHA oligomer systems with a defined cubic box, TIP3P water, NaCl, and
 multiple polymer copies. It is intentionally not a membrane builder yet, but the
 API leaves room for future enzyme/polymer systems.
 
-Two GROMACS equilibration workflows are intentionally kept visible:
+Notebook `05_gaff2_parameterisation.ipynb` is the roadmap before the workflow
+branches into the 06-series notebooks. It explains when to use OpenMM vs
+GROMACS, when dry validation is sufficient, when explicit solvent is required,
+and why the project keeps both simplified polymer and CHARMM-GUI-style staged
+GROMACS workflows.
+
+Two GROMACS equilibration workflows are intentionally kept available:
 
 - `solvated_polymer/` is the simplified polymer workflow. It is the default for
   polymer benchmarking and rapid iteration: `step6.0_minimization`,
@@ -104,8 +110,8 @@ The simplified workflow is shorter and easier to debug, but it is less
 conservative for heterogeneous systems. The CHARMM-GUI-style workflow uses more
 equilibration stages so temperature, density, interfaces, and pressure coupling
 are relaxed gradually; it costs more wall-clock time and has more files to
-inspect. Notebooks should document both workflows rather than hiding one behind
-the other.
+inspect. The detailed conceptual comparison belongs in notebook 05 so the 06
+notebooks can stay focused on reproducible execution.
 
 The GAFF2 workflow records the exact AmberTools command for each stage, separate
 raw logs for `antechamber` and `sqm`, and per-stage timings. For debugging large
