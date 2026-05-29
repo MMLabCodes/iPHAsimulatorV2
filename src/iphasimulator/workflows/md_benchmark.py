@@ -357,3 +357,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     raise SystemExit(run_benchmark(parse_args(argv)))
+
+
+if __name__ == "__main__":
+    main()
