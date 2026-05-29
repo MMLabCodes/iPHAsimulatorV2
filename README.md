@@ -19,7 +19,7 @@ PHA-specific RDKit tooling for building and validating simple oligomer structure
 - `docs/`: design notes.
 - `tests/`: automated tests.
 
-Generated structures and MD outputs are written under `examples/output/` and are ignored by Git.
+Generated structures and MD outputs are written under `examples/output/` and are ignored by Git. Exported PDB/SDF structure files live in `examples/output/polymer_structures/`.
 
 ## Tutorial notebooks
 
@@ -130,7 +130,7 @@ extensions:
 from iphasimulator.system_builders import build_packmol_solvated_system
 
 build_packmol_solvated_system(
-    ["examples/output/PHB4_R.pdb"],
+    ["examples/output/polymer_structures/PHB4_R.pdb"],
     "examples/output/md_tests/PHB4/packmol",
     box_size_nm=8.0,
     nacl_concentration_molar=0.15,

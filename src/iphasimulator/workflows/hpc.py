@@ -105,10 +105,13 @@ def workflow_plan(config: dict[str, Any]) -> list[str]:
     stages = config["stages"]
     output_root = Path(config["output_root"])
     plan: list[str] = []
+    structure_root = output_root / "polymer_structures"
     for target in targets_from_config(config):
         stage_name = target_stage_name(target)
         if stages.get("build", False):
-            plan.append(f"build {target.name} -> {output_root / (target.name + '.sdf')}")
+            plan.append(
+                f"build {target.name} -> {structure_root / (target.name + '.sdf')}"
+            )
         if stages.get("gaff2", False):
             plan.append(f"gaff2 {target.name} -> {output_root / 'md_tests' / stage_name / 'gaff2'}")
         if stages.get("openmm", False):

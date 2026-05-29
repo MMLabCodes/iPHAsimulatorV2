@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("examples/output"),
+        default=Path("examples/output/polymer_structures"),
         help="Directory for generated SDF and PDB files.",
     )
     return parser.parse_args()

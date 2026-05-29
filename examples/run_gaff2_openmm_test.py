@@ -43,7 +43,11 @@ def _repo_root() -> Path:
 
 
 def _find_sdf(output_root: Path, name: str) -> Path | None:
+    structures_root = output_root / "polymer_structures"
     candidates = [
+        structures_root / name / f"{name}.sdf",
+        structures_root / f"{name}.sdf",
+        structures_root / f"{name}_R.sdf",
         output_root / name / f"{name}.sdf",
         output_root / f"{name}.sdf",
         output_root / f"{name}_R.sdf",

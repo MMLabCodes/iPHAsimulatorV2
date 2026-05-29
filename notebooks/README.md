@@ -14,6 +14,7 @@ Run the notebooks in order:
 10. `07_hpc_workflows.ipynb`
 11. `08_trajectory_preprocessing.ipynb`
 12. `09_basic_polymer_analysis.ipynb`
+13. `10_batch_md_benchmark.ipynb`
 
 The 06-series notebooks are workflow-oriented:
 
@@ -25,6 +26,7 @@ The 06-series notebooks are workflow-oriented:
 - `07`: HPC execution, SLURM submission, restart continuation, benchmarking, and performance tuning.
 - `08`: GROMACS trajectory preprocessing with reusable `[ center ]` index groups, PBC reconstruction, compact wrapping, optional fitting, and representative frame extraction.
 - `09_basic_polymer_analysis`: analysis entry point that uses the centered trajectory by default.
+- `10_batch_md_benchmark`: workflow log, launcher, and progress checker for the six-system MD benchmark.
 
 Workflow map:
 

@@ -39,10 +39,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _structure_root(output_root: Path) -> Path:
+    return output_root / "polymer_structures"
+
+
 def _build_target(target, output_root: Path) -> tuple[Path, Path]:
     mol = build_pha_chain(target.monomer, target.degree, target.stereochemistry)
-    sdf_path = output_root / f"{target.name}.sdf"
-    pdb_path = output_root / f"{target.name}.pdb"
+    structure_root = _structure_root(output_root)
+    structure_root.mkdir(parents=True, exist_ok=True)
+    sdf_path = structure_root / f"{target.name}.sdf"
+    pdb_path = structure_root / f"{target.name}.pdb"
     to_sdf(mol, sdf_path)
     to_pdb(mol, pdb_path)
     return sdf_path, pdb_path
@@ -63,7 +69,7 @@ def run_configured_workflow(config: dict, *, dry_run: bool = False) -> None:
 
     for target in targets_from_config(config):
         stage_name = target_stage_name(target)
-        sdf_path = output_root / f"{target.name}.sdf"
+        sdf_path = _structure_root(output_root) / f"{target.name}.sdf"
 
         if stages.get("build", False):
             sdf_path, pdb_path = _build_target(target, output_root)

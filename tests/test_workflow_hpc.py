@@ -54,7 +54,7 @@ def test_workflow_plan_respects_enabled_stages():
     plan = workflow_plan(config)
 
     assert plan == [
-        "build PHB4_R -> examples/output/PHB4_R.sdf",
+        "build PHB4_R -> examples/output/polymer_structures/PHB4_R.sdf",
         "openmm dry PHB4 -> examples/output/md_tests/PHB4/openmm/dry_polymer",
     ]
 
