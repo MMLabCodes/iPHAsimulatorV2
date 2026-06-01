@@ -15,6 +15,7 @@ Run the notebooks in order:
 11. `08_trajectory_preprocessing.ipynb`
 12. `09_basic_polymer_analysis.ipynb`
 13. `10_batch_md_benchmark.ipynb`
+14. `11_PHA_Enzyme_Docking.ipynb`
 
 The 06-series notebooks are workflow-oriented:
 
@@ -27,6 +28,7 @@ The 06-series notebooks are workflow-oriented:
 - `08`: GROMACS trajectory preprocessing with reusable `[ center ]` index groups, PBC reconstruction, compact wrapping, optional fitting, and representative frame extraction.
 - `09_basic_polymer_analysis`: analysis entry point that uses the centered trajectory by default.
 - `10_batch_md_benchmark`: workflow log, launcher, and progress checker for the six-system MD benchmark.
+- `11_PHA_Enzyme_Docking`: prepares benchmark PHA oligomer PDB inputs and job notes for manual HADDOCK docking.
 
 Workflow map:
 
