@@ -674,6 +674,10 @@ def _write_hpc_equilibration_script(
     workflow_type: str,
     reference_structure: str = "step5_input.gro",
 ) -> None:
+    if workflow_type == "polymer":
+        _write_kcl_polymer_hpc_script(path, job_name=job_name)
+        return
+
     steps = GROMACS_WORKFLOW_HPC_STEPS[workflow_type]
     lines = [
         "#!/usr/bin/env bash",
@@ -711,6 +715,54 @@ def _write_hpc_equilibration_script(
         )
     path.write_text("\n".join(lines))
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def _write_kcl_polymer_hpc_script(path: Path, *, job_name: str) -> None:
+    lines = [
+        "#!/bin/bash -l",
+        f"#SBATCH --job-name={job_name}_polymer_MD",
+        "#SBATCH --partition=gpu",
+        "#SBATCH --nodes=1",
+        "#SBATCH --ntasks=1",
+        "#SBATCH --cpus-per-task=8",
+        "#SBATCH --gres=gpu:1",
+        "#SBATCH --mem=16G",
+        "#SBATCH --time=2-00:00",
+        "#SBATCH --output=logs/%x-%j.out",
+        "#SBATCH --error=logs/%x-%j.err",
+        "",
+        "module load gromacs_kcl/2021.5-gcc-9.4.0-cuda-11.5.0",
+        "",
+        "export OMP_NUM_THREADS=8",
+        "",
+        "mkdir -p logs",
+        "",
+        "# Step 6.1 — NVT",
+        "",
+        "gmx grompp -f step6.1_nvt.mdp -o step6.1_nvt.tpr -c step6.0_minimization.gro -r step5_input.gro -p topol.top -n index.ndx",
+        "",
+        "gmx mdrun -v -deffnm step6.1_nvt -pin on -nb gpu -pme gpu -bonded gpu -ntmpi 1 -ntomp 8",
+        "",
+        "# Step 6.2 — NPT",
+        "",
+        "gmx grompp -f step6.2_npt.mdp -o step6.2_npt.tpr -c step6.1_nvt.gro -r step5_input.gro -p topol.top -n index.ndx",
+        "",
+        "gmx mdrun -v -deffnm step6.2_npt -pin on -nb gpu -pme gpu -bonded gpu -ntmpi 1 -ntomp 8",
+        "",
+        "# Step 7 — Production",
+        "",
+        "gmx grompp -f step7_production.mdp -o step7_production.tpr -c step6.2_npt.gro -p topol.top -n index.ndx",
+        "",
+        "gmx mdrun -v -deffnm step7_production -pin on -nb gpu -pme gpu -bonded gpu -ntmpi 1 -ntomp 8",
+    ]
+    path.write_text("\n".join(lines) + "\n")
+    path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def _infer_polymer_hpc_job_name(output_path: Path) -> str:
+    if output_path.name == "solvated_polymer" and output_path.parent.name == "gromacs":
+        return output_path.parent.parent.name or "gromacs"
+    return output_path.parent.name or "gromacs"
 
 
 def _write_solvate_script(
@@ -1256,7 +1308,7 @@ def write_gromacs_solvation_files(
     _write_local_minimization_script(local_script_path)
     _write_hpc_equilibration_script(
         hpc_script_path,
-        job_name=output_path.parent.name or "gromacs",
+        job_name=_infer_polymer_hpc_job_name(output_path),
         workflow_type=workflow_type,
     )
 

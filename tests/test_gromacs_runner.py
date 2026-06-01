@@ -123,26 +123,23 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
     ) in local_script
 
     hpc_script = outputs.hpc_script_path.read_text()
-    assert "# - timestep: 0.002 ps (2 fs)" in hpc_script
+    assert hpc_script.startswith("#!/bin/bash -l\n")
+    assert "#SBATCH --job-name=PHB4_polymer_MD" in hpc_script
+    assert "#SBATCH --partition=gpu" in hpc_script
+    assert "#SBATCH --gres=gpu:1" in hpc_script
+    assert "module load gromacs_kcl/2021.5-gcc-9.4.0-cuda-11.5.0" in hpc_script
+    assert "export OMP_NUM_THREADS=8" in hpc_script
     assert (
-        "# step6.1_nvt: 100 ps NVT at 300 K; V-rescale thermostat; "
-        "no pressure coupling; generates initial velocities."
+        "gmx grompp -f step6.1_nvt.mdp -o step6.1_nvt.tpr "
+        "-c step6.0_minimization.gro -r step5_input.gro -p topol.top -n index.ndx"
     ) in hpc_script
     assert (
-        "# step7_production: 100 ns production MD at 300 K and 1 bar; "
-        "isotropic C-rescale pressure coupling."
+        "gmx mdrun -v -deffnm step6.1_nvt -pin on -nb gpu -pme gpu "
+        "-bonded gpu -ntmpi 1 -ntomp 8"
     ) in hpc_script
     assert (
-        "gmx grompp -f step6.1_nvt.mdp -c step6.0_minimization.gro "
-        "-r step5_input.gro -p topol.top -n index.ndx -o step6.1_nvt.tpr"
-    ) in hpc_script
-    assert (
-        "gmx grompp -f step6.2_npt.mdp -c step6.1_nvt.gro "
-        "-r step5_input.gro -p topol.top -n index.ndx -o step6.2_npt.tpr"
-    ) in hpc_script
-    assert (
-        "gmx grompp -f step7_production.mdp -c step6.2_npt.gro "
-        "-r step5_input.gro -p topol.top -n index.ndx -o step7_production.tpr"
+        "gmx grompp -f step7_production.mdp -o step7_production.tpr "
+        "-c step6.2_npt.gro -p topol.top -n index.ndx"
     ) in hpc_script
     assert "step6.3_equilibration" not in hpc_script
 
