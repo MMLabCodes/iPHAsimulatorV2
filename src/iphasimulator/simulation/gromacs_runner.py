@@ -802,7 +802,7 @@ run_logged() {
 
 run_genion_logged() {
     local log_path="genion.log"
-    local genion_args=(-s genion.tpr -o system_neutralized.gro -p topol.top -neutral -pname SOD -nname CLA)
+    local genion_args=(-s ions.tpr -o system_neutralized.gro -p topol.top -neutral -pname SOD -nname CLA)
     if awk -v concentration="${ION_CONCENTRATION_MOLAR}" 'BEGIN { exit !(concentration > 0) }'; then
         genion_args+=(-conc "${ION_CONCENTRATION_MOLAR}")
     fi
@@ -838,8 +838,6 @@ clean_generated_files() {
         step5_input_box.gro \
         step5_solvated.gro \
         step5_ions.gro \
-        system_neutralized.gro \
-        ions.tpr \
         genion.tpr \
         mdout.mdp \
         editconf.log \
@@ -1024,9 +1022,9 @@ reset_from_dry_polymer
 clean_generated_files
 run_logged "editconf_box" "editconf_box.log" gmx editconf -f step5_input.gro -o step5_input_box.gro -c -d __BOX_PADDING__ -bt cubic
 run_stdin_logged "make_ndx_box" "make_ndx_box.log" "q\\n" gmx make_ndx -f step5_input_box.gro -o index.ndx
-run_logged "solvate" "solvate.log" gmx solvate -cp step5_input_box.gro -cs spc216.gro -p topol.top -o step5_solvated.gro
+run_logged "solvate" "solvate.log" gmx solvate -cp step5_input_box.gro -cs spc216.gro -p topol.top -o system_solvated.gro
 validate_solvation_topology
-run_logged "ions_grompp" "ions_grompp.log" gmx grompp -f ions.mdp -c step5_solvated.gro -p topol.top -n index.ndx -o genion.tpr -maxwarn 1
+run_logged "ions_grompp" "ions_grompp.log" gmx grompp -f ions.mdp -c system_solvated.gro -p topol.top -n index.ndx -o ions.tpr -maxwarn 1
 run_genion_logged
 run_logged "editconf_final" "editconf_final.log" gmx editconf -f system_neutralized.gro -o step5_input.gro
 run_stdin_logged "make_ndx_final" "make_ndx_final.log" "q\\n" gmx make_ndx -f step5_input.gro -o index.ndx
@@ -1234,8 +1232,6 @@ def _clean_solvated_polymer_generated_files(output_path: Path) -> None:
         "step5_input_box.gro",
         "step5_solvated.gro",
         "step5_ions.gro",
-        "system_neutralized.gro",
-        "ions.tpr",
         "genion.tpr",
         "mdout.mdp",
         "editconf.log",
@@ -1367,13 +1363,13 @@ def validate_gromacs_solvation_grompp(
             "-f",
             "ions.mdp",
             "-c",
-            "step5_solvated.gro",
+            "system_solvated.gro",
             "-p",
             "topol.top",
             "-n",
             "index.ndx",
             "-o",
-            "genion.tpr",
+            "ions.tpr",
             "-maxwarn",
             "1",
         ),

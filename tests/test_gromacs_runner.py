@@ -505,18 +505,20 @@ def test_write_gromacs_solvation_files_writes_standard_solvate_workflow(tmp_path
     assert 'has_atomtype "${atom_type}"' in solvate_script
     assert (
         "gmx solvate -cp step5_input_box.gro -cs spc216.gro -p topol.top "
-        "-o step5_solvated.gro"
+        "-o system_solvated.gro"
     ) in solvate_script
     assert (
-        "gmx grompp -f ions.mdp -c step5_solvated.gro -p topol.top "
-        "-n index.ndx -o genion.tpr -maxwarn 1"
+        "gmx grompp -f ions.mdp -c system_solvated.gro -p topol.top "
+        "-n index.ndx -o ions.tpr -maxwarn 1"
     ) in solvate_script
     assert "gmx genion" in solvate_script
-    assert "genion_args=(-s genion.tpr -o system_neutralized.gro -p topol.top -neutral -pname SOD -nname CLA)" in solvate_script
+    assert "genion_args=(-s ions.tpr -o system_neutralized.gro -p topol.top -neutral -pname SOD -nname CLA)" in solvate_script
     assert '-conc "${ION_CONCENTRATION_MOLAR}"' in solvate_script
     assert 'ION_CONCENTRATION_MOLAR="0.15"' in solvate_script
     assert "gmx editconf -f system_neutralized.gro -o step5_input.gro" in solvate_script
     assert 'run_stdin_logged "make_ndx_final" "make_ndx_final.log" "q\\n" gmx make_ndx' in solvate_script
+    assert "system_neutralized.gro \\" not in solvate_script
+    assert "ions.tpr \\" not in solvate_script
     assert "cp step5_ions.gro step5_input.gro" not in solvate_script
     assert "step5_ions.gro -r step5_ions.gro" not in solvate_script
     assert (
@@ -568,13 +570,13 @@ def test_validate_gromacs_solvation_grompp_runs_ion_and_minimization_checks(tmp_
         "-f",
         "ions.mdp",
         "-c",
-        "step5_solvated.gro",
+        "system_solvated.gro",
         "-p",
         "topol.top",
         "-n",
         "index.ndx",
         "-o",
-        "genion.tpr",
+        "ions.tpr",
         "-maxwarn",
         "1",
     ]
