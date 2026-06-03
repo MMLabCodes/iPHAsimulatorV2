@@ -127,11 +127,11 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
     assert "#SBATCH --job-name=PHB4_polymer_MD" in hpc_script
     assert "#SBATCH --partition=gpu" in hpc_script
     assert "#SBATCH --gres=gpu:1" in hpc_script
-    assert "module load gromacs_kcl/2021.5-gcc-9.4.0-cuda-11.5.0" in hpc_script
+    assert "module load gromacs/2021.5-gcc-11.4.0-cuda-11.8.0" in hpc_script
     assert "export OMP_NUM_THREADS=8" in hpc_script
     assert (
         "gmx grompp -f step6.1_nvt.mdp -o step6.1_nvt.tpr "
-        "-c step6.0_minimization.gro -r step5_input.gro -p topol.top -n index.ndx"
+        "-c step6.0_minimization.gro -r step5_input.gro -p topol.top -n index.ndx -maxwarn 1"
     ) in hpc_script
     assert (
         "gmx mdrun -v -deffnm step6.1_nvt -pin on -nb gpu -pme gpu "
