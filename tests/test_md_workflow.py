@@ -1,7 +1,11 @@
 from types import SimpleNamespace
 from pathlib import Path
+from decimal import Decimal
 
-from iphasimulator.parameterization.gaff2 import parameterize_gaff2
+from iphasimulator.parameterization.gaff2 import (
+    _normalize_mol2_charges,
+    parameterize_gaff2,
+)
 
 
 def test_parameterize_gaff2_writes_expected_ambertools_inputs(tmp_path):
@@ -73,3 +77,35 @@ def test_parameterize_gaff2_writes_expected_ambertools_inputs(tmp_path):
     assert "loadamberparams PHB4.gaff2.frcmod" in tleap_input
     assert "mol = loadmol2 PHB4.gaff2.mol2" in tleap_input
     assert "saveamberparm mol PHB4.prmtop PHB4.inpcrd" in tleap_input
+
+
+def test_normalize_mol2_charges_removes_rounding_residue(tmp_path):
+    mol2_path = tmp_path / "PHDD4.gaff2.mol2"
+    mol2_path.write_text(
+        "\n".join(
+            [
+                "@<TRIPOS>MOLECULE",
+                "PHDD4",
+                "@<TRIPOS>ATOM",
+                "      1 C1          0.0 0.0 0.0 c3 1 PHA -0.503500",
+                "      2 H1          0.0 0.0 0.0 hc 1 PHA  0.496501",
+                "@<TRIPOS>BOND",
+                "     1    1    2 1",
+                "",
+            ]
+        )
+    )
+
+    original_charge, normalized_charge = _normalize_mol2_charges(
+        mol2_path,
+        net_charge=0,
+    )
+
+    assert original_charge == Decimal("-0.006999")
+    assert normalized_charge == Decimal("0")
+    atom_charges = [
+        Decimal(line.split()[8])
+        for line in mol2_path.read_text().splitlines()
+        if line.strip().startswith(("1 C1", "2 H1"))
+    ]
+    assert sum(atom_charges) == Decimal("0")

@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from iphasimulator.conversion import convert_amber_to_gromacs
+from iphasimulator.conversion.amber_to_gromacs import _normalize_structure_charge
 
 
 def test_convert_amber_to_gromacs_raises_clear_error_without_parmed(
@@ -32,6 +33,11 @@ def test_convert_amber_to_gromacs_writes_top_and_gro_with_parmed(
     saved_paths = []
 
     class FakeStructure:
+        atoms = [
+            SimpleNamespace(charge=-0.500),
+            SimpleNamespace(charge=0.499),
+        ]
+
         def save(self, path, overwrite):
             saved_paths.append((path, overwrite))
             with open(path, "w") as handle:
@@ -63,3 +69,30 @@ def test_convert_amber_to_gromacs_writes_top_and_gro_with_parmed(
         (str(outputs.top_path), True),
         (str(outputs.gro_path), True),
     ]
+    assert sum(atom.charge for atom in FakeStructure.atoms) == pytest.approx(0.0)
+
+
+def test_normalize_structure_charge_distributes_small_rounding_residue():
+    structure = SimpleNamespace(
+        atoms=[
+            SimpleNamespace(charge=-0.500),
+            SimpleNamespace(charge=0.493001),
+        ]
+    )
+
+    normalized_charge = _normalize_structure_charge(structure)
+
+    assert normalized_charge == pytest.approx(0.0, abs=1e-12)
+    assert sum(atom.charge for atom in structure.atoms) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_normalize_structure_charge_rejects_large_correction():
+    structure = SimpleNamespace(
+        atoms=[
+            SimpleNamespace(charge=-0.500),
+            SimpleNamespace(charge=0.300),
+        ]
+    )
+
+    with pytest.raises(ValueError, match="too far from integer charge"):
+        _normalize_structure_charge(structure)

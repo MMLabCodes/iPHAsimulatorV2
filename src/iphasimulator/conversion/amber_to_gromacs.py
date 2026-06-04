@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 
 
@@ -13,6 +14,31 @@ class GromacsConversionOutputs:
     output_dir: Path
     top_path: Path
     gro_path: Path
+
+
+def _normalize_structure_charge(structure, *, max_correction: float = 0.05) -> float:
+    """Remove small charge-rounding residue before writing GROMACS topology."""
+
+    atoms = list(structure.atoms)
+    if not atoms:
+        raise ValueError("Cannot normalize the charge of a structure without atoms")
+
+    total_charge = math.fsum(atom.charge for atom in atoms)
+    target_charge = round(total_charge)
+    correction = target_charge - total_charge
+    if abs(correction) > max_correction:
+        raise ValueError(
+            f"Structure charge {total_charge:.8f} is too far from integer charge "
+            f"{target_charge} to normalize safely"
+        )
+    if correction == 0:
+        return total_charge
+
+    correction_per_atom = correction / len(atoms)
+    for atom in atoms:
+        atom.charge += correction_per_atom
+    atoms[-1].charge += target_charge - math.fsum(atom.charge for atom in atoms)
+    return math.fsum(atom.charge for atom in atoms)
 
 
 def convert_amber_to_gromacs(
@@ -50,6 +76,7 @@ def convert_amber_to_gromacs(
     gro_path = output_path / f"{system_name}.gro"
 
     structure = pmd.load_file(str(prmtop_path), str(inpcrd_path))
+    _normalize_structure_charge(structure)
     structure.save(str(top_path), overwrite=True)
     structure.save(str(gro_path), overwrite=True)
 
