@@ -119,7 +119,7 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
     local_script = outputs.local_script_path.read_text()
     assert (
         "gmx grompp -f step6.0_minimization.mdp -c step5_input.gro -r step5_input.gro "
-        "-p topol.top -n index.ndx -o step6.0_minimization.tpr"
+        "-p topol.top -n index.ndx -o step6.0_minimization.tpr -maxwarn 1"
     ) in local_script
 
     hpc_script = outputs.hpc_script_path.read_text()

@@ -600,7 +600,7 @@ def _write_local_minimization_script(
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 "",
-                f"gmx grompp -f step6.0_minimization.mdp -c {coordinate_input} -r {coordinate_input} -p topol.top -n index.ndx -o step6.0_minimization.tpr",
+                f"gmx grompp -f step6.0_minimization.mdp -c {coordinate_input} -r {coordinate_input} -p topol.top -n index.ndx -o step6.0_minimization.tpr -maxwarn 1",
                 "gmx mdrun -deffnm step6.0_minimization",
                 "",
             ]
@@ -1031,7 +1031,7 @@ run_stdin_logged "make_ndx_final" "make_ndx_final.log" "q\\n" gmx make_ndx -f st
 
 # Validate that the solvated/ionised coordinates can enter minimisation.
 validate_coordinate_topology_counts
-run_logged "minim_grompp" "minim_grompp.log" gmx grompp -f step6.0_minimization.mdp -c step5_input.gro -r step5_input.gro -p topol.top -n index.ndx -o step6.0_minimization.tpr
+run_logged "minim_grompp" "minim_grompp.log" gmx grompp -f step6.0_minimization.mdp -c step5_input.gro -r step5_input.gro -p topol.top -n index.ndx -o step6.0_minimization.tpr -maxwarn 1
 rm -f \\#*\\# \\#*.\\#
 """
     path.write_text(
