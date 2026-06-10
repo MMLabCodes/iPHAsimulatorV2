@@ -1,0 +1,54 @@
++ gmx+ solvate+ -cp+ step5_input_box.gro+ -cs+ spc216.gro+ -p+ topol.top+ -o+ system_solvated.gro
+                 :-) GROMACS - gmx solvate, 2023.2-Homebrew (-:
+
+Executable:   /opt/homebrew/bin/../Cellar/gromacs/2023.2/bin/gmx
+Data prefix:  /opt/homebrew/bin/../Cellar/gromacs/2023.2
+Working dir:  /Users/k20098771/opt/iPHASimulator_v2/examples/output/md_tests/PHB4/gromacs/solvated_polymer
+Command line:
+  gmx solvate -cp step5_input_box.gro -cs spc216.gro -p topol.top -o system_solvated.gro
+
+Reading solute configuration
+Reading solvent configuration
+
+Initialising inter-atomic distances...
+
+WARNING: Masses and atomic (Van der Waals) radii will be guessed
+         based on residue and atom names, since they could not be
+         definitively assigned from the information in your input
+         files. These guessed numbers might deviate from the mass
+         and radius of the atom type. Please check the output
+         files if necessary. Note, that this functionality may
+         be removed in a future GROMACS version. Please, consider
+         using another file format for your input.
+
+NOTE: From version 5.0 gmx solvate uses the Van der Waals radii
+from the source below. This means the results may be different
+compared to previous GROMACS versions.
+
+++++ PLEASE READ AND CITE THE FOLLOWING REFERENCE ++++
+A. Bondi
+van der Waals Volumes and Radii
+J. Phys. Chem. 68 (1964) pp. 441-451
+-------- -------- --- Thank You --- -------- --------
+
+Generating solvent configuration
+Will generate new solvent configuration of 3x3x3 boxes
+Solvent box contains 9213 atoms in 3071 residues
+Removed 1791 solvent atoms due to solvent-solvent overlap
+Removed 51 solvent atoms due to solute-solvent overlap
+Sorting configuration
+Found 1 molecule type:
+    SOL (   3 atoms):  2457 residues
+Generated solvent containing 7371 atoms in 2457 residues
+Writing generated configuration to system_solvated.gro
+
+Output configuration contains 7422 atoms in 2458 residues
+Volume                 :     74.5568 (nm^3)
+Density                :     993.921 (g/l)
+Number of solvent molecules:   2457   
+
+Processing topology
+
+GROMACS reminds you: "There is no place like ~" (Anonymous)
+
+Adding line for 2457 solvent molecules with resname (SOL) to topology file (topol.top)

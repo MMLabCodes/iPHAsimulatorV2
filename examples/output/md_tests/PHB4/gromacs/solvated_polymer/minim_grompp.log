@@ -1,0 +1,36 @@
++ gmx+ grompp+ -f+ step6.0_minimization.mdp+ -c+ step5_input.gro+ -r+ step5_input.gro+ -p+ topol.top+ -n+ index.ndx+ -o+ step6.0_minimization.tpr
+                 :-) GROMACS - gmx grompp, 2023.2-Homebrew (-:
+
+Executable:   /opt/homebrew/bin/../Cellar/gromacs/2023.2/bin/gmx
+Data prefix:  /opt/homebrew/bin/../Cellar/gromacs/2023.2
+Working dir:  /Users/k20098771/opt/iPHASimulator_v2/examples/output/md_tests/PHB4/gromacs/solvated_polymer
+Command line:
+  gmx grompp -f step6.0_minimization.mdp -c step5_input.gro -r step5_input.gro -p topol.top -n index.ndx -o step6.0_minimization.tpr
+
+Generating 1-4 interactions: fudge = 0.5
+Number of degrees of freedom in T-Coupling group rest is 14850.00
+The integrator does not provide a ensemble temperature, there is no system ensemble temperature
+
+GROMACS reminds you: "There is no place like ~" (Anonymous)
+
+Setting the LD random seed to -136368167
+
+Generated 91 of the 91 non-bonded parameter combinations
+
+Generated 91 of the 91 1-4 parameter combinations
+
+Excluding 3 bonded neighbours molecule type 'PHA'
+
+Excluding 2 bonded neighbours molecule type 'SOL'
+
+Excluding 1 bonded neighbours molecule type 'SOD'
+
+Excluding 1 bonded neighbours molecule type 'CLA'
+
+The largest distance between excluded atoms is 0.386 nm between atom 3 and 5
+Calculating fourier grid dimensions for X Y Z
+Using a fourier grid of 36x36x36, spacing 0.117 0.117 0.117
+
+Estimate for the relative computational load of the PME mesh part: 0.19
+
+This run will generate roughly 1 Mb of data

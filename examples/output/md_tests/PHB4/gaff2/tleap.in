@@ -1,0 +1,7 @@
+source leaprc.gaff2
+loadamberparams PHB4.gaff2.frcmod
+mol = loadmol2 PHB4.gaff2.mol2
+check mol
+saveamberparm mol PHB4.prmtop PHB4.inpcrd
+savepdb mol PHB4.tleap.pdb
+quit

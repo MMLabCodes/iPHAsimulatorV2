@@ -1,0 +1,37 @@
++ printf q\\n | gmx make_ndx -f step5_input.gro -o index.ndx
+                :-) GROMACS - gmx make_ndx, 2023.2-Homebrew (-:
+
+Executable:   /opt/homebrew/bin/../Cellar/gromacs/2023.2/bin/gmx
+Data prefix:  /opt/homebrew/bin/../Cellar/gromacs/2023.2
+Working dir:  /Users/k20098771/opt/iPHASimulator_v2/examples/output/md_tests/PHB4/gromacs/solvated_polymer
+Command line:
+  gmx make_ndx -f step5_input.gro -o index.ndx
+
+
+Reading structure file
+
+GROMACS reminds you: "There is no place like ~" (Anonymous)
+
+Going to read 0 old index file(s)
+Analysing residue names:
+There are:    15      Other residues
+There are:  2443      Water residues
+Analysing residues not classified as Protein/DNA/RNA/Water and splitting into groups...
+
+  0 System              :  7394 atoms
+  1 Other               :    65 atoms
+  2 PHA                 :    51 atoms
+  3 SOD                 :     7 atoms
+  4 CLA                 :     7 atoms
+  5 Water               :  7329 atoms
+  6 SOL                 :  7329 atoms
+  7 non-Water           :    65 atoms
+
+ nr : group      '!': not  'name' nr name   'splitch' nr    Enter: list groups
+ 'a': atom       '&': and  'del' nr         'splitres' nr   'l': list residues
+ 't': atom type  '|': or   'keep' nr        'splitat' nr    'h': help
+ 'r': residue              'res' nr         'chain' char
+ "name": group             'case': case sensitive           'q': save and quit
+ 'ri': residue index
+
+> 

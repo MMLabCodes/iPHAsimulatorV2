@@ -262,7 +262,7 @@ def parameterize_gaff2(
     name: str | None = None,
     net_charge: int = 0,
     residue_name: str = "MOL",
-    charge_method: str = "bcc",
+    charge_method: str = "abcg2",
     atom_count_warning_threshold: int | None = 120,
     verbose: bool = False,
     runner=subprocess.run,
