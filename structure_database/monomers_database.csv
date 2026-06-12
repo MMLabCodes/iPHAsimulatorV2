@@ -1,0 +1,358 @@
+Name	Full name	Monomer SMILES	Repeat unit SMILES	Rescode	Parameterized
+hP2HP	2-Hydroxypropionate	O[C@H](C)C(=O)O	[C@H](C)C(=O)O		y
+mP2HP	2-Hydroxypropionate	O[C@H](C)C(=O)O	[C@H](C)C(=O)O		y
+tP2HP	2-Hydroxypropionate	O[C@H](C)C(=O)O	[C@H](C)C(=O)O		y
+hP2HB	2-Hydroxybutyrate	O[C@H](CC)C(=O)O	[C@H](CC)C(=O)O		y
+mP2HB	2-Hydroxybutyrate	O[C@H](CC)C(=O)O	[C@H](CC)C(=O)O		y
+tP2HB	2-Hydroxybutyrate	O[C@H](CC)C(=O)O	[C@H](CC)C(=O)O		y
+hP2HHx	2-Hydroxyhexanoate	O[C@H](CCCC)C(=O)O	[C@H](CCCC)C(=O)O		
+mP2HHx	2-Hydroxyhexanoate	O[C@H](CCCC)C(=O)O	[C@H](CCCC)C(=O)O		
+tP2HHx	2-Hydroxyhexanoate	O[C@H](CCCC)C(=O)O	[C@H](CCCC)C(=O)O		
+hP3HB	3-Hydroxybutyrate	O[C@H](C)CC(=O)O	[C@H](C)CC(=O)O		y
+mP3HB	3-Hydroxybutyrate	O[C@H](C)CC(=O)O	[C@H](C)CC(=O)O		y
+tP3HB	3-Hydroxybutyrate	O[C@H](C)CC(=O)O	[C@H](C)CC(=O)O		y
+hP3HV	3-Hydroxyvalerate	O[C@H](CC)CC(=O)O	[C@H](CC)CC(=O)O		y
+mP3HV	3-Hydroxyvalerate	O[C@H](CC)CC(=O)O	[C@H](CC)CC(=O)O		
+tP3HV	3-Hydroxyvalerate	O[C@H](CC)CC(=O)O	[C@H](CC)CC(=O)O		
+hP3HHx	3-Hydroxyhexanoate	O[C@H](CCC)CC(=O)O	[C@H](CCC)CC(=O)O		y
+mP3HHx	3-Hydroxyhexanoate	O[C@H](CCC)CC(=O)O	[C@H](CCC)CC(=O)O		y
+tP3HHx	3-Hydroxyhexanoate	O[C@H](CCC)CC(=O)O	[C@H](CCC)CC(=O)O		y
+hP3HHp	3-Hydroxyheptanoate	O[C@H](CCCC)CC(=O)O	[C@H](CCCC)CC(=O)O		y
+mP3HHp	3-Hydroxyheptanoate	O[C@H](CCCC)CC(=O)O	[C@H](CCCC)CC(=O)O		y
+tP3HHp	3-Hydroxyheptanoate	O[C@H](CCCC)CC(=O)O	[C@H](CCCC)CC(=O)O		y
+hP3HO	3-Hydroxyoctanoate	O[C@H](CCCCC)CC(=O)O	[C@H](CCCCC)CC(=O)O		y
+mP3HO	3-Hydroxyoctanoate	O[C@H](CCCCC)CC(=O)O	[C@H](CCCCC)CC(=O)O		y
+tP3HO	3-Hydroxyoctanoate	O[C@H](CCCCC)CC(=O)O	[C@H](CCCCC)CC(=O)O		y
+hP3HN	3-Hydroxynonanoate	O[C@H](CCCCCC)CC(=O)O	[C@H](CCCCCC)CC(=O)O		
+mP3HN	3-Hydroxynonanoate	O[C@H](CCCCCC)CC(=O)O	[C@H](CCCCCC)CC(=O)O		
+tP3HN	3-Hydroxynonanoate	O[C@H](CCCCCC)CC(=O)O	[C@H](CCCCCC)CC(=O)O		
+hP3HD	3-Hydroxydecanoate	O[C@H](CCCCCCC)CC(=O)O	[C@H](CCCCCCC)CC(=O)O		y
+mP3HD	3-Hydroxydecanoate	O[C@H](CCCCCCC)CC(=O)O	[C@H](CCCCCCC)CC(=O)O		y
+tP3HD	3-Hydroxydecanoate	O[C@H](CCCCCCC)CC(=O)O	[C@H](CCCCCCC)CC(=O)O		y
+hP3HUD	3-Hydroxyundecanoate	O[C@H](CCCCCCCC)CC(=O)O	[C@H](CCCCCCCC)CC(=O)O		
+mP3HUD	3-Hydroxyundecanoate	O[C@H](CCCCCCCC)CC(=O)O	[C@H](CCCCCCCC)CC(=O)O		
+tP3HUD	3-Hydroxyundecanoate	O[C@H](CCCCCCCC)CC(=O)O	[C@H](CCCCCCCC)CC(=O)O		
+hP3HDD	3-Hydroxydodecanoate	O[C@H](CCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCC)CC(=O)O		y
+mP3HDD	3-Hydroxydodecanoate	O[C@H](CCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCC)CC(=O)O		y
+tP3HDD	3-Hydroxydodecanoate	O[C@H](CCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCC)CC(=O)O		y
+hP3HU					
+mP3HU					
+tP3HU					
+hP3HTD	3-Hydroxytetradecanoate	O[C@H](CCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCC)CC(=O)O		
+mP3HTD	3-Hydroxytetradecanoate	O[C@H](CCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCC)CC(=O)O		
+tP3HTD	3-Hydroxytetradecanoate	O[C@H](CCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCC)CC(=O)O		
+hP3HHD	3-Hydroxyhexadecanoate	O[C@H](CCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCC)CC(=O)O		
+mP3HHD	3-Hydroxyhexadecanoate	O[C@H](CCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCC)CC(=O)O		
+tP3HHD	3-Hydroxyhexadecanoate	O[C@H](CCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCC)CC(=O)O		
+hP3HOD	3-Hydroxyoctadecanoate	O[C@H](CCCCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCCCC)CC(=O)O		
+mP3HOD	3-Hydroxyoctadecanoate	O[C@H](CCCCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCCCC)CC(=O)O		
+tP3HOD	3-Hydroxyoctadecanoate	O[C@H](CCCCCCCCCCCCCCC)CC(=O)O	[C@H](CCCCCCCCCCCCCCC)CC(=O)O		
+hP3H5HxE	3-Hydroxy-5-hexenoate	O[C@H](CC=C)CC(=O)O	[C@H](CC=C)CC(=O)O		
+mP3H5HxE	3-Hydroxy-5-hexenoate	O[C@H](CC=C)CC(=O)O	[C@H](CC=C)CC(=O)O		
+tP3H5HxE	3-Hydroxy-5-hexenoate	O[C@H](CC=C)CC(=O)O	[C@H](CC=C)CC(=O)O		
+hP3H6HpE	3-Hydroxy-6-heptenoate	O[C@H](CCC=C)CC(=O)O	[C@H](CCC=C)CC(=O)O		
+mP3H6HpE	3-Hydroxy-6-heptenoate	O[C@H](CCC=C)CC(=O)O	[C@H](CCC=C)CC(=O)O		
+tP3H6HpE	3-Hydroxy-6-heptenoate	O[C@H](CCC=C)CC(=O)O	[C@H](CCC=C)CC(=O)O		
+hP3H7OE	3-Hydroxy-7-octenoate	O[C@H](CCCC=C)CC(=O)O	[C@H](CCCC=C)CC(=O)O		
+mP3H7OE	3-Hydroxy-7-octenoate	O[C@H](CCCC=C)CC(=O)O	[C@H](CCCC=C)CC(=O)O		
+tP3H7OE	3-Hydroxy-7-octenoate	O[C@H](CCCC=C)CC(=O)O	[C@H](CCCC=C)CC(=O)O		
+hP3H8NE	3-Hydroxy-8-nonenoate	O[C@H](CCCCC=C)CC(=O)O	[C@H](CCCCC=C)CC(=O)O		
+mP3H8NE	3-Hydroxy-8-nonenoate	O[C@H](CCCCC=C)CC(=O)O	[C@H](CCCCC=C)CC(=O)O		
+tP3H8NE	3-Hydroxy-8-nonenoate	O[C@H](CCCCC=C)CC(=O)O	[C@H](CCCCC=C)CC(=O)O		
+hP3H9DE	3-Hydroxy-9-decenoate	O[C@H](CCCCCC=C)CC(=O)O	[C@H](CCCCCC=C)CC(=O)O		
+mP3H9DE	3-Hydroxy-9-decenoate	O[C@H](CCCCCC=C)CC(=O)O	[C@H](CCCCCC=C)CC(=O)O		
+tP3H9DE	3-Hydroxy-9-decenoate	O[C@H](CCCCCC=C)CC(=O)O	[C@H](CCCCCC=C)CC(=O)O		
+hP3H11DdE	3-Hydroxy-11-dodecenoate	O[C@H](CCCCCCCC=C)CC(=O)O	[C@H](CCCCCCCC=C)CC(=O)O		
+mP3H11DdE	3-Hydroxy-11-dodecenoate	O[C@H](CCCCCCCC=C)CC(=O)O	[C@H](CCCCCCCC=C)CC(=O)O		
+tP3H11DdE	3-Hydroxy-11-dodecenoate	O[C@H](CCCCCCCC=C)CC(=O)O	[C@H](CCCCCCCC=C)CC(=O)O		
+hP3H3PhP	3-Hydroxy-3-phenylpropionate	O[C@@H](C1=CC=CC=C1)CC(=O)O	[C@@H](C1=CC=CC=C1)CC(=O)O		y
+mP3H3PhP	3-Hydroxy-3-phenylpropionate	O[C@@H](C1=CC=CC=C1)CC(=O)O	[C@@H](C1=CC=CC=C1)CC(=O)O		y
+tP3H3PhP	3-Hydroxy-3-phenylpropionate	O[C@@H](C1=CC=CC=C1)CC(=O)O	[C@@H](C1=CC=CC=C1)CC(=O)O		y
+hP3H4PhB	3-Hydroxy-4-phenylbutyrate	O[C@H](CC1=CC=CC=C1)CC(=O)O	[C@H](CC1=CC=CC=C1)CC(=O)O		y
+mP3H4PhB	3-Hydroxy-4-phenylbutyrate	O[C@H](CC1=CC=CC=C1)CC(=O)O	[C@H](CC1=CC=CC=C1)CC(=O)O		y
+tP3H4PhB	3-Hydroxy-4-phenylbutyrate	O[C@H](CC1=CC=CC=C1)CC(=O)O	[C@H](CC1=CC=CC=C1)CC(=O)O		y
+hP3H5PhV	3-Hydroxy-5-phenylvalerate	O[C@H](CCC1=CC=CC=C1)CC(=O)O	[C@H](CCC1=CC=CC=C1)CC(=O)O		y
+mP3H5PhV	3-Hydroxy-5-phenylvalerate	O[C@H](CCC1=CC=CC=C1)CC(=O)O	[C@H](CCC1=CC=CC=C1)CC(=O)O		y
+tP3H5PhV	3-Hydroxy-5-phenylvalerate	O[C@H](CCC1=CC=CC=C1)CC(=O)O	[C@H](CCC1=CC=CC=C1)CC(=O)O		y
+hP3H6PhHX	3-Hydroxy-6-phenylhexanoate	O[C@H](CCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCC1=CC=CC=C1)CC(=O)O		y
+mP3H6PhHX	3-Hydroxy-6-phenylhexanoate	O[C@H](CCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCC1=CC=CC=C1)CC(=O)O		y
+tP3H6PhHX	3-Hydroxy-6-phenylhexanoate	O[C@H](CCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCC1=CC=CC=C1)CC(=O)O		y
+hP3H7PhHP	3-Hydroxy-7-phenylheptanoate	O[C@H](CCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCC1=CC=CC=C1)CC(=O)O		y
+mP3H7PhHP	3-Hydroxy-7-phenylheptanoate	O[C@H](CCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCC1=CC=CC=C1)CC(=O)O		y
+tP3H7PhHP	3-Hydroxy-7-phenylheptanoate	O[C@H](CCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCC1=CC=CC=C1)CC(=O)O		y
+hP3H8PhO	3-Hydroxy-8-phenyloctanoate	O[C@H](CCCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCC1=CC=CC=C1)CC(=O)O		y
+mP3H8PhO	3-Hydroxy-8-phenyloctanoate	O[C@H](CCCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCC1=CC=CC=C1)CC(=O)O		y
+tP3H8PhO	3-Hydroxy-8-phenyloctanoate	O[C@H](CCCCCC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCC1=CC=CC=C1)CC(=O)O		y
+hP3H4PxB	3-Hydroxy-4-phenoxybutyrate	O[C@@H](COC1=CC=CC=C1)CC(=O)O	[C@@H](COC1=CC=CC=C1)CC(=O)O		
+mP3H4PxB	3-Hydroxy-4-phenoxybutyrate	O[C@@H](COC1=CC=CC=C1)CC(=O)O	[C@@H](COC1=CC=CC=C1)CC(=O)O		
+tP3H4PxB	3-Hydroxy-4-phenoxybutyrate	O[C@@H](COC1=CC=CC=C1)CC(=O)O	[C@@H](COC1=CC=CC=C1)CC(=O)O		
+hP3H5PxV	3-Hydroxy-5-phenoxyvalerate	O[C@H](CCOC1=CC=CC=C1)CC(=O)O	[C@H](CCOC1=CC=CC=C1)CC(=O)O		y
+mP3H5PxV	3-Hydroxy-5-phenoxyvalerate	O[C@H](CCOC1=CC=CC=C1)CC(=O)O	[C@H](CCOC1=CC=CC=C1)CC(=O)O		y
+tP3H5PxV	3-Hydroxy-5-phenoxyvalerate	O[C@H](CCOC1=CC=CC=C1)CC(=O)O	[C@H](CCOC1=CC=CC=C1)CC(=O)O		y
+hP3H6PhHx	3-Hydroxy-6-phenoxyhexanoate	O[C@H](CCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCOC1=CC=CC=C1)CC(=O)O		
+mP3H6PhHx	3-Hydroxy-6-phenoxyhexanoate	O[C@H](CCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCOC1=CC=CC=C1)CC(=O)O		
+tP3H6PhHx	3-Hydroxy-6-phenoxyhexanoate	O[C@H](CCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCOC1=CC=CC=C1)CC(=O)O		
+hP3H7PxHp	3-Hydroxy-7-phenoxyheptanoate	O[C@H](CCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCOC1=CC=CC=C1)CC(=O)O		
+mP3H7PxHp	3-Hydroxy-7-phenoxyheptanoate	O[C@H](CCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCOC1=CC=CC=C1)CC(=O)O		
+tP3H7PxHp	3-Hydroxy-7-phenoxyheptanoate	O[C@H](CCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCOC1=CC=CC=C1)CC(=O)O		
+hP3H8PxO	3-Hydroxy-8-phenoxyoctanoate	O[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O		
+mP3H8PxO	3-Hydroxy-8-phenoxyoctanoate	O[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O		
+tP3H8PxO	3-Hydroxy-8-phenoxyoctanoate	O[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O	[C@H](CCCCCOC1=CC=CC=C1)CC(=O)O		
+hP3H4pMPxPb	3-Hydroxy-4-(4-methylphenoxy)butyrate	O[C@@H](COC1=CC=C(C)C=C1)CC(=O)O	[C@@H](COC1=CC=C(C)C=C1)CC(=O)O		y
+mP3H4pMPxPb	3-Hydroxy-4-(4-methylphenoxy)butyrate	O[C@@H](COC1=CC=C(C)C=C1)CC(=O)O	[C@@H](COC1=CC=C(C)C=C1)CC(=O)O		y
+tP3H4pMPxPb	3-Hydroxy-4-(4-methylphenoxy)butyrate	O[C@@H](COC1=CC=C(C)C=C1)CC(=O)O	[C@@H](COC1=CC=C(C)C=C1)CC(=O)O		y
+hP3H4mMPxPb	3-Hydroxy-4-(3-methylphenoxy)butyrate	O[C@@H](COC1=CC(C)=CC=C1)CC(=O)O	[C@@H](COC1=CC(C)=CC=C1)CC(=O)O		y
+mP3H4mMPxPb	3-Hydroxy-4-(3-methylphenoxy)butyrate	O[C@@H](COC1=CC(C)=CC=C1)CC(=O)O	[C@@H](COC1=CC(C)=CC=C1)CC(=O)O		y
+tP3H4mMPxPb	3-Hydroxy-4-(3-methylphenoxy)butyrate	O[C@@H](COC1=CC(C)=CC=C1)CC(=O)O	[C@@H](COC1=CC(C)=CC=C1)CC(=O)O		y
+hP3H5pMePxV	3-Hydroxy-5-(4-methylphenoxy)valerate	O[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O		y
+mP3H5pMePxV	3-Hydroxy-5-(4-methylphenoxy)valerate	O[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O		y
+tP3H5pMePxV	3-Hydroxy-5-(4-methylphenoxy)valerate	O[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C)C=C1)CC(=O)O		y
+hP3H5mMePxV	3-Hydroxy-5-(3-methylphenoxy)valerate	O[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O		y
+mP3H5mMePxV	3-Hydroxy-5-(3-methylphenoxy)valerate	O[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O		y
+tP3H5mMePxV	3-Hydroxy-5-(3-methylphenoxy)valerate	O[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCOC1=CC(C)=CC=C1)CC(=O)O		y
+hP3H6pMePxHx	3-Hydroxy-6-(4-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O		y
+mP3H6pMePxHx	3-Hydroxy-6-(4-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O		y
+tP3H6pMePxHx	3-Hydroxy-6-(4-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C)C=C1)CC(=O)O		y
+hP3H6mMePxHx	3-Hydroxy-6-(3-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O		y
+mP3H6mMePxHx	3-Hydroxy-6-(3-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O		y
+tP3H6mMePxHx	3-Hydroxy-6-(3-methylphenoxy)hexanoate	O[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCOC1=CC(C)=CC=C1)CC(=O)O		y
+hP3H5pFPxV	3-Hydroxy-5-(4-fluorophenoxy)valerate	O[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O		
+mP3H5pFPxV	3-Hydroxy-5-(4-fluorophenoxy)valerate	O[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O		
+tP3H5pFPxV	3-Hydroxy-5-(4-fluorophenoxy)valerate	O[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(F)C=C1)CC(=O)O		
+hP3H6pFPxHx	3-Hydroxy-6-(4-fluorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O		
+mP3H6pFPxHx	3-Hydroxy-6-(4-fluorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O		
+tP3H6pFPxHx	3-Hydroxy-6-(4-fluorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(F)C=C1)CC(=O)O		
+hP3H7pFPxHp	3-Hydroxy-7-(4-fluorophenoxy)heptanoate	O[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O		
+mP3H7pFPxHp	3-Hydroxy-7-(4-fluorophenoxy)heptanoate	O[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O		
+tP3H7pFPxHp	3-Hydroxy-7-(4-fluorophenoxy)heptanoate	O[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O	[C@H](CCCCOC1=CC=C(F)C=C1)CC(=O)O		
+hP3H5opF2PxV	"3-Hydroxy-5-(2,4-difluorophenoxy)valerate"	O[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O	[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O		y
+mP3H5opF2PxV	"3-Hydroxy-5-(2,4-difluorophenoxy)valerate"	O[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O	[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O		y
+tP3H5opF2PxV	"3-Hydroxy-5-(2,4-difluorophenoxy)valerate"	O[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O	[C@H](CCOC1=CC(F)=CC(F)=C1)CC(=O)O		y
+hP3H5pNO2PxV	3-Hydroxy-5-(4-nitrophenoxy)valerate	O[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+mP3H5pNO2PxV	3-Hydroxy-5-(4-nitrophenoxy)valerate	O[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+tP3H5pNO2PxV	3-Hydroxy-5-(4-nitrophenoxy)valerate	O[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+hP3H6pNO2PxHX	3-Hydroxy-6-(4-nitrophenoxy)hexanoate	O[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+mP3H6pNO2PxHX	3-Hydroxy-6-(4-nitrophenoxy)hexanoate	O[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+tP3H6pNO2PxHX	3-Hydroxy-6-(4-nitrophenoxy)hexanoate	O[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCCOC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+hP3H5pNO2PhV	3-Hydroxy-5-(4-nitrophenyl)valerate	O[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+mP3H5pNO2PhV	3-Hydroxy-5-(4-nitrophenyl)valerate	O[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+tP3H5pNO2PhV	3-Hydroxy-5-(4-nitrophenyl)valerate	O[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O	[C@H](CCC1=CC=C([N+](=O)[O-])C=C1)CC(=O)O		
+hP3H6pCNPxHx	3-Hydroxy-6-(4-cyanophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O		
+mP3H6pCNPxHx	3-Hydroxy-6-(4-cyanophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O		
+tP3H6pCNPxHx	3-Hydroxy-6-(4-cyanophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(C#N)C=C1)CC(=O)O		
+hP3H5pCNPhV	3-Hydroxy-5-(4-cyanophenyl)valerate	O[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O		
+mP3H5pCNPhV	3-Hydroxy-5-(4-cyanophenyl)valerate	O[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O		
+tP3H5pCNPhV	3-Hydroxy-5-(4-cyanophenyl)valerate	O[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C#N)C=C1)CC(=O)O		
+hP3H5pCNPxV	3-Hydroxy-5-(4-cyanophenoxy)valerate	O[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O		
+mP3H5pCNPxV	3-Hydroxy-5-(4-cyanophenoxy)valerate	O[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O		
+tP3H5pCNPxV	3-Hydroxy-5-(4-cyanophenoxy)valerate	O[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(C#N)C=C1)CC(=O)O		
+hP3H5TPxV	3-Hydroxy-5-thiophenoxyvalerate	O[C@@H](CCSC1=CC=CC=C1)CC(=O)O	[C@@H](CCSC1=CC=CC=C1)CC(=O)O		
+mP3H5TPxV	3-Hydroxy-5-thiophenoxyvalerate	O[C@@H](CCSC1=CC=CC=C1)CC(=O)O	[C@@H](CCSC1=CC=CC=C1)CC(=O)O		
+tP3H5TPxV	3-Hydroxy-5-thiophenoxyvalerate	O[C@@H](CCSC1=CC=CC=C1)CC(=O)O	[C@@H](CCSC1=CC=CC=C1)CC(=O)O		
+hP3H5pFTPxV	3-Hydroxy-5-(4-fluorothiophenoxy)valerate	O[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O	[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O		
+mP3H5pFTPxV	3-Hydroxy-5-(4-fluorothiophenoxy)valerate	O[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O	[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O		
+tP3H5pFTPxV	3-Hydroxy-5-(4-fluorothiophenoxy)valerate	O[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O	[C@@H](CSC1=CC=C(F)C=C1)CC(=O)O		
+hP3H7TPxHp	3-Hydroxy-7-thiophenoxyheptanoate	O[C@H](CCCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCCSC1=CC=CC=C1)CC(=O)O		
+mP3H7TPxHp	3-Hydroxy-7-thiophenoxyheptanoate	O[C@H](CCCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCCSC1=CC=CC=C1)CC(=O)O		
+tP3H7TPxHp	3-Hydroxy-7-thiophenoxyheptanoate	O[C@H](CCCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCCSC1=CC=CC=C1)CC(=O)O		
+hP3H6TPxHx	3-Hydroxy-6-thiophenoxyhexanoate	O[C@H](CCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCSC1=CC=CC=C1)CC(=O)O		
+mP3H6TPxHx	3-Hydroxy-6-thiophenoxyhexanoate	O[C@H](CCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCSC1=CC=CC=C1)CC(=O)O		
+tP3H6TPxHx	3-Hydroxy-6-thiophenoxyhexanoate	O[C@H](CCCSC1=CC=CC=C1)CC(=O)O	[C@H](CCCSC1=CC=CC=C1)CC(=O)O		
+hP3MB		O[C@H](S)CC(=O)O	[C@H](S)CC(=O)O		
+mP3MB		O[C@H](S)CC(=O)O	[C@H](S)CC(=O)O		
+tP3MB		O[C@H](S)CC(=O)O	[C@H](S)CC(=O)O		
+hP3MP		SCCC(=O)O	SCCC(=O)O		
+mP3MP		SCCC(=O)O	SCCC(=O)O		
+tP3MP		SCCC(=O)O	SCCC(=O)O		
+hP3H5BzV	3-Hydroxy-5-benzoylvalerate	O[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O		
+mP3H5BzV	3-Hydroxy-5-benzoylvalerate	O[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O		
+tP3H5BzV	3-Hydroxy-5-benzoylvalerate	O[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCC(=O)C1=CC=CC=C1)CC(=O)O		
+hP3H6BzHx	3-Hydroxy-6-benzoylhexanoate	O[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O		
+mP3H6BzHx	3-Hydroxy-6-benzoylhexanoate	O[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O		
+tP3H6BzHx	3-Hydroxy-6-benzoylhexanoate	O[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCC(=O)C1=CC=CC=C1)CC(=O)O		
+hP3H7BzHp	3-Hydroxy-7-benzoylheptanoate	O[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O		
+mP3H7BzHp	3-Hydroxy-7-benzoylheptanoate	O[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O		
+tP3H7BzHp	3-Hydroxy-7-benzoylheptanoate	O[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O	[C@H](CCCCC(=O)C1=CC=CC=C1)CC(=O)O		
+hP3AP		O[C@@H](N)CC(=O)O	[C@@H](N)CC(=O)O		
+mP3AP		O[C@@H](N)CC(=O)O	[C@@H](N)CC(=O)O		
+tP3AP		O[C@@H](N)CC(=O)O	[C@@H](N)CC(=O)O		
+hP3BoylP		O[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O	[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O		
+mP3BoylP		O[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O	[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O		
+tP3BoylP		O[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O	[C@@H](C(=O)C1=CC=CC=C1)CC(=O)O		
+hP3OHP		OC(O)CC(=O)O	C(O)CC(=O)O		
+mP3OHP		OC(O)CC(=O)O	C(O)CC(=O)O		
+tP3OHP		OC(O)CC(=O)O	C(O)CC(=O)O		
+hP3CoxyP		O[C@@H](C(=O)O)CC(=O)O	[C@@H](C(=O)O)CC(=O)O		
+mP3CoxyP		O[C@@H](C(=O)O)CC(=O)O	[C@@H](C(=O)O)CC(=O)O		
+tP3CoxyP		O[C@@H](C(=O)O)CC(=O)O	[C@@H](C(=O)O)CC(=O)O		
+hP3CnylB		O[C@@H](C=O)CC(=O)O	[C@@H](C=O)CC(=O)O		
+mP3CnylB		O[C@@H](C=O)CC(=O)O	[C@@H](C=O)CC(=O)O		
+tP3CnylB		O[C@@H](C=O)CC(=O)O	[C@@H](C=O)CC(=O)O		
+hP3H4MeV		O[C@@H](C(C)C)CC(=O)O	[C@@H](C(C)C)CC(=O)O		y
+mP3H4MeV		O[C@@H](C(C)C)CC(=O)O	[C@@H](C(C)C)CC(=O)O		y
+tP3H4MeV		O[C@@H](C(C)C)CC(=O)O	[C@@H](C(C)C)CC(=O)O		y
+hP3H5MeHx		O[C@H](CC(C)C)CC(=O)O	[C@H](CC(C)C)CC(=O)O		
+mP3H5MeHx		O[C@H](CC(C)C)CC(=O)O	[C@H](CC(C)C)CC(=O)O		
+tP3H5MeHx		O[C@H](CC(C)C)CC(=O)O	[C@H](CC(C)C)CC(=O)O		
+hP3H6MeHp		O[C@H](CCC(C)C)CC(=O)O	[C@H](CCC(C)C)CC(=O)O		
+mP3H6MeHp		O[C@H](CCC(C)C)CC(=O)O	[C@H](CCC(C)C)CC(=O)O		
+tP3H6MeHp		O[C@H](CCC(C)C)CC(=O)O	[C@H](CCC(C)C)CC(=O)O		
+hP3H7MeO		O[C@H](CCCC(C)C)CC(=O)O	[C@H](CCCC(C)C)CC(=O)O		
+mP3H7MeO		O[C@H](CCCC(C)C)CC(=O)O	[C@H](CCCC(C)C)CC(=O)O		
+tP3H7MeO		O[C@H](CCCC(C)C)CC(=O)O	[C@H](CCCC(C)C)CC(=O)O		
+hP3H8MeN		O[C@H](CCCCC(C)C)CC(=O)O	[C@H](CCCCC(C)C)CC(=O)O		
+mP3H8MeN		O[C@H](CCCCC(C)C)CC(=O)O	[C@H](CCCCC(C)C)CC(=O)O		
+tP3H8MeN		O[C@H](CCCCC(C)C)CC(=O)O	[C@H](CCCCC(C)C)CC(=O)O		
+hP3H4EtHx		O[C@@H](C(CC)CC)CC(=O)O	[C@@H](C(CC)CC)CC(=O)O		
+mP3H4EtHx		O[C@@H](C(CC)CC)CC(=O)O	[C@@H](C(CC)CC)CC(=O)O		
+tP3H4EtHx		O[C@@H](C(CC)CC)CC(=O)O	[C@@H](C(CC)CC)CC(=O)O		
+hP3H5EtHp		O[C@H](CC(CC)CC)CC(=O)O	[C@H](CC(CC)CC)CC(=O)O		
+mP3H5EtHp		O[C@H](CC(CC)CC)CC(=O)O	[C@H](CC(CC)CC)CC(=O)O		
+tP3H5EtHp		O[C@H](CC(CC)CC)CC(=O)O	[C@H](CC(CC)CC)CC(=O)O		
+hP3H5pMePhV	3-Hydroxy-5-(4-methylphenyl)valerate	O[C@H](CCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C)C=C1)CC(=O)O		
+mP3H5pMePhV	3-Hydroxy-5-(4-methylphenyl)valerate	O[C@H](CCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C)C=C1)CC(=O)O		
+tP3H5pMePhV	3-Hydroxy-5-(4-methylphenyl)valerate	O[C@H](CCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCC1=CC=C(C)C=C1)CC(=O)O		
+hP3H5mMePhV	3-Hydroxy-5-(3-methylphenyl)valerate	O[C@H](CCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCC1=CC(C)=CC=C1)CC(=O)O		
+mP3H5mMePhV	3-Hydroxy-5-(3-methylphenyl)valerate	O[C@H](CCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCC1=CC(C)=CC=C1)CC(=O)O		
+tP3H5mMePhV	3-Hydroxy-5-(3-methylphenyl)valerate	O[C@H](CCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCC1=CC(C)=CC=C1)CC(=O)O		
+hP3H6pMePhHx	3-Hydroxy-6-(4-methylphenyl)hexanoate	O[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O		
+mP3H6pMePhHx	3-Hydroxy-6-(4-methylphenyl)hexanoate	O[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O		
+tP3H6pMePhHx	3-Hydroxy-6-(4-methylphenyl)hexanoate	O[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O	[C@H](CCCC1=CC=C(C)C=C1)CC(=O)O		
+hP3H6mMePhHx	3-Hydroxy-6-(3-methylphenyl)hexanoate	O[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O		
+mP3H6mMePhHx	3-Hydroxy-6-(3-methylphenyl)hexanoate	O[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O		
+tP3H6mMePhHx	3-Hydroxy-6-(3-methylphenyl)hexanoate	O[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O	[C@H](CCCC1=CC(C)=CC=C1)CC(=O)O		
+hP3H5pBrPhV	3-Hydroxy-5-(4-bromophenyl)valerate	O[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O		
+mP3H5pBrPhV	3-Hydroxy-5-(4-bromophenyl)valerate	O[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O		
+tP3H5pBrPhV	3-Hydroxy-5-(4-bromophenyl)valerate	O[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Br)C=C1)CC(=O)O		
+hP3H5pBrPxV	3-Hydroxy-5-(4-bromophenoxy)valerate	O[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O		
+mP3H5pBrPxV	3-Hydroxy-5-(4-bromophenoxy)valerate	O[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O		
+tP3H5pBrPxV	3-Hydroxy-5-(4-bromophenoxy)valerate	O[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Br)C=C1)CC(=O)O		
+hP3H5pCLPxV	3-Hydroxy-5-(4-chlorophenoxy)valerate	O[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O		
+mP3H5pCLPxV	3-Hydroxy-5-(4-chlorophenoxy)valerate	O[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O		
+tP3H5pCLPxV	3-Hydroxy-5-(4-chlorophenoxy)valerate	O[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCOC1=CC=C(Cl)C=C1)CC(=O)O		
+hP3H6pCLPxHx	3-Hydroxy-6-(4-chlorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O		
+mP3H6pCLPxHx	3-Hydroxy-6-(4-chlorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O		
+tP3H6pCLPxHx	3-Hydroxy-6-(4-chlorophenoxy)hexanoate	O[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCCOC1=CC=C(Cl)C=C1)CC(=O)O		
+hP3H5pCLPhV	3-Hydroxy-5-(4-chlorophenyl)valerate	O[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O		
+mP3H5pCLPhV	3-Hydroxy-5-(4-chlorophenyl)valerate	O[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O		
+tP3H5pCLPhV	3-Hydroxy-5-(4-chlorophenyl)valerate	O[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O	[C@H](CCC1=CC=C(Cl)C=C1)CC(=O)O		
+hP4HB	4-Hydroxybutyrate	OCCCC(=O)O	CCCC(=O)O		
+mP4HB	4-Hydroxybutyrate	OCCCC(=O)O	CCCC(=O)O		
+tP4HB	4-Hydroxybutyrate	OCCCC(=O)O	CCCC(=O)O		
+hP5HV	5-Hydroxyvalerate	OCCCCC(=O)O	CCCCC(=O)O		
+mP5HV	5-Hydroxyvalerate	OCCCCC(=O)O	CCCCC(=O)O		
+tP5HV	5-Hydroxyvalerate	OCCCCC(=O)O	CCCCC(=O)O		
+hP6HHx	6-Hydroxyhexanoate	OCCCCCC(=O)O	CCCCCC(=O)O		
+mP6HHx	6-Hydroxyhexanoate	OCCCCCC(=O)O	CCCCCC(=O)O		
+tP6HHx	6-Hydroxyhexanoate	OCCCCCC(=O)O	CCCCCC(=O)O		
+hP7HHp	7-Hydroxyheptanoate	OCCCCCCC(=O)O	CCCCCCC(=O)O		
+mP7HHp	7-Hydroxyheptanoate	OCCCCCCC(=O)O	CCCCCCC(=O)O		
+tP7HHp	7-Hydroxyheptanoate	OCCCCCCC(=O)O	CCCCCCC(=O)O		
+hP3HP					
+mP3HP					
+tP3HP					
+hP4HV					
+mP4HV					
+tP4HV					
+hP4HHx					
+mP4HHx					
+tP4HHx					
+hP4HHp					
+mP4HHp					
+tP4HHp					
+hP4HO					
+mP4HO					
+tP4HO					
+hP4HD					
+mP4HD					
+tP4HD					
+hP5HHx					
+mP5HHx					
+tP5HHx					
+hP6HDD					
+mP6HDD					
+tP6HDD					
+hP3H4PE					
+mP3H4PE					
+tP3H4PE					
+hP3H4tHE					
+mP3H4tHE					
+tP3H4tHE					
+hP3H4cHE					
+mP3H4cHE					
+tP3H4cHE					
+hP3H6tOE					
+mP3H6tOE					
+tP3H6tOE					
+hP3H6cOE					
+mP3H6cOE					
+tP3H6cOE					
+hP3H8NE					
+mP3H8NE					
+tP3H8NE					
+hP3H5cDDE					
+mP3H5cDDE					
+tP3H5cDDE					
+hP3H6DDE					
+mP3H6DDE					
+tP3H6DDE					
+hP3H4MeHx					
+mP3H4MeHx					
+tP3H4MeHx					
+hP3H4MeO					
+mP3H4MeO					
+tP3H4MeO					
+hP3H5MeO					
+mP3H5MeO					
+tP3H5MeO					
+hP3H6MeO					
+mP3H6MeO					
+tP3H6MeO					
+hP3H7MeO					
+mP3H7MeO					
+tP3H7MeO					
+hP3H6MeN					
+mP3H6MeN					
+tP3H6MeN					
+hP3H7MeN					
+mP3H7MeN					
+tP3H7MeN					
+hP3H8MeN					
+mP3H8MeN					
+tP3H8MeN					
+hP3H7MeD					
+mP3H7MeD					
+tP3H7MeD					
+hP3H9MeD					
+mP3H9MeD					
+tP3H9MeD					
+hP3H5PoxV					
+mP3H5PoxV					
+tP3H5PoxV					
+hP2H3PhP					
+mP2H3PhP					
+tP2H3PhP					
+hP3H10PhD					
+mP3H10PhD					
+tP3H10PhD					
+hP3H9PxN					
+mP3H9PxN					
+tP3H9PxN					
+hP3H8pMPxO					
+mP3H8pMPxO					
+tP3H8pMPxO					
+hP3H5opNPhV					
+mP3H5opNPhV					
+tP3H5opNPhV					
+hP3H5mFPxV					
+mP3H5mFPxV					
+tP3H5mFPxV					
+hP3H7mFPxHp					
+mP3H7mFPxHp					
+tP3H7mFPxHp					
+hP3H4BzB					
+mP3H4BzB					
+tP3H4BzB					
+hP3H8BzO					
+mP3H8BzO					
+tP3H8BzO					
