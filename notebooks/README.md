@@ -2,7 +2,7 @@
 
 Run the notebooks in order:
 
-1. `01_build_pha_oligomers.ipynb`
+1. `01_examples_pha_oligomers.ipynb`
 2. `02_design_polymer_for_user_request.ipynb`
 3. `03_validate_and_visualize.ipynb`
 4. `04_export_structures.ipynb`

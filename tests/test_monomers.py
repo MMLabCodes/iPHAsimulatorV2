@@ -59,6 +59,16 @@ def test_get_monomer_is_case_insensitive():
     assert get_monomer("phhep") is MONOMERS["PHHep"]
 
 
+@pytest.mark.parametrize(
+    ("hydroxyalkanoate_name", "registry_code"),
+    [("3HB", "PHB"), ("3HO", "PHO"), ("3HDD", "PHDD")],
+)
+def test_get_monomer_accepts_hydroxyalkanoate_names(
+    hydroxyalkanoate_name, registry_code
+):
+    assert get_monomer(hydroxyalkanoate_name) is MONOMERS[registry_code]
+
+
 def test_get_monomer_rejects_unknown_code():
     with pytest.raises(ValueError, match="Unknown monomer"):
         get_monomer("PLA")

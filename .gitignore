@@ -5,5 +5,5 @@ __pycache__/
 *.egg-info/
 
 # Generated tutorial and workflow outputs.
-examples/output/benchmark
+examples/output
 notebooks/.ipynb_checkpoints/

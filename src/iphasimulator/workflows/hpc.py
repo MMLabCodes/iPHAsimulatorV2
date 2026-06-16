@@ -23,7 +23,7 @@ DEFAULT_WORKFLOW_CONFIG: dict[str, Any] = {
         "openmm": True,
     },
     "gaff2": {
-        "charge_method": "gas",
+        "charge_method": "abcg2",
         "net_charge": 0,
         "residue_name": "PHA",
         "atom_count_warning_threshold": 120,

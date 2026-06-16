@@ -87,6 +87,13 @@ MONOMERS: dict[str, Monomer] = {
 }
 
 _MONOMER_LOOKUP = {code.upper(): code for code in MONOMERS}
+_MONOMER_LOOKUP.update(
+    {
+        "3HB": "PHB",
+        "3HO": "PHO",
+        "3HDD": "PHDD",
+    }
+)
 
 
 def get_monomer(code: str) -> Monomer:

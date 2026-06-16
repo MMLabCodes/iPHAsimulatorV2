@@ -25,7 +25,7 @@ Generated structures and MD outputs are written under `examples/output/` and are
 
 The tutorials are split by step:
 
-1. `notebooks/01_build_pha_oligomers.ipynb`
+1. `notebooks/01_examples_pha_oligomers.ipynb`
 2. `notebooks/02_design_polymer_for_user_request.ipynb`
 3. `notebooks/03_validate_and_visualize.ipynb`
 4. `notebooks/04_export_structures.ipynb`
