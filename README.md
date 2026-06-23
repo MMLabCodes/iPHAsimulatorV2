@@ -29,12 +29,13 @@ The tutorials are split by step:
 2. `notebooks/02_design_polymer_for_user_request.ipynb`
 3. `notebooks/03_validate_and_visualize.ipynb`
 4. `notebooks/04_export_structures.ipynb`
-5. `notebooks/05_gaff2_parameterisation.ipynb`
-6. `notebooks/06A_openmm_dry_polymer.ipynb`
-7. `notebooks/06B_gromacs_dry_polymer.ipynb`
-8. `notebooks/06C_gromacs_solvated_system.ipynb`
-9. `notebooks/06D_openmm_solvated_system.ipynb`
-10. `notebooks/07_hpc_workflows.ipynb`
+5. `notebooks/05A_amber_gaff2_parameterisation.ipynb` - Amber/GAFF2 Parameterisation
+6. `notebooks/05B_charmm_cgenff_parameterisation.ipynb` - CHARMM/CGenFF Parameterisation
+7. `notebooks/06A_openmm_dry_polymer.ipynb`
+8. `notebooks/06B_gromacs_dry_polymer.ipynb`
+9. `notebooks/06C_gromacs_solvated_system.ipynb`
+10. `notebooks/06D_openmm_solvated_system.ipynb`
+11. `notebooks/07_hpc_workflows.ipynb`
 
 The notebooks are written as guided tutorials for non-specialist users. They
 import reusable code from `src/iphasimulator`; they should not contain core
