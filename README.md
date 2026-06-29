@@ -1,5 +1,9 @@
 # iPHASimulator v2
 
+<p align="center">
+  <img src="docs/logo.png" alt="iPHAsimulator logo" width="400"/>
+</p>
+
 iPHASimulator v2 is a notebook-driven Python toolkit for building, validating,
 parameterising, simulating, preprocessing, and analysing polyhydroxyalkanoate
 (PHA) oligomer systems.
