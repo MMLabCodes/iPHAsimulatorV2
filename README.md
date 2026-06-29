@@ -58,19 +58,21 @@ home of core package logic.
 
 ## Installation
 
-The recommended installation route is conda for scientific and external MD
-dependencies, followed by an editable install of the local package.
+The Python package dependencies are declared in `pyproject.toml`. A typical
+development install creates a conda environment, installs the local package in
+editable mode, and lets `pip` read the dependency metadata from that file.
 
 ```bash
 conda create -n iphasimulator-v2 python=3.11
 conda activate iphasimulator-v2
 
-conda install -c conda-forge \
-  rdkit ambertools openmm gromacs parmed mdtraj mdanalysis \
-  pandas numpy scipy matplotlib pyyaml networkx jupyterlab pytest openbabel
-
 python -m pip install -e ".[dev,md]"
 ```
+
+This installs the core Python dependencies listed in `pyproject.toml`, plus the
+`dev` and `md` optional dependency groups. External command-line tools used by
+some notebooks, such as AmberTools, GROMACS, and Open Babel, still need to be
+available in the active environment when those workflows are run.
 
 Then start the notebooks from the repository root:
 
@@ -80,6 +82,29 @@ jupyter lab notebooks/
 
 Generated structures, parameter files, simulation inputs, trajectories, and logs
 are written under `examples/output/`, which is ignored by Git.
+
+## Testing the Installation
+
+The main verification suite is in `tests/`. After installing the package, run the
+tests from the repository root with `pytest`:
+
+```bash
+python -m pytest tests
+```
+
+Individual workflow areas can also be checked by running a specific test file:
+
+```bash
+python -m pytest tests/test_build_pha.py
+python -m pytest tests/test_export.py
+python -m pytest tests/test_md_workflow.py
+python -m pytest tests/test_gromacs_runner.py
+python -m pytest tests/test_trajectory_preprocessing.py
+```
+
+These tests cover the builder, monomer registry, stereochemistry, structure
+export, GAFF2 workflow helpers, GROMACS conversion/preparation helpers, HPC
+workflow helpers, and trajectory preprocessing utilities.
 
 ## Required Dependencies
 
