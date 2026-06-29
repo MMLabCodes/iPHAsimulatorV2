@@ -58,21 +58,126 @@ home of core package logic.
 
 ## Installation
 
-The Python package dependencies are declared in `pyproject.toml`. A typical
-development install creates a conda environment, installs the local package in
-editable mode, and lets `pip` read the dependency metadata from that file.
+iPHASimulator v2 is installed from the GitHub repository:
+[MMLabCodes/iPHAsimulatorV2](https://github.com/MMLabCodes/iPHAsimulatorV2).
+
+These instructions assume you are using a terminal on Linux, macOS, or Windows
+with WSL. The terminal is the application where you type commands such as
+`conda activate ...` and `python ...`.
+
+### 1. Install Conda
+
+Install Miniconda or Anaconda first if `conda` is not already available on your
+computer. Conda creates an isolated software environment, so the packages for
+iPHASimulator v2 do not interfere with other Python projects.
+
+After installing Conda, open a new terminal and check that it works:
+
+```bash
+conda --version
+```
+
+### 2. Download iPHASimulator v2
+
+Choose a folder where you keep research software, then download the repository
+from GitHub:
+
+```bash
+cd ~
+git clone https://github.com/MMLabCodes/iPHAsimulatorV2.git
+cd iPHAsimulatorV2
+```
+
+If you do not use `git`, open the GitHub page in a browser, click **Code**,
+choose **Download ZIP**, unzip the folder, and then open a terminal inside the
+unzipped folder. The folder may be named `iPHAsimulatorV2` or
+`iPHAsimulatorV2-main`, depending on how it was downloaded.
+
+### 3. Create and Activate the Environment
+
+Create a new conda environment with Python 3.11:
 
 ```bash
 conda create -n iphasimulator-v2 python=3.11
 conda activate iphasimulator-v2
+```
 
+If conda asks `Proceed ([y]/n)?`, type `y` and press Enter.
+
+When the environment is active, your terminal prompt should usually start with
+`(iphasimulator-v2)`.
+
+### 4. Install the Python Package
+
+The Python dependencies are declared in `pyproject.toml`. You do not need to
+type every Python package name manually. From the repository root, run:
+
+```bash
 python -m pip install -e ".[dev,md]"
 ```
 
-This installs the core Python dependencies listed in `pyproject.toml`, plus the
-`dev` and `md` optional dependency groups. External command-line tools used by
-some notebooks, such as AmberTools, GROMACS, and Open Babel, still need to be
-available in the active environment when those workflows are run.
+This command tells `pip` to read `pyproject.toml` and install:
+
+- the core `iphasimulator` package;
+- the main Python dependencies such as RDKit, numpy, pandas, scipy, networkx,
+  and pyyaml;
+- the `dev` tools, including pytest and JupyterLab;
+- the `md` tools, including OpenMM, ParmEd, and MDTraj.
+
+The `-e` option means "editable install". This is useful for development because
+changes made in `src/iphasimulator/` are used immediately without reinstalling
+the package.
+
+### 5. Check the Python Installation
+
+Run these commands from the same activated environment:
+
+```bash
+python -c "import iphasimulator; print('iPHASimulator import OK')"
+python -c "from rdkit import Chem; import openmm; import parmed; import mdtraj; print('Python dependencies OK')"
+```
+
+### 6. Check External Simulation Tools
+
+Some notebooks call external command-line programs. These are not ordinary
+Python imports, so they may need to be installed separately in the same conda
+environment:
+
+- AmberTools for GAFF2 parameterisation (`antechamber`, `parmchk2`, `tleap`);
+- GROMACS for GROMACS MD workflows (`gmx`);
+- Open Babel for optional structure conversion (`obabel`).
+
+Check whether they are available:
+
+```bash
+which antechamber
+which tleap
+which gmx
+which obabel
+gmx --version
+obabel -V
+```
+
+If any command is missing, install that external tool before running the
+notebooks that require it. For example, AmberTools, GROMACS, and Open Babel are
+available from conda-forge:
+
+```bash
+conda install -c conda-forge ambertools gromacs openbabel
+```
+
+After installing them, check again:
+
+```bash
+which antechamber
+which tleap
+which gmx
+which obabel
+gmx --version
+obabel -V
+```
+
+### 7. Start the Notebooks
 
 Then start the notebooks from the repository root:
 
