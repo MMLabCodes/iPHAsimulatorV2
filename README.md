@@ -1,176 +1,187 @@
 # iPHASimulator v2
 
-PHA-specific RDKit tooling for building and validating simple oligomer structures.
+iPHASimulator v2 is a notebook-driven Python toolkit for building, validating,
+parameterising, simulating, preprocessing, and analysing polyhydroxyalkanoate
+(PHA) oligomer systems.
 
-## Builder levels
+The current v2 workflow focuses on reproducible PHA molecular simulation
+preparation. It starts from chemically defined PHA oligomers, exports structure
+files, prepares Amber/GAFF2 and GROMACS/OpenMM simulation inputs, supports HPC
+execution patterns, and provides early analysis and PHA-enzyme docking
+preparation notebooks.
 
-1. Curated common PHA library: `PHB`, `PHV`, `PHHx`, `PHHep`, `PHO`, `PHN`, `PHD`, and `PHDD`.
-2. Generic linear alkyl-side-chain builder: `build_pha_by_sidechain(side_chain_carbons, degree)`.
-3. Custom 3-hydroxy acid monomer builder: `build_custom_pha(monomer_smiles, degree, name)`.
+## What It Does
 
-## Project layout
+iPHASimulator v2 currently provides:
 
-- `src/iphasimulator/`: reusable package code.
-- `src/iphasimulator/parameterization/`: AmberTools/GAFF2 workflow code.
-- `src/iphasimulator/simulation/`: OpenMM and GROMACS workflow code.
-- `src/iphasimulator/workflows/`: reusable notebook/example workflow helpers.
-- `notebooks/`: step-by-step tutorials.
-- `examples/`: thin command-line scripts.
-- `docs/`: design notes.
-- `tests/`: automated tests.
+- RDKit-based PHA oligomer generation for curated common PHAs and custom
+  3-hydroxy acid monomers.
+- Validation and visualisation of generated oligomer structures.
+- PDB and SDF export for downstream molecular simulation workflows.
+- AmberTools/GAFF2 parameterisation for PHA oligomers.
+- OpenMM and GROMACS workflow preparation for dry and solvated systems.
+- HPC workflow helpers for repeatable simulation execution.
+- GROMACS trajectory preprocessing for analysis-ready trajectories.
+- Basic polymer trajectory analysis.
+- PHA-enzyme docking input preparation for manual HADDOCK workflows.
 
-Generated structures and MD outputs are written under `examples/output/` and are ignored by Git. Exported PDB/SDF structure files live in `examples/output/polymer_structures/`.
+DFT workflows are not documented as a current v2 capability.
 
-## Tutorial notebooks
+## Workflow Overview
 
-The tutorials are split by step:
-
-1. `notebooks/01_examples_pha_oligomers.ipynb`
-2. `notebooks/02_design_polymer_for_user_request.ipynb`
-3. `notebooks/03_validate_and_visualize.ipynb`
-4. `notebooks/04_export_structures.ipynb`
-5. `notebooks/05A_amber_gaff2_parameterisation.ipynb` - Amber/GAFF2 Parameterisation
-6. `notebooks/05B_charmm_cgenff_parameterisation.ipynb` - CHARMM/CGenFF Parameterisation
-7. `notebooks/06A_openmm_dry_polymer.ipynb`
-8. `notebooks/06B_gromacs_dry_polymer.ipynb`
-9. `notebooks/06C_gromacs_solvated_system.ipynb`
-10. `notebooks/06D_openmm_solvated_system.ipynb`
-11. `notebooks/07_hpc_workflows.ipynb`
-
-The notebooks are written as guided tutorials for non-specialist users. They
-import reusable code from `src/iphasimulator`; they should not contain core
-package logic.
-
-Workflow map:
-
-```mermaid
-flowchart LR
-    A[build] --> B[parameterise]
-    B --> C[convert or solvate]
-    C --> D[engine-specific MD]
-    D --> E[HPC execution]
+```text
+Design -> validation -> structure export -> parameterisation -> MD simulation
+       -> trajectory preprocessing -> analysis -> PHA-enzyme docking
 ```
 
-Run it with:
+The repository is organised around guided notebooks. Reusable code lives in
+`src/iphasimulator`; notebooks should remain workflow tutorials rather than the
+home of core package logic.
+
+## Current Status
+
+| Area | Status | Notes |
+|---|---|---|
+| Polymer generation | Working | Curated PHA names, side-chain based generation, and custom monomers are implemented in `src/iphasimulator`. |
+| GAFF2/Amber parameterisation | Working | AmberTools workflow writes GAFF2 `mol2`, `frcmod`, `prmtop`, `inpcrd`, logs, and timing files. |
+| CHARMM/CGenFF parameterisation | In progress | Notebook `05B` documents the CHARMM/CGenFF handoff route; it is not yet equivalent to the GAFF2 workflow. |
+| GROMACS/OpenMM MD workflows | Working/in progress | Dry OpenMM and GROMACS preparation are working; solvated workflows and production-style routes are under active development by notebook. |
+| HPC workflow | Working | YAML/SLURM-oriented helpers and notebook guidance are present for staged runs. |
+| Polymer analysis | Working | Basic analysis notebook supports analysis from preprocessed trajectories. |
+| PHA-enzyme docking preparation | Working/in progress | Notebook `11` prepares docking-ready polymer PDB inputs and manual HADDOCK job notes; docking submission is manual. |
+| Enzyme-polymer MD | Planned | Docked complexes are not yet converted into enzyme-polymer MD systems. |
+| ML/database functionality | Planned | Reusable databases and ML-backed workflows are future work. |
+
+## Installation
+
+The recommended installation route is conda for scientific and external MD
+dependencies, followed by an editable install of the local package.
 
 ```bash
-python -m pip install -e .
-python -m pip install jupyterlab
+conda create -n iphasimulator-v2 python=3.11
+conda activate iphasimulator-v2
+
+conda install -c conda-forge \
+  rdkit ambertools openmm gromacs parmed mdtraj mdanalysis \
+  pandas numpy scipy matplotlib pyyaml networkx jupyterlab pytest openbabel
+
+python -m pip install -e ".[dev,md]"
+```
+
+Then start the notebooks from the repository root:
+
+```bash
 jupyter lab notebooks/
 ```
 
-Jupyter is an interactive development dependency, not a core runtime dependency.
+Generated structures, parameter files, simulation inputs, trajectories, and logs
+are written under `examples/output/`, which is ignored by Git.
 
-To generate validation SDF/PDB files without Jupyter:
+## Required Dependencies
 
-```bash
-PYTHONPATH=src python examples/generate_validation_structures.py
-```
+| Dependency | Purpose |
+|---|---|
+| RDKit | PHA molecule construction, stereochemistry handling, structure validation, and SDF/PDB export. |
+| AmberTools | GAFF2 parameterisation through `antechamber`, `parmchk2`, and `tleap`. |
+| OpenMM | Python-native MD validation and OpenMM simulation workflows. |
+| GROMACS | GROMACS dry/solvated workflow execution and trajectory preprocessing. |
+| ParmEd | AMBER-to-GROMACS topology conversion. |
+| MDTraj / MDAnalysis | Trajectory handling and analysis support. |
+| pandas | Workflow tables, status summaries, and analysis data frames. |
+| numpy | Numerical calculations. |
+| matplotlib | Notebook plots and basic analysis visualisation. |
+| Open Babel | Optional structure format conversion support where needed. |
 
-For config-driven workstation or HPC runs:
+The package metadata also includes supporting Python dependencies such as
+`scipy`, `networkx`, and `pyyaml`.
 
-```bash
-PYTHONPATH=src python examples/run_configured_workflow.py --config examples/hpc_validation_workflow.yaml --dry-run
-PYTHONPATH=src python examples/run_configured_workflow.py --config examples/hpc_validation_workflow.yaml
-```
-
-To prepare the alternative GROMACS route after GAFF2 parameterisation:
-
-```bash
-PYTHONPATH=src python examples/prepare_gromacs_from_gaff2.py --target PHB4
-```
-
-The MD output layout is workflow-oriented:
+## Repository Structure
 
 ```text
-examples/output/md_tests/<SYSTEM>/
-    gaff2/
-    gromacs/
-        dry_polymer/
-        solvated_polymer/
-        charmm_gui_membrane/
-    openmm/
-        dry_polymer/
-        solvated_polymer/
-        advanced_workflows/
-        debug/
+notebooks/   Guided v2 workflow notebooks.
+src/         Reusable `iphasimulator` Python package code.
+examples/    Thin runnable scripts, YAML workflow examples, SLURM templates,
+             and generated output under `examples/output/`.
+docs/        Developer and design documentation.
+tests/       Automated tests for builders, export, MD workflow helpers,
+             GROMACS conversion, HPC helpers, and trajectory preprocessing.
 ```
 
-GROMACS workflow folders under `examples/output/md_tests/PHB4/gromacs/`:
+## Notebook Workflow
 
-- `dry_polymer/` for polymer-only dry/vacuum minimisation debugging.
-- `solvated_polymer/` for polymer + water + ions MD.
-- `charmm_gui_membrane/` for optional CHARMM-GUI-style membrane/protein
-  equilibration templates.
+| Notebook | Purpose | Main output |
+|---|---|---|
+| `01_examples_pha_oligomers.ipynb` | Introduce built-in PHA oligomer generation examples. | Example RDKit PHA molecules for tutorial use. |
+| `02_design_polymer_for_user_request.ipynb` | Select or define a PHA target from user-facing design inputs. | A designed polymer target such as `PHB4_R`. |
+| `03_validate_and_visualize.ipynb` | Validate generated oligomers and inspect molecular structures. | Validation summaries and visual checks. |
+| `04_export_structures.ipynb` | Export validated oligomers to structure files. | PDB/SDF files in `examples/output/polymer_structures/`. |
+| `05A_amber_gaff2_parameterisation.ipynb` | Run AmberTools/GAFF2 parameterisation. | `prmtop`, `inpcrd`, GAFF2 `mol2`/`frcmod`, and logs under `examples/output/md_tests/<SYSTEM>/gaff2/`. |
+| `05B_charmm_cgenff_parameterisation.ipynb` | Document CHARMM/CGenFF parameterisation handoff. | In-progress CHARMM/CGenFF preparation notes. |
+| `06A_openmm_dry_polymer.ipynb` | Validate GAFF2-derived AMBER files with dry OpenMM MD. | Dry OpenMM outputs under `examples/output/md_tests/<SYSTEM>/openmm/dry_polymer/`. |
+| `06B_gromacs_dry_polymer.ipynb` | Convert AMBER files and prepare dry GROMACS validation. | Dry GROMACS folder under `examples/output/md_tests/<SYSTEM>/gromacs/dry_polymer/`. |
+| `06C_gromacs_solvated_system.ipynb` | Prepare explicit-solvent GROMACS inputs and scripts. | Solvated GROMACS workflow under `examples/output/md_tests/<SYSTEM>/gromacs/solvated_polymer/`. |
+| `06D_openmm_solvated_system.ipynb` | Prepare explicit-solvent OpenMM workflow templates. | Solvated OpenMM preparation under `examples/output/md_tests/<SYSTEM>/openmm/solvated_polymer/`. |
+| `07_hpc_workflows.ipynb` | Prepare and document local/HPC staged execution. | SLURM scripts, restart guidance, and benchmark execution notes. |
+| `08_trajectory_preprocessing.ipynb` | Reconstruct, center, wrap, and optionally fit GROMACS trajectories. | `step7_centered.xtc`, optional `step7_fitted.xtc`, and representative frames. |
+| `09_basic_polymer_analysis.ipynb` | Run basic polymer trajectory analysis. | Analysis tables and plots for metrics such as radius of gyration and SASA. |
+| `10_batch_md_benchmark.ipynb` | Launch and track multi-system MD benchmark preparation. | Benchmark outputs under `examples/output/benchmark/`. |
+| `11_PHA_Enzyme_Docking.ipynb` | Prepare PHA oligomer inputs for manual enzyme docking. | Docking-ready polymer PDBs and manual HADDOCK job records under `examples/output/docking_inputs/`. |
 
-OpenMM dry validation writes to `openmm/dry_polymer/`. Explicit-solvent OpenMM
-preparation writes to `openmm/solvated_polymer/`. Temporary smoke-test output,
-belongs under `openmm/debug/` and is not part of the production workflow
-documentation.
+## Minimal PHB4 Benchmark Workflow
 
-Each workflow folder has its own inputs and scripts where applicable, so
-running one workflow does not modify another. Existing old mixed files directly
-inside `examples/output/md_tests/<SYSTEM>/gromacs/` can be deleted and
-regenerated.
+`PHB4` is the default small benchmark system for checking the v2 workflow.
 
-The solvated workflow is reset-safe: `run_solvate_local.sh` copies fresh
-polymer-only `topol.top` and `step5_input.gro` from `dry_polymer/`, removes old
-generated solvation/minimisation files, then writes the final solvated and
-neutralised starting structure back to `solvated_polymer/step5_input.gro`.
-Do not rerun `gmx solvate` or `gmx genion` manually on an already modified
-`topol.top`; rerun the generated script with clean/overwrite mode instead.
+1. Install the environment and start Jupyter:
 
-The simplified dry polymer workflow remains the default for PHA oligomer
-validation. The solvated GROMACS and solvated OpenMM notebooks are the realistic
-production-preparation routes once the dry validation succeeds. An
-advanced Packmol builder is also available for future realistic PHA oligomer
-systems with TIP3P water, NaCl, multiple polymers, and later enzyme/polymer
-extensions:
+   ```bash
+   conda activate iphasimulator-v2
+   jupyter lab notebooks/
+   ```
 
-```python
-from iphasimulator.system_builders import build_packmol_solvated_system
+2. Run notebooks `01` to `04` using the PHB tetramer target. The expected
+   exported structure names are:
 
-build_packmol_solvated_system(
-    ["examples/output/polymer_structures/PHB4_R.pdb"],
-    "examples/output/md_tests/PHB4/packmol",
-    box_size_nm=8.0,
-    nacl_concentration_molar=0.15,
-)
-```
+   ```text
+   examples/output/polymer_structures/PHB4_R.sdf
+   examples/output/polymer_structures/PHB4_R.pdb
+   ```
 
-Running that advanced builder requires the `packmol` executable on `PATH`.
+3. Run `05A_amber_gaff2_parameterisation.ipynb` with `PHB4_R` as the target.
+   The expected Amber/GAFF2 outputs are written under:
 
-## MD workflow dependencies
+   ```text
+   examples/output/md_tests/PHB4/gaff2/
+   ```
 
-Stage 1 uses AmberTools executables (`antechamber`, `parmchk2`, `tleap`). Stage 2 uses OpenMM with AMBER topology files.
+4. Run the relevant MD notebook for the route being tested:
 
-Install the MD stack with conda-forge:
+   - `06A_openmm_dry_polymer.ipynb` for dry OpenMM validation.
+   - `06B_gromacs_dry_polymer.ipynb` for dry GROMACS validation.
+   - `06C_gromacs_solvated_system.ipynb` for explicit-solvent GROMACS setup.
+   - `06D_openmm_solvated_system.ipynb` for explicit-solvent OpenMM setup.
 
-```bash
-conda install -c conda-forge ambertools openmm parmed mdtraj -y
-```
+5. For production-style GROMACS trajectories, continue with:
 
-Activate the same conda environment before running the workflow:
+   - `07_hpc_workflows.ipynb` for local/HPC execution guidance.
+   - `08_trajectory_preprocessing.ipynb` to generate analysis-ready trajectories.
+   - `09_basic_polymer_analysis.ipynb` for basic trajectory analysis.
+   - `11_PHA_Enzyme_Docking.ipynb` only after suitable production structures are available.
 
-```bash
-conda activate <your-env>
-which antechamber
-which tleap
-python -c "import openmm, parmed, mdtraj"
-PYTHONPATH=src python3 examples/run_gaff2_openmm_test.py
-```
+## Developer Documentation
 
-The default workflow runs the smaller validation systems only: `PHB4`, `PHO4`,
-and `PHDD4`. Larger systems such as `PHB8`, `PHO8`, and `PHDD8` are opt-in with
-`--target` until the smaller systems are validated.
+- [Developer guide](docs/developer_guide.md)
+- [Notebook guide](notebooks/README.md)
 
-For faster AmberTools debugging without AM1-BCC charge generation:
+## Roadmap
 
-```bash
-PYTHONPATH=src python3 examples/run_gaff2_openmm_test.py --target PHB4 --skip-openmm --skip-am1-bcc
-```
+- Reusable PHA residue database.
+- Head/main/tail building blocks for more robust polymer assembly.
+- Mixed PHA sequences and sequence-aware validation.
+- Enzyme-polymer MD workflows from reviewed docking poses.
+- ML potential and database support for future screening workflows.
 
-The workflow writes GAFF2/OpenMM outputs under `examples/output/md_tests/`,
-including per-stage timing logs and separate raw `antechamber`/`sqm` logs.
-Generated trajectories, checkpoints, and logs are under `examples/output/`,
-which is ignored by Git by default and should not be committed.
+## Citation and Acknowledgements
+
+Citation information will be added before publication or formal release. Until
+then, please cite the repository URL and acknowledge the iPHASimulator v2
+development team when using this software in research outputs.
