@@ -68,8 +68,29 @@ with WSL. The terminal is the application where you type commands such as
 ### 1. Install Conda
 
 Install Miniconda or Anaconda first if `conda` is not already available on your
-computer. Conda creates an isolated software environment, so the packages for
-iPHASimulator v2 do not interfere with other Python projects.
+computer. Conda is not normally installed with `pip`; it is a separate Python
+and software environment manager. Conda creates an isolated environment, so the
+packages for iPHASimulator v2 do not interfere with other Python projects.
+
+Recommended options:
+
+- **Miniconda**: smaller download, recommended if you only want the package
+  manager and will install packages as needed.
+- **Anaconda**: larger download, includes many scientific Python packages by
+  default.
+
+For most users, Miniconda is enough:
+
+1. Open the Miniconda download page:
+   <https://docs.conda.io/en/latest/miniconda.html>
+2. Download the installer for your operating system.
+3. Run the installer and accept the default options unless your institution has
+   specific instructions.
+4. Close and reopen the terminal after installation.
+
+On Windows, this project is easiest to use through WSL because AmberTools and
+many MD tools are Linux-oriented. Install Miniconda inside the WSL terminal, not
+only in the normal Windows command prompt.
 
 After installing Conda, open a new terminal and check that it works:
 
@@ -78,6 +99,22 @@ conda --version
 ```
 
 ### 2. Download iPHASimulator v2
+
+The easiest way to download the repository is with `git`. First check whether
+`git` is installed:
+
+```bash
+git --version
+```
+
+If that command is not found, install Git. If Conda is working, one simple route
+is:
+
+```bash
+conda install -c conda-forge git
+```
+
+If Conda asks `Proceed ([y]/n)?`, type `y` and press Enter.
 
 Choose a folder where you keep research software, then download the repository
 from GitHub:
@@ -98,14 +135,14 @@ unzipped folder. The folder may be named `iPHAsimulatorV2` or
 Create a new conda environment with Python 3.11:
 
 ```bash
-conda create -n iphasimulator-v2 python=3.11
-conda activate iphasimulator-v2
+conda create -n iphasimulator_v2 python=3.11
+conda activate iphasimulator_v2
 ```
 
 If conda asks `Proceed ([y]/n)?`, type `y` and press Enter.
 
 When the environment is active, your terminal prompt should usually start with
-`(iphasimulator-v2)`.
+`(iphasimulator_v2)`.
 
 ### 4. Install the Python Package
 
@@ -268,7 +305,7 @@ tests/       Automated tests for builders, export, MD workflow helpers,
 1. Install the environment and start Jupyter:
 
    ```bash
-   conda activate iphasimulator-v2
+   conda activate iphasimulator_v2
    jupyter lab notebooks/
    ```
 
