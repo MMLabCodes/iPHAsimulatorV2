@@ -1,0 +1,46 @@
+-I: Adding /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/prep to search path.
+-I: Adding /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/lib to search path.
+-I: Adding /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/parm to search path.
+-I: Adding /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/cmd to search path.
+-f: Source /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/leap/build_P3HB_10.in.
+
+Welcome to LEaP!
+(no leaprc in search path)
+Sourcing: /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/leap/build_P3HB_10.in
+----- Source: /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/cmd/leaprc.gaff2
+----- Source of /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/cmd/leaprc.gaff2 done
+Log file: ./leap.log
+Loading parameters: /Users/daniel/miniconda3/envs/AmberTools23/dat/leap/parm/gaff2.dat
+Reading title:
+AMBER General Force Field for organic molecules (Version 2.2.20, March 2021)
+Loading Prep file: /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/hP3HB.prepin
+Loading Prep file: /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/mP3HB.prepin
+Loading Prep file: /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/tP3HB.prepin
+Loading parameters: /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/trimer/P3HB_3.frcmod
+Reading force field modification type file (frcmod)
+Reading title:
+Remark line goes here
+Checking 'polymer'....
+Checking parameters for unit 'polymer'.
+Checking for bond parameters.
+Checking for angle parameters.
+Unit is OK.
+Checking Unit.
+Building topology.
+Building atom parameters.
+Building bond parameters.
+Building angle parameters.
+Building proper torsion parameters.
+Building improper torsion parameters.
+old PREP-specified impropers:
+ total 0 improper torsions applied
+ 0 improper torsions in old prep form
+Building H-Bond parameters.
+Incorporating Non-Bonded adjustments.
+Not Marking per-residue atom chain types.
+Marking per-residue atom chain types.
+ (no restraints)
+Writing pdb file: /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/amber/P3HB_10.pdb
+	Quit
+
+Exiting LEaP: Errors = 0; Warnings = 0; Notes = 0.

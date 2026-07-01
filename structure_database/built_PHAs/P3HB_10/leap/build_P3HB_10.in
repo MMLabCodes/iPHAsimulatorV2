@@ -1,0 +1,17 @@
+
+source leaprc.gaff2
+
+loadamberprep /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/hP3HB.prepin
+loadamberprep /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/mP3HB.prepin
+loadamberprep /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/monomer_units/tP3HB.prepin
+
+loadamberparams /Users/daniel/projects/polymersimulator_lite/structure_database/PHA_types/3HB/trimer/P3HB_3.frcmod
+
+polymer = sequence { AAB AAC AAC AAC AAC AAC AAC AAC AAC AAD }
+
+check polymer
+
+saveamberparm polymer /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/amber/P3HB_10.prmtop /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/amber/P3HB_10.rst7
+savepdb polymer /Users/daniel/projects/polymersimulator_lite/structure_database/built_PHAs/P3HB_10/amber/P3HB_10.pdb
+
+quit
