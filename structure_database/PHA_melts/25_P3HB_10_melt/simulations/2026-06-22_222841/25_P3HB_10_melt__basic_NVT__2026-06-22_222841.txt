@@ -1,0 +1,2 @@
+#"Progress (%)","Step","Time (ps)","Potential Energy (kJ/mole)","Kinetic Energy (kJ/mole)","Total Energy (kJ/mole)","Temperature (K)","Box Volume (nm^3)","Density (g/mL)","Speed (ns/day)","Elapsed Time (s)"
+100.0%,1000,1.0000000000000007,-20210.52974184476,6363.7294921875,-13846.800249657259,191.84878628405608,50.59388221397401,0.7500011480256262,0,6.604194641113281e-05

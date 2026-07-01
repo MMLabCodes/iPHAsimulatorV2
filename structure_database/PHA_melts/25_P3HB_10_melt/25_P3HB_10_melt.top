@@ -1,0 +1,12 @@
+
+
+#include "25_P3HB_10_melt.itp"
+
+[ system ]
+
+Packed P3HB_10
+
+[ molecules ]
+
+P3HB_10 25
+
