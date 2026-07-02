@@ -304,3 +304,237 @@ def show_PHA_monomer(
         plt.show()
 
     return img
+
+# =============================================================================
+# Polymer visualisation from polymer_smiles.csv
+# =============================================================================
+
+def load_polymer_smiles(polymer_smiles_csv):
+    """
+    Load polymer SMILES from polymer_smiles.csv.
+
+    Parameters
+    ----------
+
+    polymer_smiles_csv : str or pathlib.Path
+        Path to polymer_smiles.csv.
+
+    Returns
+    -------
+
+    list[tuple[str, str]]
+        List of ``(polymer_name, smiles)`` tuples.
+    """
+
+    polymer_smiles_csv = Path(polymer_smiles_csv)
+
+    if not polymer_smiles_csv.exists():
+        raise FileNotFoundError(
+            f"Could not find polymer SMILES CSV:\n"
+            f"{polymer_smiles_csv}"
+        )
+
+    polymers = []
+
+    with open(polymer_smiles_csv, "r", newline="") as f:
+
+        reader = csv.DictReader(f)
+
+        for row in reader:
+
+            polymer_name = (
+                row.get("polymer_name")
+                or row.get("name")
+                or row.get("Name")
+                or row.get("polymer")
+            )
+
+            smiles = (
+                row.get("smiles")
+                or row.get("SMILES")
+                or row.get("polymer_smiles")
+            )
+
+            if polymer_name is None or smiles is None:
+                continue
+
+            if polymer_name.strip() == "" or smiles.strip() == "":
+                continue
+
+            polymers.append(
+                (
+                    polymer_name.strip(),
+                    smiles.strip(),
+                )
+            )
+
+    return sorted(
+        polymers,
+        key=lambda item: item[0],
+    )
+
+
+def plot_available_PHA_polymers(
+    polymer_smiles_csv="structure_database/polymer_smiles.csv",
+    output_file="available_PHA_polymers.png",
+    mols_per_row=3,
+    image_size=(500, 280),
+):
+    """
+    Plot all available PHA polymers from polymer_smiles.csv.
+    """
+
+    output_file = Path(output_file)
+
+    polymers = load_polymer_smiles(
+        polymer_smiles_csv
+    )
+
+    if len(polymers) == 0:
+        raise RuntimeError(
+            "No valid polymer SMILES found."
+        )
+
+    names = []
+    mols = []
+
+    for polymer_name, smiles in polymers:
+
+        mol = smiles_to_mol(
+            smiles,
+            name=polymer_name,
+        )
+
+        names.append(polymer_name)
+        mols.append(mol)
+
+    image = Draw.MolsToGridImage(
+        mols,
+        molsPerRow=mols_per_row,
+        subImgSize=image_size,
+        legends=names,
+    )
+
+    output_file.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    image.save(output_file)
+
+    print(
+        f"Saved PHA polymer overview to:\n"
+        f"{output_file}"
+    )
+
+    return output_file
+
+
+def show_available_PHA_polymers(
+    polymer_smiles_csv="structure_database/polymer_smiles.csv",
+    mols_per_row=3,
+    image_size=(500, 280),
+):
+    """
+    Display all available PHA polymers from polymer_smiles.csv.
+    """
+
+    polymers = load_polymer_smiles(
+        polymer_smiles_csv
+    )
+
+    if len(polymers) == 0:
+        raise RuntimeError(
+            "No valid polymer SMILES found."
+        )
+
+    names = []
+    mols = []
+
+    for polymer_name, smiles in polymers:
+
+        mol = smiles_to_mol(
+            smiles,
+            name=polymer_name,
+        )
+
+        names.append(polymer_name)
+        mols.append(mol)
+
+    img = Draw.MolsToGridImage(
+        mols,
+        molsPerRow=mols_per_row,
+        subImgSize=image_size,
+        legends=names,
+    )
+
+    try:
+        from IPython.display import display
+        display(img)
+
+    except Exception:
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(14, 10))
+        plt.imshow(img)
+        plt.axis("off")
+        plt.show()
+
+    return img
+
+
+def show_PHA_polymer(
+    polymer_name,
+    polymer_smiles_csv="structure_database/polymer_smiles.csv",
+    image_size=(900, 300),
+):
+    """
+    Display one PHA polymer structure from polymer_smiles.csv.
+    """
+
+    polymers = load_polymer_smiles(
+        polymer_smiles_csv
+    )
+
+    polymer_dict = {
+        name: smiles
+        for name, smiles in polymers
+    }
+
+    if polymer_name not in polymer_dict:
+
+        available = ", ".join(
+            sorted(polymer_dict.keys())
+        )
+
+        raise ValueError(
+            f"Polymer not found: {polymer_name}\n\n"
+            f"Available polymers:\n{available}"
+        )
+
+    smiles = polymer_dict[polymer_name]
+
+    mol = smiles_to_mol(
+        smiles,
+        name=polymer_name,
+    )
+
+    img = Draw.MolToImage(
+        mol,
+        size=image_size,
+        legend=polymer_name,
+    )
+
+    try:
+        from IPython.display import display
+        display(img)
+
+    except Exception:
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(12, 4))
+        plt.imshow(img)
+        plt.axis("off")
+        plt.show()
+
+    return img
