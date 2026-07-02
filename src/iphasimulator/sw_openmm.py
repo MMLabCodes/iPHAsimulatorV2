@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import csv
 import time
 import shutil
 import datetime
@@ -87,52 +86,6 @@ class BuildSimulation:
 
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.log_info = {
-            "Minimization": {
-                "Temperature": None,
-                "Time taken": None,
-            },
-            "Annealing_NVT": {
-                "Time taken": None,
-                "Simulation time": None,
-                "Start temp": None,
-                "Target temp": None,
-                "Cycles": None,
-                "Steps at plateaus": None,
-                "Steps at incremental temps": None,
-                "Timestep": None,
-            },
-            "Basic_NPT": {
-                "Time taken": None,
-                "Simulation time": None,
-                "Temperature": None,
-                "Pressure": None,
-                "Timestep": None,
-            },
-            "Basic_NVT": {
-                "Time taken": None,
-                "Simulation time": None,
-                "Temperature": None,
-                "Timestep": None,
-            },
-            "Thermal Ramp": {
-                "Time taken": None,
-                "Simulation time": None,
-                "Start temp": None,
-                "Target temp": None,
-                "Quench Rate": None,
-                "Steps at incremental temps": None,
-                "Timestep": None,
-                "Ensemble": None,
-                "Method": None,
-            },
-        }
-
-        self.log_csv = os.path.join(
-            self.output_dir,
-            f"{self.filename}_{self.timestamp}_log.csv",
-        )
-
     def type_of_simulation(self):
         if isinstance(self, AmberSimulation):
             return "AMB"
@@ -163,7 +116,12 @@ class BuildSimulation:
 
         return Platform.getPlatformByName("CPU")
 
-    def create_openmm_system(self, ensemble="NVT", temp=None, pressure=None):
+    def create_openmm_system(
+        self,
+        ensemble="NVT",
+        temp=None,
+        pressure=None,
+    ):
         if temp is None:
             temp = self.temp
 
@@ -200,7 +158,12 @@ class BuildSimulation:
 
         return system
 
-    def create_openmm_simulation(self, system, integrator, platform):
+    def create_openmm_simulation(
+        self,
+        system,
+        integrator,
+        platform,
+    ):
         sim_type = self.type_of_simulation()
 
         if sim_type == "AMB":
@@ -278,16 +241,14 @@ class BuildSimulation:
             )
 
         time_taken = time.time() - min_start_time
-
-        self.log_info["Minimization"]["Time taken"] = time_taken
-        self.log_info["Minimization"]["Temperature"] = self.temp
+        print(f"Minimization completed in {time_taken:.2f} seconds.")
 
         return simulation
 
     @classmethod
     def minimize_energy_help(cls):
         print(cls.minimize_energy.__doc__)
-        
+
     def anneal_NVT(
         self,
         simulation,
@@ -355,14 +316,18 @@ class BuildSimulation:
         simulation.context.setPositions(xyz)
 
         total_steps = steps_per_cycle * cycles
-
+    
         if self.savepdb_traj is True:
             output_pdbname = os.path.join(
                 self.output_dir,
                 self.filename + filename + str(self.timestamp) + ".pdb",
             )
+
             simulation.reporters.append(
-                app.PDBReporter(output_pdbname, self.reporter_freq)
+                app.PDBReporter(
+                    output_pdbname,
+                    self.reporter_freq,
+                )
             )
 
         output_dcdname = os.path.join(
@@ -394,10 +359,21 @@ class BuildSimulation:
             dataWriter.stateDataReporter
         )
 
-        increments = int((max_temp - start_temp) / quench_rate)
-        steps_per_slope = int(steps_per_cycle * 0.4)
-        holding_steps = int(steps_per_cycle * 0.1)
-        steps_at_increment = int(steps_per_slope / increments)
+        increments = int(
+            (max_temp - start_temp) / quench_rate
+        )
+
+        steps_per_slope = int(
+            steps_per_cycle * 0.4
+        )
+
+        holding_steps = int(
+            steps_per_cycle * 0.1
+        )
+
+        steps_at_increment = int(
+            steps_per_slope / increments
+        )
 
         if verbose is True:
             print(
@@ -411,40 +387,56 @@ class BuildSimulation:
             )
 
         def cycle():
-            integrator.setTemperature(start_temp * kelvin)
-            simulation.step(steps_at_increment)
+            integrator.setTemperature(
+                start_temp * kelvin
+            )
+
+            simulation.step(
+                steps_at_increment
+            )
 
             for i in range(increments):
                 integrator.setTemperature(
                     (start_temp + i * quench_rate) * kelvin
                 )
-                simulation.step(steps_at_increment)
 
-            integrator.setTemperature(max_temp * kelvin)
-            simulation.step(holding_steps)
+                simulation.step(
+                    steps_at_increment
+                )
+
+            integrator.setTemperature(
+                max_temp * kelvin
+            )
+
+            simulation.step(
+                holding_steps
+            )
 
             for i in range(increments):
                 integrator.setTemperature(
                     (max_temp - i * quench_rate) * kelvin
                 )
-                simulation.step(steps_at_increment)
 
-            integrator.setTemperature(start_temp * kelvin)
-            simulation.step(holding_steps)
+                simulation.step(
+                    steps_at_increment
+                )
+
+            integrator.setTemperature(
+                start_temp * kelvin
+            )
+
+            simulation.step(
+                holding_steps
+            )
 
         for _ in range(cycles):
             cycle()
 
         time_taken = time.time() - anneal_start_time
 
-        self.log_info["Annealing_NVT"]["Time taken"] = time_taken
-        self.log_info["Annealing_NVT"]["Simulation time"] = total_steps * self.timestep
-        self.log_info["Annealing_NVT"]["Start temp"] = start_temp
-        self.log_info["Annealing_NVT"]["Target temp"] = max_temp
-        self.log_info["Annealing_NVT"]["Cycles"] = cycles
-        self.log_info["Annealing_NVT"]["Steps at plateaus"] = holding_steps
-        self.log_info["Annealing_NVT"]["Steps at incremental temps"] = steps_at_increment
-        self.log_info["Annealing_NVT"]["Timestep"] = self.timestep
+        print(
+            f"Annealing completed in {time_taken:.2f} seconds."
+        )
 
         final_state = simulation.context.getState(
             getPositions=True,
@@ -456,7 +448,10 @@ class BuildSimulation:
             "final" + filename + self.filename + ".pdb",
         )
 
-        with open(self.final_pdbname, "w") as output:
+        with open(
+            self.final_pdbname,
+            "w",
+        ) as output:
             PDBFile.writeFile(
                 simulation.topology,
                 final_state.getPositions(),
@@ -473,7 +468,9 @@ class BuildSimulation:
 
     @classmethod
     def anneal_help(cls):
-        print(cls.anneal_NVT.__doc__)
+        print(
+            cls.anneal_NVT.__doc__
+        )
 
     def basic_NPT(
         self,
@@ -540,22 +537,45 @@ class BuildSimulation:
             platform,
         )
 
-        simulation.context.setPeriodicBoxVectors(vx, vy, vz)
-        simulation.context.setPositions(xyz)
-        simulation.context.setVelocitiesToTemperature(temp * kelvin)
+        simulation.context.setPeriodicBoxVectors(
+            vx,
+            vy,
+            vz,
+        )
+
+        simulation.context.setPositions(
+            xyz
+        )
+
+        simulation.context.setVelocitiesToTemperature(
+            temp * kelvin
+        )
 
         if self.savepdb_traj is True:
             output_pdbname = os.path.join(
                 self.output_dir,
-                self.filename + "_" + str(pressure) + filename + str(self.timestamp) + ".pdb",
+                self.filename
+                + "_"
+                + str(pressure)
+                + filename
+                + str(self.timestamp)
+                + ".pdb",
             )
+
             simulation.reporters.append(
-                app.PDBReporter(output_pdbname, self.reporter_freq)
+                app.PDBReporter(
+                    output_pdbname,
+                    self.reporter_freq,
+                )
             )
 
         output_dcdname = os.path.join(
             self.output_dir,
-            self.filename + "_" + str(pressure) + filename + str(self.timestamp),
+            self.filename
+            + "_"
+            + str(pressure)
+            + filename
+            + str(self.timestamp),
         )
 
         dcdWriter = DcdWriter(
@@ -569,7 +589,11 @@ class BuildSimulation:
 
         output_dataname = os.path.join(
             self.output_dir,
-            self.filename + "_" + str(pressure) + filename + str(self.timestamp),
+            self.filename
+            + "_"
+            + str(pressure)
+            + filename
+            + str(self.timestamp),
         )
 
         dataWriter = DataWriter(
@@ -582,15 +606,15 @@ class BuildSimulation:
             dataWriter.stateDataReporter
         )
 
-        simulation.step(total_steps)
+        simulation.step(
+            total_steps
+        )
 
         time_taken = time.time() - equili_start_time
 
-        self.log_info["Basic_NPT"]["Time taken"] = time_taken
-        self.log_info["Basic_NPT"]["Simulation time"] = total_steps * self.timestep
-        self.log_info["Basic_NPT"]["Temperature"] = temp
-        self.log_info["Basic_NPT"]["Pressure"] = pressure
-        self.log_info["Basic_NPT"]["Timestep"] = self.timestep
+        print(
+            f"Basic NPT completed in {time_taken:.2f} seconds."
+        )
 
         final_state = simulation.context.getState(
             getPositions=True,
@@ -599,10 +623,18 @@ class BuildSimulation:
 
         self.final_pdbname = os.path.join(
             self.output_dir,
-            "final_" + filename + self.filename + "_" + str(pressure) + "_atm.pdb",
+            "final_"
+            + filename
+            + self.filename
+            + "_"
+            + str(pressure)
+            + "_atm.pdb",
         )
 
-        with open(self.final_pdbname, "w") as output:
+        with open(
+            self.final_pdbname,
+            "w",
+        ) as output:
             PDBFile.writeFile(
                 simulation.topology,
                 final_state.getPositions(),
@@ -619,7 +651,9 @@ class BuildSimulation:
 
     @classmethod
     def basic_NPT_help(cls):
-        print(cls.basic_NPT.__doc__)
+        print(
+            cls.basic_NPT.__doc__
+        )
 
     def basic_NVT(
         self,
@@ -680,21 +714,37 @@ class BuildSimulation:
             platform,
         )
 
-        simulation.context.setPositions(xyz)
-        simulation.context.setPeriodicBoxVectors(vx, vy, vz)
+        simulation.context.setPositions(
+            xyz
+        )
+
+        simulation.context.setPeriodicBoxVectors(
+            vx,
+            vy,
+            vz,
+        )
 
         if self.savepdb_traj is True:
             output_pdbname = os.path.join(
                 self.output_dir,
-                self.filename + filename + str(self.timestamp) + ".pdb",
+                self.filename
+                + filename
+                + str(self.timestamp)
+                + ".pdb",
             )
+
             simulation.reporters.append(
-                app.PDBReporter(output_pdbname, self.reporter_freq)
+                app.PDBReporter(
+                    output_pdbname,
+                    self.reporter_freq,
+                )
             )
 
         output_dcdname = os.path.join(
             self.output_dir,
-            self.filename + filename + str(self.timestamp),
+            self.filename
+            + filename
+            + str(self.timestamp),
         )
 
         dcdWriter = DcdWriter(
@@ -708,7 +758,9 @@ class BuildSimulation:
 
         output_dataname = os.path.join(
             self.output_dir,
-            self.filename + filename + str(self.timestamp),
+            self.filename
+            + filename
+            + str(self.timestamp),
         )
 
         dataWriter = DataWriter(
@@ -721,14 +773,15 @@ class BuildSimulation:
             dataWriter.stateDataReporter
         )
 
-        simulation.step(total_steps)
+        simulation.step(
+            total_steps
+        )
 
         time_taken = time.time() - prod_start_time
 
-        self.log_info["Basic_NVT"]["Time taken"] = time_taken
-        self.log_info["Basic_NVT"]["Simulation time"] = total_steps * self.timestep
-        self.log_info["Basic_NVT"]["Temperature"] = temp
-        self.log_info["Basic_NVT"]["Timestep"] = self.timestep
+        print(
+            f"Basic NVT completed in {time_taken:.2f} seconds."
+        )
 
         final_state = simulation.context.getState(
             getPositions=True,
@@ -740,7 +793,10 @@ class BuildSimulation:
             "final_" + filename + self.filename + ".pdb",
         )
 
-        with open(self.final_pdbname, "w") as output:
+        with open(
+            self.final_pdbname,
+            "w",
+        ) as output:
             PDBFile.writeFile(
                 simulation.topology,
                 final_state.getPositions(),
@@ -831,8 +887,15 @@ class BuildSimulation:
             platform,
         )
 
-        simulation.context.setPeriodicBoxVectors(vx, vy, vz)
-        simulation.context.setPositions(xyz)
+        simulation.context.setPeriodicBoxVectors(
+            vx,
+            vy,
+            vz,
+        )
+
+        simulation.context.setPositions(
+            xyz
+        )
 
         method = "heat" if heating is True else "cool"
 
@@ -934,16 +997,8 @@ class BuildSimulation:
 
         time_taken = time.time() - thermal_ramp_start_time
 
-        self.log_info["Thermal Ramp"]["Time taken"] = time_taken
-        self.log_info["Thermal Ramp"]["Simulation time"] = total_steps * self.timestep
-        self.log_info["Thermal Ramp"]["Start temp"] = start_temp
-        self.log_info["Thermal Ramp"]["Target temp"] = max_temp
-        self.log_info["Thermal Ramp"]["Quench Rate"] = quench_rate
-        self.log_info["Thermal Ramp"]["Steps at incremental temps"] = steps_at_increment
-        self.log_info["Thermal Ramp"]["Timestep"] = self.timestep
-        self.log_info["Thermal Ramp"]["Ensemble"] = ensemble
-        self.log_info["Thermal Ramp"]["Method"] = (
-            "heating" if heating is True else "cooling"
+        print(
+            f"Thermal ramp completed in {time_taken:.2f} seconds."
         )
 
         final_state = simulation.context.getState(
@@ -956,7 +1011,10 @@ class BuildSimulation:
             "final_" + output_filename + ".pdb",
         )
 
-        with open(self.final_pdbname, "w") as output:
+        with open(
+            self.final_pdbname,
+            "w",
+        ) as output:
             PDBFile.writeFile(
                 simulation.topology,
                 final_state.getPositions(),
@@ -1032,10 +1090,6 @@ class BuildSimulation:
         )
 
         return rst_filename
-
-    @classmethod
-    def production_run_help(cls):
-        print(cls.production_run.__doc__)
 
     def restrain_heavy_atoms(
         self,
@@ -1294,34 +1348,6 @@ class BuildSimulation:
     @classmethod
     def graph_state_data_help(cls):
         print(cls.graph_state_data.__doc__)
-
-    def write_log_csv(self):
-        all_keys = set()
-
-        for info in self.log_info.values():
-            all_keys.update(
-                info.keys()
-            )
-
-        with open(
-            self.log_csv,
-            "w",
-            newline="",
-        ) as file:
-            writer = csv.DictWriter(
-                file,
-                fieldnames=["Section"] + list(all_keys),
-            )
-
-            writer.writeheader()
-
-            for section, info in self.log_info.items():
-                writer.writerow(
-                    {
-                        "Section": section,
-                        **info,
-                    }
-                )
 
 
 class GromacsSimulation(BuildSimulation):
