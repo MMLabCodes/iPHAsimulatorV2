@@ -1,5 +1,14 @@
 """Generate GROMACS run folders and command templates."""
 
+"""
+Dan comments:
+  
+This could be useful if we use GROMACS for anything.
+
+However, if a GROMACS task can be carried out in openmm, i suggest we do that. Openmm is compatible with
+GROMACS files so this is not required unless we need to run a type of simulation only GROMACS can run.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
