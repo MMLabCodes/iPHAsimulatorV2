@@ -1,5 +1,16 @@
 """Convert AMBER topology/coordinate files to GROMACS files."""
 
+"""
+Dan's comments:
+    
+This can be deleted, this is integrated into my other build modules. I also take advantage
+of a well referenced tool called "ACPYPE".
+
+It could be useful for any converter to be located in its own file like this,
+but we don't need to do that to be honest.
+
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
