@@ -33,7 +33,7 @@ import subprocess
 from pathlib import Path
 import shutil
 from openbabel import pybel
-from modules.pha_filepath_manager import PHAFileManager, PHAResidueCodeManager
+from src.iphasimulator.pha_filepath_manager import PHAFileManager, PHAResidueCodeManager
 
 class PHAPolymerBuilder:
     """

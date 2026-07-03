@@ -26,8 +26,8 @@ import re
 import subprocess
 from pathlib import Path
 
-from modules.pha_filepath_manager import PHAFileManager
-from modules.pha_builder import PHAPolymerBuilder
+from src.iphasimulator.pha_filepath_manager import PHAFileManager
+from src.iphasimulator.build_pha import PHAPolymerBuilder
 
 
 class PHAMeltBuilder:
