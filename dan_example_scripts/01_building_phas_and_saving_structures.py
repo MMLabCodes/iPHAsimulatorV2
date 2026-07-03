@@ -19,7 +19,9 @@ There are a few sections
 4. Visualising PHA polymers
 5. Validating sterochemistry of PHAs
 
+"""
 
+"""
 0. Make code inside src folder accesible
 """
 from pathlib import Path
