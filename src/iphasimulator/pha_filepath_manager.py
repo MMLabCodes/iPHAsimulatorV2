@@ -269,6 +269,47 @@ root_dir : str or pathlib.Path, optional
         run_dir.mkdir(parents=True, exist_ok=False)
         return run_dir
 
+    def create_named_PHA_melt_simulation_run_dir(
+            self,
+            polymer_names,
+            number_of_polymers,
+            run_name,
+            ):
+        """
+        Create a numbered simulation run directory.
+
+        Examples
+        --------
+        run_name="Tg"   -> Tg_01, Tg_02, Tg_03
+        run_name="Test" -> Test_01, Test_02, Test_03
+        """
+
+        simulations_dir = self.get_PHA_melt_simulations_dir(
+            polymer_names,
+            number_of_polymers,
+            )
+
+        simulations_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+            )
+
+        run_name = run_name.strip().replace(" ", "_")
+
+        counter = 1
+
+        while True:
+            candidate_dir = simulations_dir / f"{run_name}_{counter:02d}"
+
+            if not candidate_dir.exists():
+                candidate_dir.mkdir(
+                    parents=True,
+                    exist_ok=False,
+                    )
+                return candidate_dir
+
+            counter += 1
+
     def find_file(self, directory, extension):
         """
         Return the first file in a directory with the requested extension.

@@ -52,69 +52,135 @@ class DataWriter:
 
 
 class BuildSimulation:
+
     """
+
     Parent class for OpenMM simulations.
 
     Child classes:
+
         AmberSimulation
+
         GromacsSimulation
+
     """
 
     savepdb_traj = False
+
     pressure = 1
+
     temp = 300
+
     min_temp = 0
+
     timestep = 2.0
+
     friction_coeff = 1.0
+
     total_steps = 1000
+
     reporter_freq = 1000
+
     nonbondedcutoff = 1.0
+
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+
     anneal_parameters = [300, 700, 5, 10, 500000]
+
     minimized_only = None
+
     restrain_heavys = False
 
-    def __init__(self, manager, filename):
+    def __init__(
+
+        self,
+
+        manager,
+
+        filename,
+
+        output_dir=None,
+
+    ):
+
         self.manager = manager
+
         self.filename = filename
 
-        self.output_dir = os.path.join(
-            self.manager.systems_dir,
-            self.filename,
-            self.timestamp,
+        if output_dir is None:
+
+            self.output_dir = os.path.join(
+
+                self.manager.systems_dir,
+
+                self.filename,
+
+                self.timestamp,
+
+            )
+
+        
+        else:
+
+            self.output_dir = output_dir
+        self.run_name = os.path.basename(self.output_dir)       
+        os.makedirs(
+
+            self.output_dir,
+
+            exist_ok=True,
+
         )
 
-        os.makedirs(self.output_dir, exist_ok=True)
-
     def type_of_simulation(self):
+
         if isinstance(self, AmberSimulation):
+
             return "AMB"
 
         if isinstance(self, GromacsSimulation):
+
             return "GRO"
 
         return "UNKNOWN"
 
-    def get_platform(self):
+    def get_platform(self, platform_name=None):
+        """
+        Select the OpenMM platform.
+
+        Parameters
+    ----------
+        platform_name : str, optional
+            Force a platform: "CUDA", "OpenCL", or "CPU".
+            """
+
+        if platform_name is not None:
+            platform = Platform.getPlatformByName(platform_name)
+            print(f"Using requested platform: {platform_name}")
+            return platform
+
         try:
             platform = Platform.getPlatformByName("CUDA")
             platform.setPropertyDefaultValue("Precision", "mixed")
-            print("Using CUDA platform for GPU execution.")
+            print("Using CUDA platform.")
             return platform
 
         except Exception:
             print("CUDA not available, trying OpenCL...")
 
         try:
+            # OpenCL is mac GPUs
             platform = Platform.getPlatformByName("OpenCL")
-            platform.setPropertyDefaultValue("Precision", "mixed")
-            print("Using OpenCL platform for GPU execution.")
+            platform_properties = {"Precision": "mixed"}
+            print("Using OpenCL platform.")
             return platform
 
         except Exception:
-            print("CUDA and OpenCL not available — falling back to CPU.")
+            print("OpenCL not available, falling back to CPU.")
 
-        return Platform.getPlatformByName("CPU")
+        platform = Platform.getPlatformByName("CPU")
+        print("Using CPU platform.")
+        return platform
 
     def create_openmm_system(
         self,
@@ -320,7 +386,7 @@ class BuildSimulation:
         if self.savepdb_traj is True:
             output_pdbname = os.path.join(
                 self.output_dir,
-                self.filename + filename + str(self.timestamp) + ".pdb",
+                self.filename + filename + self.run_name + ".pdb",
             )
 
             simulation.reporters.append(
@@ -332,7 +398,7 @@ class BuildSimulation:
 
         output_dcdname = os.path.join(
             self.output_dir,
-            self.filename + filename + str(self.timestamp),
+            self.filename + filename + self.run_name,
         )
 
         dcdWriter = DcdWriter(
@@ -346,7 +412,7 @@ class BuildSimulation:
 
         output_dataname = os.path.join(
             self.output_dir,
-            self.filename + filename + str(self.timestamp),
+            self.filename + filename + self.run_name,
         )
 
         dataWriter = DataWriter(
@@ -558,7 +624,7 @@ class BuildSimulation:
                 + "_"
                 + str(pressure)
                 + filename
-                + str(self.timestamp)
+                + self.run_name
                 + ".pdb",
             )
 
@@ -575,7 +641,7 @@ class BuildSimulation:
             + "_"
             + str(pressure)
             + filename
-            + str(self.timestamp),
+            + self.run_name,
         )
 
         dcdWriter = DcdWriter(
@@ -593,7 +659,7 @@ class BuildSimulation:
             + "_"
             + str(pressure)
             + filename
-            + str(self.timestamp),
+            + self.run_name,
         )
 
         dataWriter = DataWriter(
@@ -729,7 +795,7 @@ class BuildSimulation:
                 self.output_dir,
                 self.filename
                 + filename
-                + str(self.timestamp)
+                + self.run_name
                 + ".pdb",
             )
 
@@ -744,7 +810,7 @@ class BuildSimulation:
             self.output_dir,
             self.filename
             + filename
-            + str(self.timestamp),
+            + self.run_name,
         )
 
         dcdWriter = DcdWriter(
@@ -760,7 +826,7 @@ class BuildSimulation:
             self.output_dir,
             self.filename
             + filename
-            + str(self.timestamp),
+            + self.run_name,
         )
 
         dataWriter = DataWriter(
@@ -903,7 +969,7 @@ class BuildSimulation:
             self.filename
             + filename
             + method
-            + str(self.timestamp)
+            + self.run_name
         )
 
         if self.savepdb_traj is True:
@@ -1351,51 +1417,89 @@ class BuildSimulation:
 
 
 class GromacsSimulation(BuildSimulation):
+
     """
+
     OpenMM simulation using GROMACS topology and coordinate files.
+
     """
 
     def __new__(cls, *args, **kwargs):
-        if len(args) != 3:
+
+        if len(args) < 3:
+
             raise TypeError(
-                f"GromacsSimulation expected 3 arguments, "
-                f"but {len(args)} were given. "
-                "Usage: sim = GromacsSimulation("
-                "manager, topology_file, coordinates_file)"
+
+                "Usage:\n"
+
+                "sim = GromacsSimulation(\n"
+
+                "    manager,\n"
+
+                "    topology_file,\n"
+
+                "    coordinates_file,\n"
+
+                "    output_dir=None,\n"
+
+                ")"
+
             )
 
         return super().__new__(cls)
 
     def __init__(
+
         self,
+
         manager,
+
         topology_file,
+
         coordinates_file,
+
+        output_dir=None,
+
     ):
+
         self.manager = manager
 
         self.filename = os.path.basename(
+
             topology_file
+
         ).split(".")[0]
 
         super().__init__(
+
             manager,
+
             self.filename,
+
+            output_dir=output_dir,
+
         )
 
         self.coordinates_file = coordinates_file
+
         self.topology_file = topology_file
 
         self.gro_coordinates = GromacsGroFile(
+
             coordinates_file
+
         )
 
         self.gro_topology = GromacsTopFile(
+
             topology_file,
+
             periodicBoxVectors=self.gro_coordinates.getPeriodicBoxVectors(),
+
         )
 
     def __str__(self):
+
         return f"GROMACS simulation object of - {self.filename}"
 
 
@@ -1405,12 +1509,15 @@ class AmberSimulation(BuildSimulation):
     """
 
     def __new__(cls, *args, **kwargs):
-        if len(args) != 3:
+        if len(args) < 3:
             raise TypeError(
-                f"AmberSimulation expected 3 arguments, "
-                f"but {len(args)} were given. "
-                "Usage: sim = AmberSimulation("
-                "manager, topology_file, coordinates_file)"
+                "Usage:\n"
+                "sim = AmberSimulation(\n"
+                "    manager,\n"
+                "    topology_file,\n"
+                "    coordinates_file,\n"
+                "    output_dir=None,\n"
+                ")"
             )
 
         return super().__new__(cls)
@@ -1420,6 +1527,7 @@ class AmberSimulation(BuildSimulation):
         manager,
         topology_file,
         coordinates_file,
+        output_dir=None,
     ):
         self.manager = manager
 
@@ -1430,6 +1538,7 @@ class AmberSimulation(BuildSimulation):
         super().__init__(
             manager,
             self.filename,
+            output_dir=output_dir,
         )
 
         self.coordinates_file = coordinates_file
