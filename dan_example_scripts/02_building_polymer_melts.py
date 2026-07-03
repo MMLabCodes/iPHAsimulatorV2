@@ -60,6 +60,8 @@ density = 750
 
 """
 3. Run melt builder
+
+    Nothing to add here, just using the inputs already defined
 """
 
 result = melt_builder.generate_polymer_melt(
@@ -70,6 +72,20 @@ result = melt_builder.generate_polymer_melt(
     
 """
 4. Run a test simulation
+
+It is useful to run a short test simulation of these systems. This is to ensure the packing was carried out properly
+and that there will be no undesired errors when running openmm simulations in a HPC environment.
+
+If this 'Packing_check' simulation fails, just rerun this script.
+
+Inputs for test simulation:
+    - melt name: this is contained in the 'result' dictionary variable of the packing
+    - topology file: this is contained in the 'result' dictionary variable of the packing
+    - coordinate file: this is contained in the 'result' dictionary variable of the packing
+    - run name: the desired name to give the test simulatin, by default this is "Packing_check"
+    - test steps: number of desired steps in the packing check
+    - temperature: desired temperature of this packing check
+    - timestep: desired timestep of this packing checl
 """
 
 test_result = melt_builder.test_polymer_melt_simulation(
