@@ -326,13 +326,11 @@ def remove_workflow_step(index):
 
 
 def build_openmm_script_builder(
-    root_dir,
     polymer_names,
     number_of_polymers,
     run_name,
 ):
     builder = OpenMMScriptBuilder(
-        root_dir=root_dir,
         polymer_names=polymer_names,
         number_of_polymers=number_of_polymers,
         run_name=run_name,
@@ -391,6 +389,25 @@ def build_openmm_script_builder(
 
     return builder
 
+def get_next_md_script_path(run_name):
+
+    safe_run_name = run_name.strip().replace(" ", "_")
+
+    if safe_run_name == "":
+
+        safe_run_name = "OpenMM_Run"
+
+    counter = 1
+
+    while True:
+
+        script_path = MD_SCRIPT_DIR / f"{safe_run_name}_{counter:02d}.py"
+
+        if not script_path.exists():
+
+            return script_path
+
+        counter += 1
 
 def run_python_script_with_ambertools(script_path):
     if not AMBERTOOLS_PYTHON.exists():
@@ -755,10 +772,8 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
             help="Used to create directories such as Test_01, Test_02, Tg_01.",
         )
 
-        output_script_input = st.text_input(
-            "Generated script path",
-            value="dan_example_scripts/generated_openmm_gui_script.py",
-        )
+        st.write("Generated scripts will be saved in:")
+        st.code(str(MD_SCRIPT_DIR))
 
         st.markdown("### Add Workflow Step")
 
