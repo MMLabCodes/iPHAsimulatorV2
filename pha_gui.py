@@ -1160,15 +1160,12 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                     polymer_names=polymer_names,
                     number_of_polymers=number_of_polymers,
                     run_name=run_name_input,
-                )   
+                )
 
                 output_script = get_next_md_script_path(run_name_input)
 
                 script_text = script_builder.to_script()
                 output_script = script_builder.write_script(output_script)
-
-                script_text = script_builder.to_script()
-                output_script = script_builder.write_script(output_script_input)
 
                 st.session_state.generated_openmm_script = script_text
                 st.session_state.generated_openmm_script_path = str(output_script)
