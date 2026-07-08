@@ -128,7 +128,7 @@ cd iPHAsimulatorV2
 If you do not use `git`, open the GitHub page in a browser, click **Code**,
 choose **Download ZIP**, unzip the folder, and then open a terminal inside the
 unzipped folder. The folder may be named `iPHAsimulatorV2` or
-`iPHAsimulatorV2-main`, depending on how it was downloaded.
+`iPHAsimulatorV2-main`, depending on how it was downloaded
 
 ### 3. Create and Activate the Environment
 
