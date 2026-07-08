@@ -748,12 +748,6 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
     with settings_col:
         st.markdown("### System Selection")
 
-        root_dir_input = st.text_input(
-            "Structure database root",
-            value="../structure_database",
-            help="This path is written into the generated script.",
-        )
-
         polymer_names_input = st.text_input(
             "Polymer names",
             value="P3HB_10",
@@ -1163,11 +1157,15 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                     )
 
                 script_builder = build_openmm_script_builder(
-                    root_dir=root_dir_input,
                     polymer_names=polymer_names,
                     number_of_polymers=number_of_polymers,
                     run_name=run_name_input,
-                )
+                )   
+
+                output_script = get_next_md_script_path(run_name_input)
+
+                script_text = script_builder.to_script()
+                output_script = script_builder.write_script(output_script)
 
                 script_text = script_builder.to_script()
                 output_script = script_builder.write_script(output_script_input)
