@@ -3,14 +3,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from iphasimulator.trajectory import (
+from iphasimulator.trajectory_centering import ensure_center_index, read_index
+from iphasimulator.trajectory_frame_extraction import extract_frame
+from iphasimulator.trajectory_gromacs_trjconv import (
     center_and_compact_wrap,
-    ensure_center_index,
     fit_trajectory,
-    preprocess_gromacs_trajectory,
-    read_index,
 )
-from iphasimulator.trajectory.frame_extraction import extract_frame
+from iphasimulator.trajectory_preprocessing import preprocess_gromacs_trajectory
 
 
 def _write_index(path: Path) -> None:

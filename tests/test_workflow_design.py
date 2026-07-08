@@ -7,14 +7,16 @@ from iphasimulator.workflows import PolymerDesign, design_polymer, supported_pol
 def test_supported_polymer_table_contains_curated_names():
     rows = supported_polymer_table()
 
-    assert {row["code"] for row in rows} >= {"PHB", "PHO", "PHDD"}
+    assert {row["code"] for row in rows} >= {"3HB", "3HO", "3HDD"}
+    assert {row["polymer_code"] for row in rows} >= {"P3HB", "P3HO", "P3HDD"}
     assert all("polymer_name" in row for row in rows)
+    assert all("head_residue_code" in row for row in rows)
 
 
 def test_design_polymer_builds_common_name():
-    name, mol = design_polymer(PolymerDesign(common_name="PHB", degree=4))
+    name, mol = design_polymer(PolymerDesign(common_name="3HB", degree=4))
 
-    assert name == "PHB4_R"
+    assert name == "P3HB_4"
     assert isinstance(mol, Chem.Mol)
 
 
@@ -40,4 +42,4 @@ def test_design_polymer_builds_custom_monomer():
 
 def test_design_polymer_requires_one_mode():
     with pytest.raises(ValueError, match="exactly one"):
-        design_polymer(PolymerDesign(common_name="PHB", side_chain_carbons=1, degree=4))
+        design_polymer(PolymerDesign(common_name="3HB", side_chain_carbons=1, degree=4))

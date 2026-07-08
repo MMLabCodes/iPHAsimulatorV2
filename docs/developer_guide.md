@@ -8,17 +8,32 @@ This package builds PHA oligomers and prepares them for molecular simulation.
 
 The builder has three levels:
 
-1. Built-in curated PHA library for common names: PHB, PHV, PHHx, PHHep, PHO, PHN, PHD, and PHDD.
+1. Built-in curated PHA library for canonical monomer/residue codes: `3HB`, `3HV`, `3HHx`, `3HHep`, `3HO`, `3HN`, `3HD`, and `3HDD`.
 2. Generic alkyl-side-chain PHA generation with `build_pha_by_sidechain(side_chain_carbons, degree)`.
 3. Custom PHA generation with `build_custom_pha(monomer_smiles, degree, name)` for user-defined 3-hydroxy acid monomers with branched, unsaturated, or functionalised side chains.
 
-The design goal is curated common PHA names plus generalisable custom generation, not manual enumeration of every possible PHA.
+The design goal is curated common PHA chemistry plus generalisable custom generation, not manual enumeration of every possible PHA.
+
+## Naming convention
+
+Name generation and validation live in `src/iphasimulator/naming.py`.
+
+| Meaning | Examples |
+|---|---|
+| Monomer / residue code | `3HB`, `3HO`, `3HDD` |
+| Polymer code | `P3HB`, `P3HO`, `P3HDD` |
+| Single oligomer chain | `P3HB_4`, `P3HO_8`, `P3HDD_4` |
+| Multi-chain system | `25_P3HB_3`, `10_P3HO_8` |
+| Head/main/tail residue entries | `3HB_H`, `3HB_M`, `3HB_T` |
+
+Notebook and script outputs should use polymer-level names such as `P3HB_4`.
+Residue-level database entries should use the head/main/tail suffixes.
 
 ## Project organisation
 
 - `src/iphasimulator/` contains reusable Python modules.
-- `src/iphasimulator/parameterization/` contains AmberTools/GAFF2 code.
-- `src/iphasimulator/simulation/` contains OpenMM execution code.
+- `src/iphasimulator/parameterization_gaff2.py` contains AmberTools/GAFF2 code.
+- `src/iphasimulator/simulation_openmm_amber_runner.py` contains OpenMM execution code.
 - `src/iphasimulator/workflows/` contains reusable workflow helpers for tutorials and examples.
 - `notebooks/` contains separate step-by-step Jupyter tutorials written for
   users who may not be computational specialists.
@@ -39,12 +54,12 @@ should be launched through scripts such as `examples/run_configured_workflow.py`
 
 ## Debug validation systems
 
-- Default workflow: PHB, PHO, and PHDD at n = 4.
-- Larger opt-in systems: PHB, PHO, and PHDD at n = 8.
+- Default workflow: `P3HB_4`, `P3HO_4`, and `P3HDD_4`.
+- Larger opt-in systems: `P3HB_8`, `P3HO_8`, and `P3HDD_8`.
 
 The n = 8 systems are intentionally excluded from the default AmberTools/OpenMM
 workflow until the smaller systems are validated. AM1-BCC charge generation in
-`antechamber` can be very slow for larger PHDD oligomers.
+`antechamber` can be very slow for larger `P3HDD` oligomers.
 
 ## Core design
 
@@ -85,7 +100,7 @@ remains the default quick-validation path. Intermediate files such as
 solvation script deletes stale generated files before rerunning and starts from
 the fresh polymer-only dry topology, which prevents duplicated solvent or ion
 molecule counts in `topol.top`. A separate advanced Packmol builder in
-`src/iphasimulator/system_builders/packmol_builder.py` can prepare future
+`src/iphasimulator/system_builder_packmol.py` can prepare future
 realistic PHA oligomer systems with a defined cubic box, TIP3P water, NaCl, and
 multiple polymer copies. It is intentionally not a membrane builder yet, but the
 API leaves room for future enzyme/polymer systems.
@@ -118,7 +133,7 @@ raw logs for `antechamber` and `sqm`, and per-stage timings. For debugging large
 systems, the example runner can use faster temporary charge methods such as
 `--charge-method gas` or `--skip-am1-bcc`.
 
-OpenMM AMBER execution lives in `src/iphasimulator/simulation/openmm_amber_runner.py`
+OpenMM AMBER execution lives in `src/iphasimulator/simulation_openmm_amber_runner.py`
 and uses existing `prmtop`/`inpcrd` files. The v2 runner performs minimisation,
 NVT equilibration, NPT equilibration when periodic box vectors are present, and a
 short production stage. Single-molecule GAFF2 outputs generated without a box are
@@ -133,7 +148,7 @@ nonperiodic; for those inputs the runner writes an explicit skipped-NPT log.
 5. Export PDB and SDF.
 6. Keep AMBER separate from polymer construction.
 7. Allow custom 3-hydroxy acid monomers without requiring every possible PHA to be registered manually.
-8. Keep reusable MD workflow code in `src/iphasimulator/parameterization/` and `src/iphasimulator/simulation/`; examples only contain runnable scripts.
+8. Keep reusable MD workflow code in root-level `src/iphasimulator/` modules with descriptive prefixes; examples only contain runnable scripts.
 
 ## MD dependencies
 

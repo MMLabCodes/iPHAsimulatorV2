@@ -11,7 +11,7 @@ import re
 import subprocess
 import warnings
 
-from iphasimulator.conversion import convert_amber_to_gromacs
+from iphasimulator.conversion_amber_to_gromacs import convert_amber_to_gromacs
 
 
 @dataclass(frozen=True)

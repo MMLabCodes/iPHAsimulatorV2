@@ -8,6 +8,7 @@ from rdkit import Chem
 
 from iphasimulator.build import build_custom_pha, build_pha_by_sidechain, build_pha_chain
 from iphasimulator.monomers import MONOMERS
+from iphasimulator.naming import monomer_to_polymer_code, oligomer_name
 
 
 @dataclass(frozen=True)
@@ -32,7 +33,12 @@ def supported_polymer_table() -> list[dict[str, object]]:
     return [
         {
             "code": monomer.code,
+            "polymer_code": monomer_to_polymer_code(monomer.code),
             "polymer_name": monomer.polymer_name,
+            "residue_code": monomer.residue_code,
+            "head_residue_code": monomer.head_residue_code,
+            "main_residue_code": monomer.main_residue_code,
+            "tail_residue_code": monomer.tail_residue_code,
             "side_chain_carbons": monomer.side_chain_length,
             "monomer_smiles": monomer.chiral_smiles,
         }
@@ -62,7 +68,7 @@ def design_polymer(design: PolymerDesign) -> tuple[str, Chem.Mol]:
         )
 
     if design.common_name is not None:
-        name = f"{design.common_name}{design.degree}_{design.stereochemistry}"
+        name = oligomer_name(design.common_name, design.degree)
         return name, build_pha_chain(
             design.common_name,
             design.degree,

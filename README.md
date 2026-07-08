@@ -42,6 +42,21 @@ The repository is organised around guided notebooks. Reusable code lives in
 `src/iphasimulator`; notebooks should remain workflow tutorials rather than the
 home of core package logic.
 
+## Naming Convention
+
+iPHASimulator uses one central naming convention for PHA identifiers:
+
+| Meaning | Examples |
+|---|---|
+| Monomer / residue code | `3HB`, `3HO`, `3HDD` |
+| Polymer code | `P3HB`, `P3HO`, `P3HDD` |
+| Single oligomer chain with n repeat units | `P3HB_4`, `P3HO_8`, `P3HDD_4` |
+| Multi-chain system | `25_P3HB_3`, `10_P3HO_8` |
+| Head/main/tail residue database entries | `3HB_H`, `3HB_M`, `3HB_T` |
+
+Use `src/iphasimulator/naming.py` to generate and validate names instead of
+typing names manually in notebooks or scripts.
+
 ## Current Status
 
 | Area | Status | Notes |
@@ -283,7 +298,7 @@ tests/       Automated tests for builders, export, MD workflow helpers,
 | Notebook | Purpose | Main output |
 |---|---|---|
 | `01_examples_pha_oligomers.ipynb` | Introduce built-in PHA oligomer generation examples. | Example RDKit PHA molecules for tutorial use. |
-| `02_design_polymer_for_user_request.ipynb` | Select or define a PHA target from user-facing design inputs. | A designed polymer target such as `PHB4_R`. |
+| `02_design_polymer_for_user_request.ipynb` | Select or define a PHA target from user-facing design inputs. | A designed polymer target such as `P3HB_4`. |
 | `03_validate_and_visualize.ipynb` | Validate generated oligomers and inspect molecular structures. | Validation summaries and visual checks. |
 | `04_export_structures.ipynb` | Export validated oligomers to structure files. | PDB/SDF files in `examples/output/polymer_structures/`. |
 | `05A_amber_gaff2_parameterisation.ipynb` | Run AmberTools/GAFF2 parameterisation. | `prmtop`, `inpcrd`, GAFF2 `mol2`/`frcmod`, and logs under `examples/output/md_tests/<SYSTEM>/gaff2/`. |
@@ -298,9 +313,9 @@ tests/       Automated tests for builders, export, MD workflow helpers,
 | `10_batch_md_benchmark.ipynb` | Launch and track multi-system MD benchmark preparation. | Benchmark outputs under `examples/output/benchmark/`. |
 | `11_PHA_Enzyme_Docking.ipynb` | Prepare PHA oligomer inputs for manual enzyme docking. | Docking-ready polymer PDBs and manual HADDOCK job records under `examples/output/docking_inputs/`. |
 
-## Minimal PHB4 Benchmark Workflow
+## Minimal P3HB_4 Benchmark Workflow
 
-`PHB4` is the default small benchmark system for checking the v2 workflow.
+`P3HB_4` is the default small benchmark system for checking the v2 workflow.
 
 1. Install the environment and start Jupyter:
 
@@ -309,19 +324,19 @@ tests/       Automated tests for builders, export, MD workflow helpers,
    jupyter lab notebooks/
    ```
 
-2. Run notebooks `01` to `04` using the PHB tetramer target. The expected
+2. Run notebooks `01` to `04` using the P3HB tetramer target. The expected
    exported structure names are:
 
    ```text
-   examples/output/polymer_structures/PHB4_R.sdf
-   examples/output/polymer_structures/PHB4_R.pdb
+   examples/output/polymer_structures/P3HB_4.sdf
+   examples/output/polymer_structures/P3HB_4.pdb
    ```
 
-3. Run `05A_amber_gaff2_parameterisation.ipynb` with `PHB4_R` as the target.
+3. Run `05A_amber_gaff2_parameterisation.ipynb` with `P3HB_4` as the target.
    The expected Amber/GAFF2 outputs are written under:
 
    ```text
-   examples/output/md_tests/PHB4/gaff2/
+   examples/output/md_tests/P3HB_4/gaff2/
    ```
 
 4. Run the relevant MD notebook for the route being tested:

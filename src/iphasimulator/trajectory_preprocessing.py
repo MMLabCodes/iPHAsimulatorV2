@@ -6,9 +6,14 @@ from dataclasses import dataclass
 from pathlib import Path
 import subprocess
 
-from .centering import CenterIndexResult, ensure_center_index
-from .frame_extraction import extract_first_frame
-from .gromacs_trjconv import Runner, TrjconvResult, center_and_compact_wrap, fit_trajectory
+from iphasimulator.trajectory_centering import CenterIndexResult, ensure_center_index
+from iphasimulator.trajectory_frame_extraction import extract_first_frame
+from iphasimulator.trajectory_gromacs_trjconv import (
+    Runner,
+    TrjconvResult,
+    center_and_compact_wrap,
+    fit_trajectory,
+)
 
 
 @dataclass(frozen=True)

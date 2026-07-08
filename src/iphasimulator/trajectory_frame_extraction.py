@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 
-from .gromacs_trjconv import Runner, TrjconvResult, run_trjconv
+from iphasimulator.trajectory_gromacs_trjconv import Runner, TrjconvResult, run_trjconv
 
 
 def extract_frame(

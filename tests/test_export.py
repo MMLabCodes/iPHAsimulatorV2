@@ -4,8 +4,8 @@ from rdkit import Chem
 
 
 def test_export_sdf_writes_file(tmp_path):
-    mol = build_pha_chain("PHB", 4, "R")
-    output_path = tmp_path / "PHB4_R.sdf"
+    mol = build_pha_chain("3HB", 4, "R")
+    output_path = tmp_path / "P3HB_4.sdf"
 
     to_sdf(mol, output_path)
 
@@ -17,8 +17,8 @@ def test_export_sdf_writes_file(tmp_path):
 
 
 def test_export_pdb_handles_long_side_chain_pha(tmp_path):
-    mol = build_pha_chain("PHDD", 4, "R")
-    output_path = tmp_path / "PHDD4_R.pdb"
+    mol = build_pha_chain("3HDD", 4, "R")
+    output_path = tmp_path / "P3HDD_4.pdb"
 
     to_pdb(mol, output_path)
 

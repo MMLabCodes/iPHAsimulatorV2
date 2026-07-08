@@ -7,13 +7,13 @@
 output_root: examples/output
 
 targets:
-  - monomer: PHB
+  - monomer: 3HB
     degree: 4
     stereochemistry: R
-  - monomer: PHO
+  - monomer: 3HO
     degree: 4
     stereochemistry: R
-  - monomer: PHDD
+  - monomer: 3HDD
     degree: 4
     stereochemistry: R
 
