@@ -70,14 +70,14 @@ root_dir : str or pathlib.Path, optional
         self._create_base_structure()
 
     def _create_base_structure(self):
-        """
-        Create the base directory structure if it does not already exist.
-        """
         self.root_dir.mkdir(exist_ok=True)
         self.PHA_types_dir.mkdir(exist_ok=True)
         self.built_PHAs_dir.mkdir(exist_ok=True)
         self.PHA_melts_dir.mkdir(exist_ok=True)
         self.temp_dir.mkdir(exist_ok=True)
+        self.get_dry_PHAs_dir().mkdir(exist_ok=True)
+        self.get_solvated_PHAs_dir().mkdir(exist_ok=True)
+        self.get_solvated_ions_PHAs_dir().mkdir(exist_ok=True)
 
     def get_root_dir(self):
         """
