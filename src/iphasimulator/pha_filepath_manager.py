@@ -411,6 +411,76 @@ root_dir : str or pathlib.Path, optional
         system_dir = self.get_single_PHA_system_dir(system_name)
         system_dir.mkdir(parents=True, exist_ok=True)
         return system_dir
+    
+    def get_dry_PHAs_dir(self):
+        return self.root_dir / "dry_phas"
+
+    def get_solvated_PHAs_dir(self):
+        return self.root_dir / "solvated_phas"
+
+    def get_solvated_ions_PHAs_dir(self):
+        return self.root_dir / "solvated_ions_phas"
+
+    def get_dry_PHA_system_name(self, polymer_name):
+        return f"{polymer_name}_dry"
+
+    def get_solvated_PHA_system_name(self, polymer_name):
+        return f"{polymer_name}_solvated"
+
+    def get_solvated_ions_PHA_system_name(
+        self,
+        polymer_name,
+        ion_names,
+        ion_concentration,
+    ):
+        concentration_label = str(ion_concentration).replace(".", "p")
+        ion_label = str(ion_names).replace(" ", "").replace("+", "p").replace("-", "m")
+        return f"{polymer_name}_solvated_{ion_label}_{concentration_label}"
+
+    def get_dry_PHA_dir(self, polymer_name):
+        system_name = self.get_dry_PHA_system_name(polymer_name)
+        return self.get_dry_PHAs_dir() / system_name
+
+    def get_solvated_PHA_dir(self, polymer_name):
+        system_name = self.get_solvated_PHA_system_name(polymer_name)
+        return self.get_solvated_PHAs_dir() / system_name
+
+    def get_solvated_ions_PHA_dir(
+        self,
+        polymer_name,
+        ion_names,
+        ion_concentration,
+    ):
+        system_name = self.get_solvated_ions_PHA_system_name(
+            polymer_name,
+            ion_names,
+            ion_concentration,
+        )
+        return self.get_solvated_ions_PHAs_dir() / system_name
+
+    def create_dry_PHA_dir(self, polymer_name):
+        system_dir = self.get_dry_PHA_dir(polymer_name)
+        system_dir.mkdir(parents=True, exist_ok=True)
+        return system_dir
+
+    def create_solvated_PHA_dir(self, polymer_name):
+        system_dir = self.get_solvated_PHA_dir(polymer_name)
+        system_dir.mkdir(parents=True, exist_ok=True)
+        return system_dir
+
+    def create_solvated_ions_PHA_dir(
+        self,
+        polymer_name,
+        ion_names,
+        ion_concentration,
+    ):
+        system_dir = self.get_solvated_ions_PHA_dir(
+            polymer_name,
+            ion_names,
+            ion_concentration,
+        )
+        system_dir.mkdir(parents=True, exist_ok=True)
+        return system_dir
 
 class PHAResidueCodeManager:
     """
