@@ -378,18 +378,29 @@ root_dir : str or pathlib.Path, optional
         }
 
     def get_PHA_monomer_unit_files(self, PHA_type):
+
         """
+
         Return expected monomer unit parameter files for a PHA type.
+
         """
+
         monomer_units_dir = self.get_PHA_monomer_units_dir(PHA_type)
-        trimer_name = f"P{PHA_type}_3"
+
+        trimer_dir = self.get_PHA_trimer_dir(PHA_type)
 
         return {
+
             "monomer_units_dir": monomer_units_dir,
-            "head_prepi": monomer_units_dir / f"head_{trimer_name}.prepi",
-            "mainchain_prepi": monomer_units_dir / f"mainchain_{trimer_name}.prepi",
-            "tail_prepi": monomer_units_dir / f"tail_{trimer_name}.prepi",
-            "frcmod": self.get_PHA_trimer_dir(PHA_type) / f"{trimer_name}.frcmod",
+
+            "head_prepin": monomer_units_dir / f"hP{PHA_type}.prepin",
+
+            "mainchain_prepin": monomer_units_dir / f"mP{PHA_type}.prepin",
+
+            "tail_prepin": monomer_units_dir / f"tP{PHA_type}.prepin",
+
+            "frcmod": trimer_dir / f"P{PHA_type}_3.frcmod",
+
         }
 
     def get_single_PHA_systems_dir(self):

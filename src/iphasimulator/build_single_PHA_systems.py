@@ -4,20 +4,6 @@
 """
 Build dry, solvated, and ionised single-chain PHA systems from already-built
 PHA polymers.
-
-Input examples
---------------
-P3HB_10
-
-Expected input location
------------------------
-structure_database/built_PHAs/P3HB_10/amber/
-
-Output locations
-----------------
-structure_database/dry_phas/
-structure_database/solvated_phas/
-structure_database/solvated_ions_phas/
 """
 
 from pathlib import Path
@@ -34,11 +20,7 @@ def run_tleap(intleap_file, workdir):
     intleap_file = Path(intleap_file)
     workdir = Path(workdir)
 
-    command = [
-        "tleap",
-        "-f",
-        intleap_file.name,
-    ]
+    command = ["tleap", "-f", intleap_file.name]
 
     print("\nRunning tleap:")
     print(" ".join(command))
@@ -66,9 +48,7 @@ def run_tleap(intleap_file, workdir):
     print("Log file:", log_file)
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"tleap failed. See log file:\n{log_file}"
-        )
+        raise RuntimeError(f"tleap failed. See log file:\n{log_file}")
 
     return result
 
@@ -125,28 +105,29 @@ def calculate_ion_pairs_from_rst7(rst7_path, concentration_molar):
     return n_pairs
 
 
-def prepare_single_system_inputs(
-    paths,
-    polymer_name,
-    output_dir,
-):
+def prepare_single_system_inputs(paths, polymer_name, output_dir):
     """
     Copy the already-built polymer PDB and PHA parameter files locally.
 
-    tleap is run inside output_dir using local filenames.
+    Expected monomer-unit parameter filenames now follow:
+
+        hP3HB.prepin
+        mP3HB.prepin
+        tP3HB.prepin
+
+    The filepath manager should return these as:
+
+        head_prepin
+        mainchain_prepin
+        tail_prepin
+        frcmod
     """
 
-    PHA_type, length = paths.parse_built_PHA_name(
-        polymer_name
-    )
+    PHA_type, length = paths.parse_built_PHA_name(polymer_name)
 
-    built_files = paths.get_built_PHA_amber_files(
-        polymer_name
-    )
+    built_files = paths.get_built_PHA_amber_files(polymer_name)
 
-    parameter_files = paths.get_PHA_monomer_unit_files(
-        PHA_type
-    )
+    parameter_files = paths.get_PHA_monomer_unit_files(PHA_type)
 
     check_required_files(
         built_files,
@@ -156,19 +137,15 @@ def prepare_single_system_inputs(
     check_required_files(
         parameter_files,
         [
-            "head_prepi",
-            "mainchain_prepi",
-            "tail_prepi",
+            "head_prepin",
+            "mainchain_prepin",
+            "tail_prepin",
             "frcmod",
         ],
     )
 
     output_dir = Path(output_dir)
-
-    output_dir.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     local_pdb = output_dir / built_files["pdb"].name
 
@@ -180,9 +157,9 @@ def prepare_single_system_inputs(
     local_parameter_files = {}
 
     for key in [
-        "head_prepi",
-        "mainchain_prepi",
-        "tail_prepi",
+        "head_prepin",
+        "mainchain_prepin",
+        "tail_prepin",
         "frcmod",
     ]:
         source_file = parameter_files[key]
@@ -219,19 +196,13 @@ def build_dry_PHA(
     """
 
     if not isinstance(box_radius, float):
-        raise TypeError(
-            "box_radius must be a float, e.g. 20.0"
-        )
+        raise TypeError("box_radius must be a float, e.g. 20.0")
 
     paths = PHAFileManager(root_dir)
 
-    system_name = paths.get_dry_PHA_system_name(
-        polymer_name
-    )
+    system_name = paths.get_dry_PHA_system_name(polymer_name)
 
-    output_dir = paths.create_dry_PHA_dir(
-        polymer_name
-    )
+    output_dir = paths.create_dry_PHA_dir(polymer_name)
 
     prepared = prepare_single_system_inputs(
         paths=paths,
@@ -250,9 +221,9 @@ def build_dry_PHA(
     tleap_content = f"""
 source leaprc.{forcefield}
 
-loadamberprep {params["head_prepi"].name}
-loadamberprep {params["mainchain_prepi"].name}
-loadamberprep {params["tail_prepi"].name}
+loadamberprep {params["head_prepin"].name}
+loadamberprep {params["mainchain_prepin"].name}
+loadamberprep {params["tail_prepin"].name}
 loadamberparams {params["frcmod"].name}
 
 polymer = loadpdb {local_pdb.name}
@@ -265,10 +236,7 @@ savepdb polymer {pdb.name}
 quit
 """
 
-    write_tleap_file(
-        intleap,
-        tleap_content,
-    )
+    write_tleap_file(intleap, tleap_content)
 
     run_tleap(
         intleap,
@@ -304,19 +272,13 @@ def build_solvated_PHA(
     """
 
     if not isinstance(box_radius, float):
-        raise TypeError(
-            "box_radius must be a float, e.g. 20.0"
-        )
+        raise TypeError("box_radius must be a float, e.g. 20.0")
 
     paths = PHAFileManager(root_dir)
 
-    system_name = paths.get_solvated_PHA_system_name(
-        polymer_name
-    )
+    system_name = paths.get_solvated_PHA_system_name(polymer_name)
 
-    output_dir = paths.create_solvated_PHA_dir(
-        polymer_name
-    )
+    output_dir = paths.create_solvated_PHA_dir(polymer_name)
 
     prepared = prepare_single_system_inputs(
         paths=paths,
@@ -336,9 +298,9 @@ def build_solvated_PHA(
 source leaprc.{forcefield}
 source leaprc.{water_leaprc}
 
-loadamberprep {params["head_prepi"].name}
-loadamberprep {params["mainchain_prepi"].name}
-loadamberprep {params["tail_prepi"].name}
+loadamberprep {params["head_prepin"].name}
+loadamberprep {params["mainchain_prepin"].name}
+loadamberprep {params["tail_prepin"].name}
 loadamberparams {params["frcmod"].name}
 
 polymer = loadpdb {local_pdb.name}
@@ -351,10 +313,7 @@ savepdb polymer {pdb.name}
 quit
 """
 
-    write_tleap_file(
-        intleap,
-        tleap_content,
-    )
+    write_tleap_file(intleap, tleap_content)
 
     run_tleap(
         intleap,
@@ -396,9 +355,7 @@ def build_solvated_PHA_ions(
     """
 
     if not isinstance(box_radius, float):
-        raise TypeError(
-            "box_radius must be a float, e.g. 20.0"
-        )
+        raise TypeError("box_radius must be a float, e.g. 20.0")
 
     paths = PHAFileManager(root_dir)
 
@@ -441,9 +398,9 @@ def build_solvated_PHA_ions(
 source leaprc.{forcefield}
 source leaprc.{water_leaprc}
 
-loadamberprep {params["head_prepi"].name}
-loadamberprep {params["mainchain_prepi"].name}
-loadamberprep {params["tail_prepi"].name}
+loadamberprep {params["head_prepin"].name}
+loadamberprep {params["mainchain_prepin"].name}
+loadamberprep {params["tail_prepin"].name}
 loadamberparams {params["frcmod"].name}
 
 polymer = loadpdb {local_pdb.name}
@@ -456,10 +413,7 @@ savepdb polymer {temp_pdb.name}
 quit
 """
 
-    write_tleap_file(
-        temp_intleap,
-        temp_tleap_content,
-    )
+    write_tleap_file(temp_intleap, temp_tleap_content)
 
     print("Running first tleap pass: solvation only.")
 
@@ -477,9 +431,9 @@ quit
 source leaprc.{forcefield}
 source leaprc.{water_leaprc}
 
-loadamberprep {params["head_prepi"].name}
-loadamberprep {params["mainchain_prepi"].name}
-loadamberprep {params["tail_prepi"].name}
+loadamberprep {params["head_prepin"].name}
+loadamberprep {params["mainchain_prepin"].name}
+loadamberprep {params["tail_prepin"].name}
 loadamberparams {params["frcmod"].name}
 
 polymer = loadpdb {local_pdb.name}
@@ -495,10 +449,7 @@ savepdb polymer {pdb.name}
 quit
 """
 
-    write_tleap_file(
-        intleap,
-        final_tleap_content,
-    )
+    write_tleap_file(intleap, final_tleap_content)
 
     print("Running second tleap pass: solvation with ions.")
 
