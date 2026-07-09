@@ -335,6 +335,82 @@ root_dir : str or pathlib.Path, optional
         Return the path to polymer_smiles.csv.
         """
         return self.root_dir / "polymer_smiles.csv"
+    
+    def parse_built_PHA_name(self, polymer_name):
+        """
+        Parse a built PHA polymer name.
+
+        Example
+        -------
+        P3HB_10 -> ("3HB", 10)
+        """
+        import re
+
+        match = re.fullmatch(r"P(.+)_(\d+)", polymer_name)
+
+        if match is None:
+            raise ValueError(
+                f"Invalid polymer name: {polymer_name}\n"
+                "Expected format like: P3HB_10"
+            )
+
+        PHA_type = match.group(1)
+        length = int(match.group(2))
+
+        return PHA_type, length
+
+    def get_built_PHA_amber_files(self, polymer_name):
+        """
+        Return expected Amber files for an already-built PHA polymer.
+        """
+        PHA_type, length = self.parse_built_PHA_name(polymer_name)
+
+        amber_dir = self.get_built_PHA_amber_dir(
+            PHA_type,
+            length,
+        )
+
+        return {
+            "amber_dir": amber_dir,
+            "pdb": amber_dir / f"{polymer_name}.pdb",
+            "prmtop": amber_dir / f"{polymer_name}.prmtop",
+            "rst7": amber_dir / f"{polymer_name}.rst7",
+        }
+
+    def get_PHA_monomer_unit_files(self, PHA_type):
+        """
+        Return expected monomer unit parameter files for a PHA type.
+        """
+        monomer_units_dir = self.get_PHA_monomer_units_dir(PHA_type)
+        trimer_name = f"P{PHA_type}_3"
+
+        return {
+            "monomer_units_dir": monomer_units_dir,
+            "head_prepi": monomer_units_dir / f"head_{trimer_name}.prepi",
+            "mainchain_prepi": monomer_units_dir / f"mainchain_{trimer_name}.prepi",
+            "tail_prepi": monomer_units_dir / f"tail_{trimer_name}.prepi",
+            "frcmod": self.get_PHA_trimer_dir(PHA_type) / f"{trimer_name}.frcmod",
+        }
+
+    def get_single_PHA_systems_dir(self):
+        """
+        Return the parent directory for single-chain PHA systems.
+        """
+        return self.root_dir / "single_PHA_systems"
+
+    def get_single_PHA_system_dir(self, system_name):
+        """
+        Return the directory for a single-chain PHA system.
+        """
+        return self.get_single_PHA_systems_dir() / system_name
+
+    def create_single_PHA_system_dir(self, system_name):
+        """
+        Create and return a single-chain PHA system directory.
+        """
+        system_dir = self.get_single_PHA_system_dir(system_name)
+        system_dir.mkdir(parents=True, exist_ok=True)
+        return system_dir
 
 class PHAResidueCodeManager:
     """
