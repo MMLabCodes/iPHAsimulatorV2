@@ -495,7 +495,11 @@ with st.sidebar:
     st.metric("OpenMM steps", len(st.session_state.openmm_steps))
 
     with st.expander("Show monomer table"):
-        st.dataframe(mainchain_df, use_container_width=True)
+        monomer_table_html = mainchain_df.to_html(index=False, escape=True)
+        st.markdown(
+            f'<div style="overflow-x: auto;">{monomer_table_html}</div>',
+            unsafe_allow_html=True,
+        )
 
 
 tab_builder, tab_preview, tab_logs, tab_openmm = st.tabs(

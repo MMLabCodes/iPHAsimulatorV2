@@ -22,6 +22,9 @@ md = [
     "parmed",
     "mdtraj"
 ]
+gui = [
+    "streamlit"
+]
 
 [build-system]
 requires = ["setuptools"]

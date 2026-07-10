@@ -165,7 +165,7 @@ The Python dependencies are declared in `pyproject.toml`. You do not need to
 type every Python package name manually. From the repository root, run:
 
 ```bash
-python -m pip install -e ".[dev,md]"
+python -m pip install -e ".[dev,md,gui]"
 ```
 
 This command tells `pip` to read `pyproject.toml` and install:
@@ -174,7 +174,8 @@ This command tells `pip` to read `pyproject.toml` and install:
 - the main Python dependencies such as RDKit, numpy, pandas, scipy, networkx,
   and pyyaml;
 - the `dev` tools, including pytest and JupyterLab;
-- the `md` tools, including OpenMM, ParmEd, and MDTraj.
+- the `md` tools, including OpenMM, ParmEd, and MDTraj;
+- the `gui` tools, including Streamlit for the graphical interface.
 
 The `-e` option means "editable install". This is useful for development because
 changes made in `src/iphasimulator/` are used immediately without reinstalling
@@ -186,10 +187,37 @@ Run these commands from the same activated environment:
 
 ```bash
 python -c "import iphasimulator; print('iPHASimulator import OK')"
-python -c "from rdkit import Chem; import openmm; import parmed; import mdtraj; print('Python dependencies OK')"
+python -c "from rdkit import Chem; import openmm; import parmed; import mdtraj; import streamlit; print('Python dependencies OK')"
 ```
 
-### 6. Check External Simulation Tools
+### 6. Start the Graphical Interface
+
+The graphical interface is provided by `pha_gui.py` and requires Streamlit.
+Streamlit is installed automatically when you use the
+`python -m pip install -e ".[dev,md,gui]"` command above.
+
+Activate the same Conda environment, move to the repository root, and start the
+interface with:
+
+```bash
+conda activate iphasimulator_v2
+python -m streamlit run pha_gui.py
+```
+
+Use `python -m streamlit run pha_gui.py`, not `python pha_gui.py`. Streamlit must
+start its web server before the interface can work. Your web browser should open
+automatically, normally at <http://localhost:8501>. Press `Ctrl+C` in the
+terminal when you want to stop the server.
+
+If Python reports `No module named 'streamlit'`, confirm that the correct Conda
+environment is active and install the GUI dependencies again:
+
+```bash
+conda activate iphasimulator_v2
+python -m pip install -e ".[gui]"
+```
+
+### 7. Check External Simulation Tools
 
 Some notebooks call external command-line programs. These are not ordinary
 Python imports, so they may need to be installed separately in the same conda
@@ -229,7 +257,7 @@ gmx --version
 obabel -V
 ```
 
-### 7. Start the Notebooks
+### 8. Start the Notebooks
 
 Then start the notebooks from the repository root:
 
@@ -276,6 +304,7 @@ workflow helpers, and trajectory preprocessing utilities.
 | pandas | Workflow tables, status summaries, and analysis data frames. |
 | numpy | Numerical calculations. |
 | matplotlib | Notebook plots and basic analysis visualisation. |
+| Streamlit | Browser-based graphical interface provided by `pha_gui.py`. |
 | Open Babel | Optional structure format conversion support where needed. |
 
 The package metadata also includes supporting Python dependencies such as
