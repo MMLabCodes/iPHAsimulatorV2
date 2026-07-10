@@ -7,3 +7,23 @@ __pycache__/
 # Generated tutorial and workflow outputs.
 examples/output
 notebooks/.ipynb_checkpoints/
+
+# Generated PHA melts
+
+structure_database/PHA_melts/
+
+# Generated built-polymer outputs
+
+structure_database/built_PHAs/
+
+# Generated single-PHA systems
+
+structure_database/dry_phas/
+
+structure_database/solvated_phas/
+
+structure_database/solvated_ions_phas/
+
+# OpenMM outputs
+
+*.dcd

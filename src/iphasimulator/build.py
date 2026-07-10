@@ -1,5 +1,15 @@
 """RDKit-based PHA chain builder."""
 
+"""
+Dan's comments:
+    
+I don't think we require any of these functions to build the polymers at the current point in time.
+
+I like the idea of validating the sterochemistry and counting specifc carbons/functionalities/etc..
+"""
+
+
+
 from __future__ import annotations
 
 from rdkit import Chem

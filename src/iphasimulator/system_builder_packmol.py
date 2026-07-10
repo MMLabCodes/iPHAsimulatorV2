@@ -5,6 +5,12 @@ route. It prepares Packmol inputs for future realistic polymer simulations while
 keeping the quick validation workflow lightweight.
 """
 
+"""
+Dan comments:
+    
+Will leave this here, not sure what this builds yet - I havent gotten that far
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

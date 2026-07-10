@@ -1,5 +1,17 @@
 """GAFF2 parameterisation workflow using AmberTools."""
 
+"""
+Dan comments:
+    
+This carries out the same functionality as found in the build_pha.py
+
+However, that code is formatted exactly for PHAs (you can technically parameterise anything),
+    residue codes and files are generated specifically for the trimer parameterisation workflow.
+    
+It may be useful to create a seperate function that can parameterise anything and store the files,
+    however, this file is redundant.
+"""
+
 from __future__ import annotations
 
 from decimal import Decimal
