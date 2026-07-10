@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from iphasimulator.system_builders import (
+from iphasimulator.system_builder_packmol import (
     build_packmol_solvated_system,
     estimate_ion_pairs,
     estimate_tip3p_water_count,
@@ -26,7 +26,7 @@ def test_estimate_ion_pairs_from_molarity_and_box_volume():
 
 
 def test_build_packmol_solvated_system_writes_input_without_running(tmp_path):
-    polymer_path = tmp_path / "PHB4.pdb"
+    polymer_path = tmp_path / "P3HB_4.pdb"
     polymer_path.write_text(POLYMER_PDB)
 
     outputs = build_packmol_solvated_system(
@@ -64,7 +64,7 @@ def test_build_packmol_solvated_system_writes_input_without_running(tmp_path):
 
 
 def test_build_packmol_solvated_system_runs_packmol_with_stdin(tmp_path):
-    polymer_path = tmp_path / "PHB4.pdb"
+    polymer_path = tmp_path / "P3HB_4.pdb"
     polymer_path.write_text(POLYMER_PDB)
     calls = []
 
@@ -89,8 +89,8 @@ def test_build_packmol_solvated_system_runs_packmol_with_stdin(tmp_path):
 
 
 def test_build_packmol_solvated_system_accepts_multiple_polymer_structures(tmp_path):
-    polymer_1 = tmp_path / "PHB4.pdb"
-    polymer_2 = tmp_path / "PHO4.pdb"
+    polymer_1 = tmp_path / "P3HB_4.pdb"
+    polymer_2 = tmp_path / "P3HO_4.pdb"
     polymer_1.write_text(POLYMER_PDB)
     polymer_2.write_text(POLYMER_PDB)
 
@@ -109,7 +109,7 @@ def test_build_packmol_solvated_system_accepts_multiple_polymer_structures(tmp_p
 
 
 def test_build_packmol_solvated_system_rejects_unsupported_water_model(tmp_path):
-    polymer_path = tmp_path / "PHB4.pdb"
+    polymer_path = tmp_path / "P3HB_4.pdb"
     polymer_path.write_text(POLYMER_PDB)
 
     with pytest.raises(ValueError, match="tip3p"):

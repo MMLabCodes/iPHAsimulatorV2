@@ -5,10 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 import argparse
 
-from iphasimulator.simulation.gromacs_runner import prepare_gromacs_run_folder
+from iphasimulator.simulation_gromacs_runner import prepare_gromacs_run_folder
 
 
-TARGETS = ("PHB4", "PHB8", "PHO4", "PHO8", "PHDD4", "PHDD8")
+TARGETS = ("P3HB_4", "P3HB_8", "P3HO_4", "P3HO_8", "P3HDD_4", "P3HDD_8")
 
 
 def parse_args() -> argparse.Namespace:
@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
         "--target",
         required=True,
         choices=TARGETS,
-        help="Target name with existing GAFF2 outputs, for example PHB4.",
+        help="Target name with existing GAFF2 outputs, for example P3HB_4.",
     )
     parser.add_argument(
         "--output-root",

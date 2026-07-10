@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from iphasimulator.simulation.gromacs_runner import (
+from iphasimulator.simulation_gromacs_runner import (
     GROMACS_MDP_TEMPLATE_NAMES,
     check_gromacs_minimization_inputs,
     create_gromacs_simulation_box,
@@ -68,8 +68,8 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
     monkeypatch,
     tmp_path,
 ):
-    prmtop_path = tmp_path / "PHB4.prmtop"
-    inpcrd_path = tmp_path / "PHB4.inpcrd"
+    prmtop_path = tmp_path / "P3HB_4.prmtop"
+    inpcrd_path = tmp_path / "P3HB_4.inpcrd"
     prmtop_path.write_text("topology")
     inpcrd_path.write_text("coordinates")
     output_dir = tmp_path / "gromacs"
@@ -79,12 +79,12 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
         top_path = output_path / f"{system_name}.top"
         gro_path = output_path / f"{system_name}.gro"
         output_path.mkdir(parents=True, exist_ok=True)
-        top_path.write_text("[ system ]\nPHB4\n")
-        gro_path.write_text("PHB4\n3\n    1PHA      C1    1   0.0   0.0   0.0\n    1PHA      C2    2   0.1   0.0   0.0\n    1PHA      O1    3   0.2   0.0   0.0\n   1.0   1.0   1.0\n")
+        top_path.write_text("[ system ]\nP3HB_4\n")
+        gro_path.write_text("P3HB_4\n3\n    1PHA      C1    1   0.0   0.0   0.0\n    1PHA      C2    2   0.1   0.0   0.0\n    1PHA      O1    3   0.2   0.0   0.0\n   1.0   1.0   1.0\n")
         return SimpleNamespace(top_path=top_path, gro_path=gro_path)
 
     monkeypatch.setattr(
-        "iphasimulator.simulation.gromacs_runner.convert_amber_to_gromacs",
+        "iphasimulator.simulation_gromacs_runner.convert_amber_to_gromacs",
         fake_convert_amber_to_gromacs,
     )
 
@@ -92,7 +92,7 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
         prmtop_path,
         inpcrd_path,
         output_dir,
-        "PHB4",
+        "P3HB_4",
         runner=_fake_editconf_runner,
     )
 
@@ -124,7 +124,7 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
 
     hpc_script = outputs.hpc_script_path.read_text()
     assert hpc_script.startswith("#!/bin/bash -l\n")
-    assert "#SBATCH --job-name=PHB4_polymer_MD" in hpc_script
+    assert "#SBATCH --job-name=P3HB_4_polymer_MD" in hpc_script
     assert "#SBATCH --partition=gpu" in hpc_script
     assert "#SBATCH --gres=gpu:1" in hpc_script
     assert "module load gromacs/2021.5-gcc-11.4.0-cuda-11.8.0" in hpc_script
@@ -154,8 +154,8 @@ def test_prepare_gromacs_run_folder_writes_default_polymer_folder(
 
 
 def test_prepare_gromacs_run_folder_copies_existing_index(monkeypatch, tmp_path):
-    prmtop_path = tmp_path / "PHB4.prmtop"
-    inpcrd_path = tmp_path / "PHB4.inpcrd"
+    prmtop_path = tmp_path / "P3HB_4.prmtop"
+    inpcrd_path = tmp_path / "P3HB_4.inpcrd"
     index_path = tmp_path / "custom.ndx"
     prmtop_path.write_text("topology")
     inpcrd_path.write_text("coordinates")
@@ -166,12 +166,12 @@ def test_prepare_gromacs_run_folder_copies_existing_index(monkeypatch, tmp_path)
         top_path = output_path / f"{system_name}.top"
         gro_path = output_path / f"{system_name}.gro"
         output_path.mkdir(parents=True, exist_ok=True)
-        top_path.write_text("[ system ]\nPHB4\n")
-        gro_path.write_text("PHB4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
+        top_path.write_text("[ system ]\nP3HB_4\n")
+        gro_path.write_text("P3HB_4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
         return SimpleNamespace(top_path=top_path, gro_path=gro_path)
 
     monkeypatch.setattr(
-        "iphasimulator.simulation.gromacs_runner.convert_amber_to_gromacs",
+        "iphasimulator.simulation_gromacs_runner.convert_amber_to_gromacs",
         fake_convert_amber_to_gromacs,
     )
 
@@ -179,7 +179,7 @@ def test_prepare_gromacs_run_folder_copies_existing_index(monkeypatch, tmp_path)
         prmtop_path,
         inpcrd_path,
         tmp_path / "gromacs",
-        "PHB4",
+        "P3HB_4",
         index_file=index_path,
         runner=_fake_editconf_runner,
     )
@@ -191,8 +191,8 @@ def test_prepare_gromacs_run_folder_writes_charmm_gui_membrane_workflow(
     monkeypatch,
     tmp_path,
 ):
-    prmtop_path = tmp_path / "PHB4.prmtop"
-    inpcrd_path = tmp_path / "PHB4.inpcrd"
+    prmtop_path = tmp_path / "P3HB_4.prmtop"
+    inpcrd_path = tmp_path / "P3HB_4.inpcrd"
     prmtop_path.write_text("topology")
     inpcrd_path.write_text("coordinates")
 
@@ -201,12 +201,12 @@ def test_prepare_gromacs_run_folder_writes_charmm_gui_membrane_workflow(
         top_path = output_path / f"{system_name}.top"
         gro_path = output_path / f"{system_name}.gro"
         output_path.mkdir(parents=True, exist_ok=True)
-        top_path.write_text("[ system ]\nPHB4\n")
-        gro_path.write_text("PHB4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
+        top_path.write_text("[ system ]\nP3HB_4\n")
+        gro_path.write_text("P3HB_4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
         return SimpleNamespace(top_path=top_path, gro_path=gro_path)
 
     monkeypatch.setattr(
-        "iphasimulator.simulation.gromacs_runner.convert_amber_to_gromacs",
+        "iphasimulator.simulation_gromacs_runner.convert_amber_to_gromacs",
         fake_convert_amber_to_gromacs,
     )
 
@@ -214,7 +214,7 @@ def test_prepare_gromacs_run_folder_writes_charmm_gui_membrane_workflow(
         prmtop_path,
         inpcrd_path,
         tmp_path / "gromacs",
-        "PHB4",
+        "P3HB_4",
         workflow_type="charmm_gui_membrane",
         runner=_fake_editconf_runner,
     )
@@ -231,10 +231,10 @@ def test_prepare_gromacs_run_folder_writes_charmm_gui_membrane_workflow(
 def test_prepare_gromacs_run_folder_rejects_unknown_workflow(tmp_path):
     with pytest.raises(ValueError, match="workflow_type"):
         prepare_gromacs_run_folder(
-            tmp_path / "PHB4.prmtop",
-            tmp_path / "PHB4.inpcrd",
+            tmp_path / "P3HB_4.prmtop",
+            tmp_path / "P3HB_4.inpcrd",
             tmp_path / "gromacs",
-            "PHB4",
+            "P3HB_4",
             workflow_type="unknown",
         )
 
@@ -290,8 +290,8 @@ def test_prepare_gromacs_run_folder_raises_for_missing_topology_include(
     monkeypatch,
     tmp_path,
 ):
-    prmtop_path = tmp_path / "PHB4.prmtop"
-    inpcrd_path = tmp_path / "PHB4.inpcrd"
+    prmtop_path = tmp_path / "P3HB_4.prmtop"
+    inpcrd_path = tmp_path / "P3HB_4.inpcrd"
     prmtop_path.write_text("topology")
     inpcrd_path.write_text("coordinates")
 
@@ -301,11 +301,11 @@ def test_prepare_gromacs_run_folder_raises_for_missing_topology_include(
         gro_path = output_path / f"{system_name}.gro"
         output_path.mkdir(parents=True, exist_ok=True)
         top_path.write_text('#include "toppar/missing.itp"\n')
-        gro_path.write_text("PHB4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
+        gro_path.write_text("P3HB_4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n")
         return SimpleNamespace(top_path=top_path, gro_path=gro_path)
 
     monkeypatch.setattr(
-        "iphasimulator.simulation.gromacs_runner.convert_amber_to_gromacs",
+        "iphasimulator.simulation_gromacs_runner.convert_amber_to_gromacs",
         fake_convert_amber_to_gromacs,
     )
 
@@ -314,7 +314,7 @@ def test_prepare_gromacs_run_folder_raises_for_missing_topology_include(
             prmtop_path,
             inpcrd_path,
             tmp_path / "gromacs",
-            "PHB4",
+            "P3HB_4",
             runner=_fake_editconf_runner,
         )
 
@@ -389,7 +389,7 @@ def test_create_gromacs_simulation_box_runs_editconf_from_output_folder(tmp_path
     input_gro = tmp_path / "step5_input.gro"
     output_gro = tmp_path / "step5_input_box.gro"
     input_gro.write_text(
-        "PHB4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n"
+        "P3HB_4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.0   1.0   1.0\n"
     )
     calls = []
 
@@ -421,7 +421,7 @@ def test_validate_gromacs_box_against_mdp_warns_when_cutoff_too_large(tmp_path):
     gro_path = tmp_path / "small.gro"
     mdp_path = tmp_path / "minim.mdp"
     gro_path.write_text(
-        "PHB4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.5   2.4   2.4\n"
+        "P3HB_4\n1\n    1PHA      C1    1   0.0   0.0   0.0\n   1.5   2.4   2.4\n"
     )
     mdp_path.write_text("rlist = 1.0\nrcoulomb = 1.0\nrvdw = 1.0\n")
 

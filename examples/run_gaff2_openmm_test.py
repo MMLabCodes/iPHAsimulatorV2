@@ -6,20 +6,20 @@ from dataclasses import dataclass
 from pathlib import Path
 import argparse
 
-from iphasimulator.parameterization.gaff2 import (
+from iphasimulator.parameterization_gaff2 import (
     AmberToolsError,
     ambertools_available,
     parameterize_gaff2,
 )
-from iphasimulator.simulation.openmm_amber_runner import (
+from iphasimulator.simulation_openmm_amber_runner import (
     OpenMMRunnerError,
     openmm_available,
     run_openmm_with_amber_topology,
 )
 
 
-TARGETS = ("PHB4", "PHB8", "PHO4", "PHO8", "PHDD4", "PHDD8")
-DEFAULT_TARGETS = ("PHB4", "PHO4", "PHDD4")
+TARGETS = ("P3HB_4", "P3HB_8", "P3HO_4", "P3HO_8", "P3HDD_4", "P3HDD_8")
+DEFAULT_TARGETS = ("P3HB_4", "P3HO_4", "P3HDD_4")
 CHARGE_METHODS = ("bcc", "gas", "mul")
 
 
@@ -47,10 +47,8 @@ def _find_sdf(output_root: Path, name: str) -> Path | None:
     candidates = [
         structures_root / name / f"{name}.sdf",
         structures_root / f"{name}.sdf",
-        structures_root / f"{name}_R.sdf",
         output_root / name / f"{name}.sdf",
         output_root / f"{name}.sdf",
-        output_root / f"{name}_R.sdf",
     ]
     for candidate in candidates:
         if candidate.exists():
@@ -151,8 +149,8 @@ def parse_args() -> argparse.Namespace:
         action="append",
         choices=TARGETS,
         help=(
-            "Run one target. May be passed more than once. Defaults to PHB4, "
-            "PHO4, and PHDD4."
+            "Run one target. May be passed more than once. Defaults to P3HB_4, "
+            "P3HO_4, and P3HDD_4."
         ),
     )
     parser.add_argument(

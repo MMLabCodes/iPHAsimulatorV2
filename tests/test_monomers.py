@@ -4,21 +4,23 @@ from rdkit import Chem
 from iphasimulator.monomers import MONOMERS, Monomer, get_monomer
 
 
-def test_monomer_registry_contains_v01_monomers():
+def test_monomer_registry_contains_canonical_monomers():
     assert set(MONOMERS) == {
-        "PHB",
-        "PHV",
-        "PHHx",
-        "PHHep",
-        "PHO",
-        "PHN",
-        "PHD",
-        "PHDD",
+        "3HB",
+        "3HV",
+        "3HHx",
+        "3HHep",
+        "3HO",
+        "3HN",
+        "3HD",
+        "3HDD",
     }
     assert all(isinstance(monomer, Monomer) for monomer in MONOMERS.values())
 
 
-@pytest.mark.parametrize("code", ["PHB", "PHV", "PHHx", "PHHep", "PHO", "PHN", "PHD", "PHDD"])
+@pytest.mark.parametrize(
+    "code", ["3HB", "3HV", "3HHx", "3HHep", "3HO", "3HN", "3HD", "3HDD"]
+)
 def test_registered_monomers_have_valid_chiral_smiles(code):
     monomer = MONOMERS[code]
     mol = Chem.MolFromSmiles(monomer.chiral_smiles)
@@ -32,14 +34,14 @@ def test_registered_monomers_have_valid_chiral_smiles(code):
 @pytest.mark.parametrize(
     ("code", "polymer_name", "residue_code", "side_chain_length"),
     [
-        ("PHB", "poly(3-hydroxybutyrate)", "PHB", 1),
-        ("PHV", "poly(3-hydroxyvalerate)", "PHV", 2),
-        ("PHHx", "poly(3-hydroxyhexanoate)", "PHHx", 3),
-        ("PHHep", "poly(3-hydroxyheptanoate)", "PHHep", 4),
-        ("PHO", "poly(3-hydroxyoctanoate)", "PHO", 5),
-        ("PHN", "poly(3-hydroxynonanoate)", "PHN", 6),
-        ("PHD", "poly(3-hydroxydecanoate)", "PHD", 7),
-        ("PHDD", "poly(3-hydroxydodecanoate)", "PHDD", 9),
+        ("3HB", "poly(3-hydroxybutyrate)", "3HB", 1),
+        ("3HV", "poly(3-hydroxyvalerate)", "3HV", 2),
+        ("3HHx", "poly(3-hydroxyhexanoate)", "3HHx", 3),
+        ("3HHep", "poly(3-hydroxyheptanoate)", "3HHep", 4),
+        ("3HO", "poly(3-hydroxyoctanoate)", "3HO", 5),
+        ("3HN", "poly(3-hydroxynonanoate)", "3HN", 6),
+        ("3HD", "poly(3-hydroxydecanoate)", "3HD", 7),
+        ("3HDD", "poly(3-hydroxydodecanoate)", "3HDD", 9),
     ],
 )
 def test_registered_monomers_store_expected_metadata(
@@ -53,10 +55,26 @@ def test_registered_monomers_store_expected_metadata(
     assert monomer.expected_stereochemistry == "R"
 
 
+def test_registered_monomers_store_head_main_tail_residue_codes():
+    monomer = MONOMERS["3HB"]
+
+    assert monomer.head_residue_code == "3HB_H"
+    assert monomer.main_residue_code == "3HB_M"
+    assert monomer.tail_residue_code == "3HB_T"
+
+
 def test_get_monomer_is_case_insensitive():
-    assert get_monomer("phb") is MONOMERS["PHB"]
-    assert get_monomer("phhx") is MONOMERS["PHHx"]
-    assert get_monomer("phhep") is MONOMERS["PHHep"]
+    assert get_monomer("3hb") is MONOMERS["3HB"]
+    assert get_monomer("3hhx") is MONOMERS["3HHx"]
+    assert get_monomer("3hhep") is MONOMERS["3HHep"]
+
+
+@pytest.mark.parametrize(
+    ("legacy_name", "registry_code"),
+    [("PHB", "3HB"), ("PHO", "3HO"), ("PHDD", "3HDD")],
+)
+def test_get_monomer_accepts_legacy_common_names(legacy_name, registry_code):
+    assert get_monomer(legacy_name) is MONOMERS[registry_code]
 
 
 def test_get_monomer_rejects_unknown_code():

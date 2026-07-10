@@ -6,22 +6,22 @@ from dataclasses import dataclass
 from pathlib import Path
 import argparse
 
-from iphasimulator.parameterization.gaff2 import (
+from iphasimulator.parameterization_gaff2 import (
     AmberToolsError,
     parameterize_gaff2,
 )
-from iphasimulator.simulation.gromacs_runner import (
+from iphasimulator.simulation_gromacs_runner import (
     prepare_gromacs_run_folder,
     write_gromacs_solvation_files,
 )
-from iphasimulator.simulation.openmm_amber_runner import (
+from iphasimulator.simulation_openmm_amber_runner import (
     OpenMMRunnerError,
     openmm_available,
     run_openmm_with_amber_topology,
 )
 
 
-SYSTEMS = ("PHB4", "PHB8", "PHO4", "PHO8", "PHDD4", "PHDD8")
+SYSTEMS = ("P3HB_4", "P3HB_8", "P3HO_4", "P3HO_8", "P3HDD_4", "P3HDD_8")
 CHARGE_METHODS = ("bcc", "gas", "mul")
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -58,10 +58,8 @@ class BenchmarkTarget:
 def _find_sdf(output_root: Path, system_name: str) -> Path | None:
     structures_root = output_root / "polymer_structures"
     candidates = (
-        structures_root / f"{system_name}_R.sdf",
         structures_root / f"{system_name}.sdf",
         structures_root / system_name / f"{system_name}.sdf",
-        output_root / f"{system_name}_R.sdf",
         output_root / f"{system_name}.sdf",
         output_root / system_name / f"{system_name}.sdf",
     )
@@ -273,7 +271,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         nargs="+",
         choices=SYSTEMS,
         help=(
-            "Run one or more systems, for example --systems PHB4 PHB8. "
+            "Run one or more systems, for example --systems P3HB_4 P3HB_8. "
             "Defaults to all six if no system option is provided."
         ),
     )

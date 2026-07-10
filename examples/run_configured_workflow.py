@@ -7,8 +7,8 @@ import argparse
 
 from iphasimulator.export import to_pdb, to_sdf
 from iphasimulator.build import build_pha_chain
-from iphasimulator.parameterization.gaff2 import parameterize_gaff2
-from iphasimulator.simulation.openmm_amber_runner import run_openmm_with_amber_topology
+from iphasimulator.parameterization_gaff2 import parameterize_gaff2
+from iphasimulator.simulation_openmm_amber_runner import run_openmm_with_amber_topology
 from iphasimulator.workflows import (
     load_workflow_config,
     render_slurm_script,

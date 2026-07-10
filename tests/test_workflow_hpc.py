@@ -13,7 +13,7 @@ def test_load_workflow_config_applies_defaults(tmp_path):
         "\n".join(
             [
                 "targets:",
-                "  - monomer: PHB",
+                "  - monomer: 3HB",
                 "    degree: 4",
                 "stages:",
                 "  build: true",
@@ -26,7 +26,7 @@ def test_load_workflow_config_applies_defaults(tmp_path):
 
     config = load_workflow_config(config_path)
 
-    assert config["gaff2"]["charge_method"] == "gas"
+    assert config["gaff2"]["charge_method"] == "abcg2"
     assert config["openmm"]["nvt_steps"] == 100
     assert config["stages"]["gaff2"] is False
 
@@ -34,34 +34,34 @@ def test_load_workflow_config_applies_defaults(tmp_path):
 def test_targets_from_config_and_stage_name():
     config = {
         "targets": [
-            {"monomer": "PHB", "degree": 4, "stereochemistry": "R"},
+            {"monomer": "3HB", "degree": 4, "stereochemistry": "R"},
         ]
     }
 
     targets = targets_from_config(config)
 
-    assert targets[0].name == "PHB4_R"
-    assert target_stage_name(targets[0]) == "PHB4"
+    assert targets[0].name == "P3HB_4"
+    assert target_stage_name(targets[0]) == "P3HB_4"
 
 
 def test_workflow_plan_respects_enabled_stages():
     config = {
         "output_root": "examples/output",
-        "targets": [{"monomer": "PHB", "degree": 4}],
+        "targets": [{"monomer": "3HB", "degree": 4}],
         "stages": {"build": True, "gaff2": False, "openmm": True},
     }
 
     plan = workflow_plan(config)
 
     assert plan == [
-        "build PHB4_R -> examples/output/polymer_structures/PHB4_R.sdf",
-        "openmm dry PHB4 -> examples/output/md_tests/PHB4/openmm/dry_polymer",
+        "build P3HB_4 -> examples/output/polymer_structures/P3HB_4.sdf",
+        "openmm dry P3HB_4 -> examples/output/md_tests/P3HB_4/openmm/dry_polymer",
     ]
 
 
 def test_render_slurm_script_contains_configured_command(tmp_path):
     config_path = tmp_path / "workflow.yaml"
-    config_path.write_text("targets:\n  - monomer: PHB\n    degree: 4\n")
+    config_path.write_text("targets:\n  - monomer: 3HB\n    degree: 4\n")
     config = load_workflow_config(config_path)
 
     script = render_slurm_script(

@@ -37,7 +37,7 @@ def _assert_valid_chain(mol, n, stereochemistry, side_chain_carbons):
     ],
 )
 def test_build_phb_r_chain(n, formula):
-    mol = build_pha_chain("PHB", n)
+    mol = build_pha_chain("3HB", n)
 
     _assert_valid_chain(mol, n, "R", side_chain_carbons=1)
     assert rdMolDescriptors.CalcMolFormula(mol) == formula
@@ -46,12 +46,12 @@ def test_build_phb_r_chain(n, formula):
 @pytest.mark.parametrize(
     ("monomer", "n", "side_chain_carbons"),
     [
-        ("PHB", 4, 1),
-        ("PHB", 8, 1),
-        ("PHO", 4, 5),
-        ("PHO", 8, 5),
-        ("PHDD", 4, 9),
-        ("PHDD", 8, 9),
+        ("3HB", 4, 1),
+        ("3HB", 8, 1),
+        ("3HO", 4, 5),
+        ("3HO", 8, 5),
+        ("3HDD", 4, 9),
+        ("3HDD", 8, 9),
     ],
 )
 def test_build_picture_polymer_r_chains(monomer, n, side_chain_carbons):
@@ -63,14 +63,14 @@ def test_build_picture_polymer_r_chains(monomer, n, side_chain_carbons):
 @pytest.mark.parametrize(
     ("monomer", "side_chain_carbons"),
     [
-        ("PHB", 1),
-        ("PHV", 2),
-        ("PHHx", 3),
-        ("PHHep", 4),
-        ("PHO", 5),
-        ("PHN", 6),
-        ("PHD", 7),
-        ("PHDD", 9),
+        ("3HB", 1),
+        ("3HV", 2),
+        ("3HHx", 3),
+        ("3HHep", 4),
+        ("3HO", 5),
+        ("3HN", 6),
+        ("3HD", 7),
+        ("3HDD", 9),
     ],
 )
 def test_build_curated_common_pha_library(monomer, side_chain_carbons):
@@ -88,7 +88,7 @@ def test_build_pha_by_sidechain_generates_linear_r_chains(side_chain_carbons):
 
 def test_build_pha_by_sidechain_matches_curated_pho():
     generic = build_pha_by_sidechain(5, 4)
-    curated = build_pha_chain("PHO", 4)
+    curated = build_pha_chain("3HO", 4)
 
     assert Chem.MolToSmiles(generic, isomericSmiles=True) == Chem.MolToSmiles(
         curated, isomericSmiles=True
@@ -118,7 +118,7 @@ def test_build_custom_pha_accepts_branched_unsaturated_and_functionalised_monome
 @pytest.mark.parametrize("n", [0, -1, 1.5, True])
 def test_build_phb_rejects_invalid_repeat_units(n):
     with pytest.raises(ValueError, match="repeat units"):
-        build_pha_chain("PHB", n)
+        build_pha_chain("3HB", n)
 
 
 def test_build_rejects_invalid_monomer_name():
@@ -128,7 +128,7 @@ def test_build_rejects_invalid_monomer_name():
 
 def test_build_rejects_invalid_stereochemistry():
     with pytest.raises(ValueError, match="Stereochemistry must be R or S"):
-        build_pha_chain("PHB", 4, "racemic")
+        build_pha_chain("3HB", 4, "racemic")
 
 
 @pytest.mark.parametrize("side_chain_carbons", [0, -1, 1.5, True])

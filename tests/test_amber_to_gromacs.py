@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from iphasimulator.conversion import convert_amber_to_gromacs
-from iphasimulator.conversion.amber_to_gromacs import _normalize_structure_charge
+from iphasimulator.conversion_amber_to_gromacs import convert_amber_to_gromacs
+from iphasimulator.conversion_amber_to_gromacs import _normalize_structure_charge
 
 
 def test_convert_amber_to_gromacs_raises_clear_error_without_parmed(
@@ -18,7 +18,7 @@ def test_convert_amber_to_gromacs_raises_clear_error_without_parmed(
             str(tmp_path / "missing.prmtop"),
             str(tmp_path / "missing.inpcrd"),
             str(tmp_path / "gromacs"),
-            "PHB4",
+            "P3HB_4",
         )
 
 
@@ -26,8 +26,8 @@ def test_convert_amber_to_gromacs_writes_top_and_gro_with_parmed(
     monkeypatch,
     tmp_path,
 ):
-    prmtop_path = tmp_path / "PHB4.prmtop"
-    inpcrd_path = tmp_path / "PHB4.inpcrd"
+    prmtop_path = tmp_path / "P3HB_4.prmtop"
+    inpcrd_path = tmp_path / "P3HB_4.inpcrd"
     prmtop_path.write_text("topology")
     inpcrd_path.write_text("coordinates")
     saved_paths = []
@@ -58,11 +58,11 @@ def test_convert_amber_to_gromacs_writes_top_and_gro_with_parmed(
         str(prmtop_path),
         str(inpcrd_path),
         str(tmp_path / "gromacs"),
-        "PHB4",
+        "P3HB_4",
     )
 
-    assert outputs.top_path == tmp_path / "gromacs" / "PHB4.top"
-    assert outputs.gro_path == tmp_path / "gromacs" / "PHB4.gro"
+    assert outputs.top_path == tmp_path / "gromacs" / "P3HB_4.top"
+    assert outputs.gro_path == tmp_path / "gromacs" / "P3HB_4.gro"
     assert outputs.top_path.exists()
     assert outputs.gro_path.exists()
     assert saved_paths == [

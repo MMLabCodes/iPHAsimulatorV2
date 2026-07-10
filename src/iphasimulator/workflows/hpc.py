@@ -13,9 +13,9 @@ from iphasimulator.workflows.validation import ValidationTarget
 DEFAULT_WORKFLOW_CONFIG: dict[str, Any] = {
     "output_root": "examples/output",
     "targets": [
-        {"monomer": "PHB", "degree": 4, "stereochemistry": "R"},
-        {"monomer": "PHO", "degree": 4, "stereochemistry": "R"},
-        {"monomer": "PHDD", "degree": 4, "stereochemistry": "R"},
+        {"monomer": "3HB", "degree": 4, "stereochemistry": "R"},
+        {"monomer": "3HO", "degree": 4, "stereochemistry": "R"},
+        {"monomer": "3HDD", "degree": 4, "stereochemistry": "R"},
     ],
     "stages": {
         "build": True,
@@ -23,7 +23,7 @@ DEFAULT_WORKFLOW_CONFIG: dict[str, Any] = {
         "openmm": True,
     },
     "gaff2": {
-        "charge_method": "gas",
+        "charge_method": "abcg2",
         "net_charge": 0,
         "residue_name": "PHA",
         "atom_count_warning_threshold": 120,
@@ -95,8 +95,7 @@ def targets_from_config(config: dict[str, Any]) -> tuple[ValidationTarget, ...]:
 def target_stage_name(target: ValidationTarget) -> str:
     """Return the short target name used for MD output directories."""
 
-    suffix = f"_{target.stereochemistry}"
-    return target.name.removesuffix(suffix)
+    return target.name
 
 
 def workflow_plan(config: dict[str, Any]) -> list[str]:
@@ -113,7 +112,10 @@ def workflow_plan(config: dict[str, Any]) -> list[str]:
                 f"build {target.name} -> {structure_root / (target.name + '.sdf')}"
             )
         if stages.get("gaff2", False):
-            plan.append(f"gaff2 {target.name} -> {output_root / 'md_tests' / stage_name / 'gaff2'}")
+            plan.append(
+                f"gaff2 {target.name} -> "
+                f"{output_root / 'md_tests' / stage_name / 'gaff2'}"
+            )
         if stages.get("openmm", False):
             plan.append(
                 f"openmm dry {stage_name} -> "

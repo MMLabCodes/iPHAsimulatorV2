@@ -9,6 +9,7 @@ from rdkit import Chem
 
 from iphasimulator.build import build_pha_chain
 from iphasimulator.export import to_pdb, to_sdf
+from iphasimulator.naming import oligomer_name
 
 
 @dataclass(frozen=True)
@@ -21,19 +22,19 @@ class ValidationTarget:
 
     @property
     def name(self) -> str:
-        return f"{self.monomer}{self.degree}_{self.stereochemistry}"
+        return oligomer_name(self.monomer, self.degree)
 
 
 DEFAULT_VALIDATION_TARGETS: tuple[ValidationTarget, ...] = (
-    ValidationTarget("PHB", 4),
-    ValidationTarget("PHO", 4),
-    ValidationTarget("PHDD", 4),
+    ValidationTarget("3HB", 4),
+    ValidationTarget("3HO", 4),
+    ValidationTarget("3HDD", 4),
 )
 
 LARGE_VALIDATION_TARGETS: tuple[ValidationTarget, ...] = (
-    ValidationTarget("PHB", 8),
-    ValidationTarget("PHO", 8),
-    ValidationTarget("PHDD", 8),
+    ValidationTarget("3HB", 8),
+    ValidationTarget("3HO", 8),
+    ValidationTarget("3HDD", 8),
 )
 
 
