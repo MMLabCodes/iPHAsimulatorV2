@@ -301,6 +301,16 @@ quit
         workdir=inputs_dir,
         log_file=log_file,
     )
+    
+    number_of_atoms = count_atoms_from_amber_topology(
+        prmtop
+        )
+
+    paths.register_md_system(
+        system_name=system_name,
+        system_type="dry",
+        number_of_atoms=number_of_atoms,
+        )
 
     return {
         "system_name": system_name,
@@ -315,6 +325,7 @@ quit
         "intleap": intleap,
         "log_file": log_file,
         "box_radius": box_radius,
+        "number_of_atoms": number_of_atoms,
     }
 
 
@@ -401,6 +412,16 @@ quit
         workdir=inputs_dir,
         log_file=log_file,
     )
+    
+    number_of_atoms = count_atoms_from_amber_topology(
+        prmtop
+        )
+
+    paths.register_md_system(
+        system_name=system_name,
+        system_type="solvated",
+        number_of_atoms=number_of_atoms,
+        )
 
     return {
         "system_name": system_name,
@@ -417,6 +438,7 @@ quit
         "water_leaprc": water_leaprc,
         "water_box": water_box,
         "box_radius": box_radius,
+        "number_of_atoms": number_of_atoms,
     }
 
 
@@ -574,6 +596,16 @@ quit
         workdir=inputs_dir,
         log_file=log_file,
     )
+    
+    number_of_atoms = count_atoms_from_amber_topology(
+        prmtop
+        )
+
+    paths.register_md_system(
+        system_name=system_name,
+        system_type="solvated_ions",
+        number_of_atoms=number_of_atoms,
+        )
 
     return {
         "system_name": system_name,
@@ -600,4 +632,5 @@ quit
         "neg_ion": neg_ion,
         "ion_conc": ion_conc,
         "num_ion_pairs": num_ion_pairs,
+        "number_of_atoms": number_of_atoms,
     }
