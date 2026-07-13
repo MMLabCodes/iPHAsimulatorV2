@@ -457,25 +457,22 @@ def build_solvated_PHA_ions(
 
     paths = PHAFileManager(root_dir)
 
-    ion_names = f"{pos_ion}{neg_ion}"
 
     system_name = paths.get_solvated_ions_PHA_system_name(
         polymer_name=polymer_name,
-        ion_names=ion_names,
+        salt=salt,
         ion_concentration=ion_conc,
     )
 
     output_dir = paths.create_solvated_ions_PHA_dir(
         polymer_name=polymer_name,
-        ion_names=ion_names,
-        ion_concentration=ion_conc,
-    ).resolve()
+        salt=salt,
+        ion_concentration=ion_conc).resolve()
 
     inputs_dir = paths.get_solvated_ions_PHA_inputs_dir(
         polymer_name=polymer_name,
-        ion_names=ion_names,
-        ion_concentration=ion_conc,
-    ).resolve()
+        salt=salt,
+        ion_concentration=ion_conc).resolve()
 
     prepared = prepare_single_system_inputs(
         paths=paths,

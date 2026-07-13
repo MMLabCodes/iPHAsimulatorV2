@@ -323,51 +323,38 @@ class PHAFileManager:
         return system_dir
 
     # ======================================================
-    # Solvated and ionised single-chain PHA systems
+    # Solvated + ionised single-chain PHA systems
     # ======================================================
 
     def get_PHA_solvated_ions_dir(self):
         """
-        Return the parent directory for solvated and ionised PHA systems.
+        Return the parent directory containing all solvated + ionised PHA systems.
         """
-
         return self.PHA_solvated_ions_dir
-
-    def format_ion_label(self, ion_names):
-        """
-        Convert ion names into a filesystem-safe label.
-
-        Example
-        -------
-        K+Cl- -> KpClm
-        """
-
-        return (
-            str(ion_names)
-            .replace(" ", "")
-            .replace("+", "p")
-            .replace("-", "m")
-        )
 
     def format_concentration_label(self, ion_concentration):
         """
-        Convert a concentration into a filesystem-friendly label.
+        Convert an ion concentration into a filename-safe label.
 
-        Examples
-        --------
-        0.15 -> "0_15"
-        1.00 -> "1_00"
+        Example
+        -------
+        0.15 -> 0_15
         """
         return str(ion_concentration).replace(".", "_")
 
     def get_solvated_ions_PHA_system_name(
-
         self,
         polymer_name,
         salt,
         ion_concentration,
     ):
+        """
+        Return the standard name for a solvated + ionised PHA system.
 
+        Example
+        -------
+        P3HB_10_solvated_KCl_0_15
+        """
         concentration_label = self.format_concentration_label(
             ion_concentration
         )
@@ -380,13 +367,16 @@ class PHAFileManager:
     def get_solvated_ions_PHA_dir(
         self,
         polymer_name,
-        ion_names,
+        salt,
         ion_concentration,
     ):
+        """
+        Return the directory for a solvated + ionised PHA system.
+        """
         system_name = self.get_solvated_ions_PHA_system_name(
-            polymer_name,
-            ion_names,
-            ion_concentration,
+            polymer_name=polymer_name,
+            salt=salt,
+            ion_concentration=ion_concentration,
         )
 
         return self.get_PHA_solvated_ions_dir() / system_name
@@ -394,14 +384,17 @@ class PHAFileManager:
     def get_solvated_ions_PHA_inputs_dir(
         self,
         polymer_name,
-        ion_names,
+        salt,
         ion_concentration,
     ):
+        """
+        Return the inputs directory for a solvated + ionised PHA system.
+        """
         return (
             self.get_solvated_ions_PHA_dir(
-                polymer_name,
-                ion_names,
-                ion_concentration,
+                polymer_name=polymer_name,
+                salt=salt,
+                ion_concentration=ion_concentration,
             )
             / "inputs"
         )
@@ -409,14 +402,17 @@ class PHAFileManager:
     def get_solvated_ions_PHA_simulations_dir(
         self,
         polymer_name,
-        ion_names,
+        salt,
         ion_concentration,
     ):
+        """
+        Return the simulations directory for a solvated + ionised PHA system.
+        """
         return (
             self.get_solvated_ions_PHA_dir(
-                polymer_name,
-                ion_names,
-                ion_concentration,
+                polymer_name=polymer_name,
+                salt=salt,
+                ion_concentration=ion_concentration,
             )
             / "simulations"
         )
@@ -424,13 +420,16 @@ class PHAFileManager:
     def create_solvated_ions_PHA_dir(
         self,
         polymer_name,
-        ion_names,
+        salt,
         ion_concentration,
     ):
+        """
+        Create the directory structure for a solvated + ionised PHA system.
+        """
         system_dir = self.get_solvated_ions_PHA_dir(
-            polymer_name,
-            ion_names,
-            ion_concentration,
+            polymer_name=polymer_name,
+            salt=salt,
+            ion_concentration=ion_concentration,
         )
 
         system_dir.mkdir(
@@ -439,25 +438,24 @@ class PHAFileManager:
         )
 
         self.get_solvated_ions_PHA_inputs_dir(
-            polymer_name,
-            ion_names,
-            ion_concentration,
+            polymer_name=polymer_name,
+            salt=salt,
+            ion_concentration=ion_concentration,
         ).mkdir(
             parents=True,
             exist_ok=True,
         )
 
         self.get_solvated_ions_PHA_simulations_dir(
-            polymer_name,
-            ion_names,
-            ion_concentration,
+            polymer_name=polymer_name,
+            salt=salt,
+            ion_concentration=ion_concentration,
         ).mkdir(
             parents=True,
             exist_ok=True,
         )
 
         return system_dir
-
     # ======================================================
     # PHA melts
     # ======================================================
