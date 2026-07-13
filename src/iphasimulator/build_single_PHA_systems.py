@@ -208,21 +208,27 @@ def build_dry_PHA(
     intleap = output_dir / f"{system_name}.intleap"
 
     tleap_content = f"""
+
 source leaprc.{forcefield}
 
-loadamberprep {params["head_prepin"].name}
-loadamberprep {params["mainchain_prepin"].name}
-loadamberprep {params["tail_prepin"].name}
-loadamberparams {params["frcmod"].name}
+loadamberprep {params["head_prepin"]}
 
-polymer = loadpdb {local_pdb.name}
+loadamberprep {params["mainchain_prepin"]}
+
+loadamberprep {params["tail_prepin"]}
+
+loadamberparams {params["frcmod"]}
+
+polymer = loadpdb {built_files["pdb"]}
 
 setBox polymer centers {box_radius}
 
-saveamberparm polymer {prmtop.name} {rst7.name}
-savepdb polymer {pdb.name}
+saveamberparm polymer {prmtop} {rst7}
+
+savepdb polymer {pdb}
 
 quit
+
 """
 
     write_tleap_file(intleap, tleap_content)
