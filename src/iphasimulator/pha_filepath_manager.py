@@ -814,7 +814,7 @@ class PHAFileManager:
             directory.glob(f"*.{extension}")
         )
     
-    def count_atoms_from_amber_topology(prmtop_path):
+    def count_atoms_from_amber_topology(self, prmtop_path):
         """
         Return the number of atoms stored in an Amber topology.
         """
