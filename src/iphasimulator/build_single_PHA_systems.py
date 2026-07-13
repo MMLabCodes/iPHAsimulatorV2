@@ -302,9 +302,7 @@ quit
         log_file=log_file,
     )
     
-    number_of_atoms = count_atoms_from_amber_topology(
-        prmtop
-        )
+    number_of_atoms = paths.count_atoms_from_amber_topology(prmtop)
 
     paths.register_md_system(
         system_name=system_name,
@@ -413,9 +411,7 @@ quit
         log_file=log_file,
     )
     
-    number_of_atoms = count_atoms_from_amber_topology(
-        prmtop
-        )
+    number_of_atoms = paths.count_atoms_from_amber_topology(prmtop)
 
     paths.register_md_system(
         system_name=system_name,
@@ -597,9 +593,7 @@ quit
         log_file=log_file,
     )
     
-    number_of_atoms = count_atoms_from_amber_topology(
-        prmtop
-        )
+    number_of_atoms = paths.count_atoms_from_amber_topology(prmtop)
 
     paths.register_md_system(
         system_name=system_name,
