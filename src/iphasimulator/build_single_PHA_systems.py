@@ -7,7 +7,6 @@ PHA polymers.
 """
 
 from pathlib import Path
-import shutil
 import subprocess
 
 from src.iphasimulator.pha_filepath_manager import PHAFileManager
@@ -105,33 +104,32 @@ def calculate_ion_pairs_from_rst7(rst7_path, concentration_molar):
     return n_pairs
 
 
-def prepare_single_system_inputs(paths, polymer_name, output_dir):
+def prepare_single_system_inputs(paths, polymer_name):
     """
-    Copy the already-built polymer PDB and PHA parameter files locally.
+    Locate the built polymer and parameter files.
 
-    Expected monomer-unit parameter filenames now follow:
-
-        hP3HB.prepin
-        mP3HB.prepin
-        tP3HB.prepin
-
-    The filepath manager should return these as:
-
-        head_prepin
-        mainchain_prepin
-        tail_prepin
-        frcmod
+    Files are not copied. Absolute paths are returned for use inside tleap.
     """
 
-    PHA_type, length = paths.parse_built_PHA_name(polymer_name)
+    PHA_type, length = paths.parse_built_PHA_name(
+        polymer_name
+    )
 
-    built_files = paths.get_built_PHA_amber_files(polymer_name)
+    built_files = paths.get_built_PHA_amber_files(
+        polymer_name
+    )
 
-    parameter_files = paths.get_PHA_monomer_unit_files(PHA_type)
+    parameter_files = paths.get_PHA_monomer_unit_files(
+        PHA_type
+    )
 
     check_required_files(
         built_files,
-        ["pdb", "prmtop", "rst7"],
+        [
+            "pdb",
+            "prmtop",
+            "rst7",
+        ],
     )
 
     check_required_files(
@@ -144,41 +142,17 @@ def prepare_single_system_inputs(paths, polymer_name, output_dir):
         ],
     )
 
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    local_pdb = output_dir / built_files["pdb"].name
-
-    shutil.copyfile(
-        built_files["pdb"],
-        local_pdb,
-    )
-
-    local_parameter_files = {}
-
-    for key in [
-        "head_prepin",
-        "mainchain_prepin",
-        "tail_prepin",
-        "frcmod",
-    ]:
-        source_file = parameter_files[key]
-        local_file = output_dir / source_file.name
-
-        shutil.copyfile(
-            source_file,
-            local_file,
-        )
-
-        local_parameter_files[key] = local_file
-
     return {
         "PHA_type": PHA_type,
         "length": length,
-        "built_files": built_files,
-        "parameter_files": parameter_files,
-        "local_pdb": local_pdb,
-        "local_parameter_files": local_parameter_files,
+        "built_files": {
+            key: Path(value).resolve()
+            for key, value in built_files.items()
+        },
+        "parameter_files": {
+            key: Path(value).resolve()
+            for key, value in parameter_files.items()
+        },
     }
 
 
