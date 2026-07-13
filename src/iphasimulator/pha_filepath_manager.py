@@ -831,6 +831,67 @@ class PHAFileManager:
             )
 
         return len(structure.atoms)
+    
+    def count_atoms_from_gromacs_gro(
+        self,
+        gro_path,
+    ):
+        """
+        Count atoms in a GROMACS GRO coordinate file.
+
+        The second line of a GRO file contains the total number of atoms.
+
+        Parameters
+        ----------
+        gro_path : str or pathlib.Path
+            Path to the GROMACS GRO coordinate file.
+
+        Returns
+        -------
+        int
+            Number of atoms in the system.
+        """
+
+        gro_path = Path(gro_path)
+
+        if not gro_path.exists():
+            raise FileNotFoundError(
+                f"GROMACS coordinate file not found:\n{gro_path}"
+            )
+
+        with open(
+            gro_path,
+            "r",
+            encoding="utf-8",
+            errors="replace",
+        ) as file:
+            title_line = file.readline()
+            atom_count_line = file.readline()
+
+        if not title_line or not atom_count_line:
+            raise ValueError(
+                f"GROMACS GRO file is incomplete:\n{gro_path}"
+            )
+
+        try:
+            number_of_atoms = int(
+                atom_count_line.strip()
+            )
+
+        except ValueError as error:
+            raise ValueError(
+                "Could not read the atom count from the second "
+                f"line of:\n{gro_path}"
+            ) from error
+
+        if number_of_atoms <= 0:
+            raise ValueError(
+                f"Invalid atom count in GRO file: {number_of_atoms}"
+            )
+
+        print(f"Number of atoms: {number_of_atoms}")
+
+        return number_of_atoms
 
 class PHAResidueCodeManager:
     """
