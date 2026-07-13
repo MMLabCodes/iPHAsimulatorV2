@@ -15,11 +15,20 @@ from src.iphasimulator.pha_filepath_manager import PHAFileManager
 AVOGADRO = 6.02214076e23
 
 
-def run_tleap(intleap_file, workdir):
-    intleap_file = Path(intleap_file)
-    workdir = Path(workdir)
+def run_tleap(
+    intleap_file,
+    workdir,
+    log_file,
+):
+    intleap_file = Path(intleap_file).resolve()
+    workdir = Path(workdir).resolve()
+    log_file = Path(log_file).resolve()
 
-    command = ["tleap", "-f", intleap_file.name]
+    command = [
+        "tleap",
+        "-f",
+        str(intleap_file),
+    ]
 
     print("\nRunning tleap:")
     print(" ".join(command))
@@ -35,19 +44,25 @@ def run_tleap(intleap_file, workdir):
         errors="replace",
     )
 
-    log_file = workdir / f"{intleap_file.stem}.log"
+    log_file.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    with open(log_file, "w") as f:
-        f.write("STDOUT\n")
-        f.write(result.stdout)
-        f.write("\nSTDERR\n")
-        f.write(result.stderr)
+    with open(log_file, "w") as output:
+        output.write("STDOUT\n")
+        output.write(result.stdout)
+
+        output.write("\n\nSTDERR\n")
+        output.write(result.stderr)
 
     print("Return code:", result.returncode)
     print("Log file:", log_file)
 
     if result.returncode != 0:
-        raise RuntimeError(f"tleap failed. See log file:\n{log_file}")
+        raise RuntimeError(
+            f"tleap failed. See log file:\n{log_file}"
+        )
 
     return result
 
