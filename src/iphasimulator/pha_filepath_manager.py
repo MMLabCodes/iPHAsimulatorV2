@@ -75,6 +75,7 @@ class PHAFileManager:
                 parents=True,
                 exist_ok=True,
             )
+        self.ensure_md_systems_csv_exists()
 
     # ======================================================
     # Base files and directories
@@ -672,6 +673,36 @@ class PHAFileManager:
         ) as file:
             reader = csv.DictReader(file)
             return list(reader)
+        
+    def get_md_system(self, system_name):
+        """
+        Return one registered MD system from md_systems.csv.
+
+        Parameters
+        ----------
+        system_name : str
+            Name of the registered system.
+
+        Returns
+        -------
+        dict
+            Registry row for the requested system.
+
+        Raises
+        ------
+        KeyError
+            If the system is not registered.
+        """
+
+        systems = self.load_md_systems()
+
+        for system in systems:
+            if system["system_name"] == system_name:
+                return system
+
+        raise KeyError(
+            f"MD system is not registered: {system_name}"
+        )
 
     def md_system_exists(self, system_name):
         """
@@ -790,6 +821,188 @@ class PHAFileManager:
         )
 
         return new_row
+    
+    def get_md_system_files(
+        self,
+        system_name,
+        system_type,
+    ):
+        """
+        Return the main files and directories for a registered MD system.
+
+        Parameters
+        ----------
+        system_name : str
+            Full registered system name.
+
+            Examples
+            --------
+            P3HB_10_dry
+            P3HB_10_solvated
+            P3HB_10_solvated_KCl_0_15
+            25_P3HB_10_melt
+
+        system_type : str
+            One of:
+
+                dry
+                solvated
+                solvated_ions
+                melt
+
+        Returns
+        -------
+        dict
+            System directory, topology file, coordinate file, simulations
+            directory, and input format.
+        """
+
+        allowed_system_types = {
+            "dry",
+            "solvated",
+            "solvated_ions",
+            "melt",
+        }
+
+        if system_type not in allowed_system_types:
+            raise ValueError(
+                f"Unsupported MD system type: {system_type}\n"
+                f"Allowed values: {sorted(allowed_system_types)}"
+            )
+
+        if system_type == "dry":
+            system_dir = self.PHA_dry_dir / system_name
+            topology_file = system_dir / f"{system_name}.prmtop"
+            coordinate_file = system_dir / f"{system_name}.rst7"
+            simulations_dir = system_dir / "simulations"
+            topology_format = "amber"
+
+        elif system_type == "solvated":
+            system_dir = self.PHA_solvated_dir / system_name
+            topology_file = system_dir / f"{system_name}.prmtop"
+            coordinate_file = system_dir / f"{system_name}.rst7"
+            simulations_dir = system_dir / "simulations"
+            topology_format = "amber"
+
+        elif system_type == "solvated_ions":
+            system_dir = self.PHA_solvated_ions_dir / system_name
+            topology_file = system_dir / f"{system_name}.prmtop"
+            coordinate_file = system_dir / f"{system_name}.rst7"
+            simulations_dir = system_dir / "simulations"
+            topology_format = "amber"
+
+        elif system_type == "melt":
+            system_dir = self.PHA_melts_dir / system_name
+            topology_file = system_dir / f"{system_name}.top"
+            coordinate_file = system_dir / f"{system_name}.gro"
+            simulations_dir = system_dir / "simulations"
+            topology_format = "gromacs"
+
+        return {
+            "system_name": system_name,
+            "system_type": system_type,
+            "system_dir": system_dir,
+            "topology_file": topology_file,
+            "coordinate_file": coordinate_file,
+            "simulations_dir": simulations_dir,
+            "topology_format": topology_format,
+        }
+
+    def create_named_md_system_simulation_run_dir(
+        self,
+        system_name,
+        system_type,
+        run_name,
+    ):
+        """
+        Create a numbered simulation directory for any registered MD system.
+
+        Examples
+        --------
+        run_name="Test"
+
+            Test_01
+            Test_02
+            Test_03
+
+        run_name="Tg"
+
+            Tg_01
+            Tg_02
+        """
+
+        system_files = self.get_md_system_files(
+            system_name=system_name,
+            system_type=system_type,
+        )
+
+        simulations_dir = system_files["simulations_dir"]
+
+        simulations_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        run_name = run_name.strip().replace(" ", "_")
+
+        if not run_name:
+            raise ValueError(
+                "run_name cannot be empty."
+            )
+
+        counter = 1
+
+        while True:
+            candidate_dir = (
+                simulations_dir
+                / f"{run_name}_{counter:02d}"
+            )
+
+            if not candidate_dir.exists():
+                candidate_dir.mkdir(
+                    parents=True,
+                    exist_ok=False,
+                )
+
+                return candidate_dir
+
+            counter += 1
+            
+    def validate_md_system_files(
+        self,
+        system_name,
+        system_type,
+    ):
+        """
+        Check that the topology and coordinate files exist.
+        """
+
+        system_files = self.get_md_system_files(
+            system_name=system_name,
+            system_type=system_type,
+        )
+
+        missing_files = []
+
+        for key in [
+            "topology_file",
+            "coordinate_file",
+        ]:
+            file_path = system_files[key]
+
+            if not file_path.exists():
+                missing_files.append(file_path)
+
+        if missing_files:
+            raise FileNotFoundError(
+                "Missing MD system files:\n"
+                + "\n".join(
+                    str(path)
+                    for path in missing_files
+                )
+            )
+
+        return system_files
     
     # ======================================================
     # General helpers
