@@ -25,40 +25,46 @@ from pathlib import Path
 import csv
 import itertools
 
-class PHAFileManager:
-    """
-    Manage paths for a PHA structure database.
-    """
+def __init__(self, root_dir="structure_database"):
 
-    def __init__(self, root_dir="structure_database"):
-        self.root_dir = Path(root_dir)
+    self.root_dir = Path(root_dir)
 
-        self.PHA_types_dir = self.root_dir / "PHA_types"
-        self.built_PHAs_dir = self.root_dir / "built_PHAs"
-        self.PHA_melts_dir = self.root_dir / "PHA_melts"
+    # Database directories
 
-        self.dry_PHAs_dir = self.root_dir / "dry_phas"
-        self.solvated_PHAs_dir = self.root_dir / "solvated_phas"
-        self.solvated_ions_PHAs_dir = self.root_dir / "solvated_ions_phas"
+    self.PHA_types_dir = self.root_dir / "PHA_types"
+    self.built_PHAs_dir = self.root_dir / "built_PHAs"
+    self.PHA_melts_dir = self.root_dir / "PHA_melts"
 
-        self.temp_dir = self.root_dir / "temp"
-        self.residue_codes_csv = self.root_dir / "residue_codes.csv"
-        self.polymer_smiles_csv = self.root_dir / "polymer_smiles.csv"
+    self.PHA_dry_dir = self.root_dir / "PHA_dry"
+    self.PHA_solvated_dir = self.root_dir / "PHA_solvated"
+    self.PHA_solvated_ions_dir = self.root_dir / "PHA_solvated_ions"
 
-        self._create_base_structure()
+    self.temp_dir = self.root_dir / "temp"
 
-    def _create_base_structure(self):
-        for directory in [
-            self.root_dir,
-            self.PHA_types_dir,
-            self.built_PHAs_dir,
-            self.PHA_melts_dir,
-            self.dry_PHAs_dir,
-            self.solvated_PHAs_dir,
-            self.solvated_ions_PHAs_dir,
-            self.temp_dir,
-        ]:
-            directory.mkdir(parents=True, exist_ok=True)
+    # Database files
+
+    self.residue_codes_csv = self.root_dir / "residue_codes.csv"
+    self.polymer_smiles_csv = self.root_dir / "polymer_smiles.csv"
+
+    self._create_base_structure()
+
+
+def _create_base_structure(self):
+
+    for directory in [
+        self.root_dir,
+        self.PHA_types_dir,
+        self.built_PHAs_dir,
+        self.PHA_melts_dir,
+        self.PHA_dry_dir,
+        self.PHA_solvated_dir,
+        self.PHA_solvated_ions_dir,
+        self.temp_dir,
+    ]:
+        directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
     # ======================================================
     # Base files and directories
@@ -209,26 +215,63 @@ class PHAFileManager:
     # Solvated single-chain PHA systems
     # ======================================================
 
-    def get_solvated_PHAs_dir(self):
-        return self.solvated_PHAs_dir
+    def get_PHA_solvated_dir(self):
+        """
+        Return the parent directory containing all solvated PHA systems.
+        """
+        return self.PHA_solvated_dir
 
     def get_solvated_PHA_system_name(self, polymer_name):
+        """
+        Return the standard name for a solvated PHA system.
+        """
         return f"{polymer_name}_solvated"
 
     def get_solvated_PHA_dir(self, polymer_name):
-        return self.solvated_PHAs_dir / self.get_solvated_PHA_system_name(polymer_name)
+        """
+        Return the directory for a specific solvated PHA system.
+        """
+        system_name = self.get_solvated_PHA_system_name(polymer_name)
+
+        return self.get_PHA_solvated_dir() / system_name
 
     def get_solvated_PHA_inputs_dir(self, polymer_name):
+        """
+        Return the inputs directory for a solvated PHA system.
+        """
         return self.get_solvated_PHA_dir(polymer_name) / "inputs"
 
     def get_solvated_PHA_simulations_dir(self, polymer_name):
+        """
+        Return the simulations directory for a solvated PHA system.
+        """
         return self.get_solvated_PHA_dir(polymer_name) / "simulations"
 
     def create_solvated_PHA_dir(self, polymer_name):
+        """
+        Create the directory structure for a solvated PHA system.
+        """
         system_dir = self.get_solvated_PHA_dir(polymer_name)
-        system_dir.mkdir(parents=True, exist_ok=True)
-        self.get_solvated_PHA_inputs_dir(polymer_name).mkdir(parents=True, exist_ok=True)
-        self.get_solvated_PHA_simulations_dir(polymer_name).mkdir(parents=True, exist_ok=True)
+
+        system_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.get_solvated_PHA_inputs_dir(
+            polymer_name
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.get_solvated_PHA_simulations_dir(
+            polymer_name
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
         return system_dir
 
     # ======================================================
