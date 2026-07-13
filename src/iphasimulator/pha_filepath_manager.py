@@ -351,22 +351,22 @@ class PHAFileManager:
 
     def format_concentration_label(self, ion_concentration):
         """
-        Convert concentration into a filesystem-safe label.
+        Convert a concentration into a filesystem-friendly label.
 
-        Example
-        -------
-        0.15 -> 0p15
+        Examples
+        --------
+        0.15 -> "0_15"
+        1.00 -> "1_00"
         """
-
-        return str(ion_concentration).replace(".", "p")
+        return str(ion_concentration).replace(".", "_")
 
     def get_solvated_ions_PHA_system_name(
+
         self,
         polymer_name,
-        ion_names,
+        salt,
         ion_concentration,
     ):
-        ion_label = self.format_ion_label(ion_names)
 
         concentration_label = self.format_concentration_label(
             ion_concentration
@@ -374,7 +374,7 @@ class PHAFileManager:
 
         return (
             f"{polymer_name}_solvated_"
-            f"{ion_label}_{concentration_label}"
+            f"{salt}_{concentration_label}"
         )
 
     def get_solvated_ions_PHA_dir(
