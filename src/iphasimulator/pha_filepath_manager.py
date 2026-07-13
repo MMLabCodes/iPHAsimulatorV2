@@ -24,47 +24,62 @@ layer.
 from pathlib import Path
 import csv
 import itertools
-
-def __init__(self, root_dir="structure_database"):
-
-    self.root_dir = Path(root_dir)
-
-    # Database directories
-
-    self.PHA_types_dir = self.root_dir / "PHA_types"
-    self.built_PHAs_dir = self.root_dir / "built_PHAs"
-    self.PHA_melts_dir = self.root_dir / "PHA_melts"
-
-    self.PHA_dry_dir = self.root_dir / "PHA_dry"
-    self.PHA_solvated_dir = self.root_dir / "PHA_solvated"
-    self.PHA_solvated_ions_dir = self.root_dir / "PHA_solvated_ions"
-
-    self.temp_dir = self.root_dir / "temp"
-
-    # Database files
-
-    self.residue_codes_csv = self.root_dir / "residue_codes.csv"
-    self.polymer_smiles_csv = self.root_dir / "polymer_smiles.csv"
-
-    self._create_base_structure()
+import re
 
 
-def _create_base_structure(self):
+from pathlib import Path
+import csv
+import itertools
+import re
 
-    for directory in [
-        self.root_dir,
-        self.PHA_types_dir,
-        self.built_PHAs_dir,
-        self.PHA_melts_dir,
-        self.PHA_dry_dir,
-        self.PHA_solvated_dir,
-        self.PHA_solvated_ions_dir,
-        self.temp_dir,
-    ]:
-        directory.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+
+class PHAFileManager:
+    """
+    Manage paths for the PHA structure database.
+
+    This class is the central source of truth for directory names,
+    system names, and file locations.
+    """
+
+    def __init__(self, root_dir="structure_database"):
+        self.root_dir = Path(root_dir)
+
+        # Main database directories
+        self.PHA_types_dir = self.root_dir / "PHA_types"
+        self.built_PHAs_dir = self.root_dir / "built_PHAs"
+        self.PHA_melts_dir = self.root_dir / "PHA_melts"
+
+        self.PHA_dry_dir = self.root_dir / "PHA_dry"
+        self.PHA_solvated_dir = self.root_dir / "PHA_solvated"
+        self.PHA_solvated_ions_dir = self.root_dir / "PHA_solvated_ions"
+
+        self.temp_dir = self.root_dir / "temp"
+
+        # Database files
+        self.residue_codes_csv = self.root_dir / "residue_codes.csv"
+        self.polymer_smiles_csv = self.root_dir / "polymer_smiles.csv"
+
+        self._create_base_structure()
+
+    def _create_base_structure(self):
+        """
+        Create the main structure-database directories.
+        """
+
+        for directory in [
+            self.root_dir,
+            self.PHA_types_dir,
+            self.built_PHAs_dir,
+            self.PHA_melts_dir,
+            self.PHA_dry_dir,
+            self.PHA_solvated_dir,
+            self.PHA_solvated_ions_dir,
+            self.temp_dir,
+        ]:
+            directory.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
 
     # ======================================================
     # Base files and directories
@@ -83,7 +98,7 @@ def _create_base_structure(self):
         return self.polymer_smiles_csv
 
     # ======================================================
-    # PHA type / parameterisation directories
+    # PHA type and parameterisation directories
     # ======================================================
 
     def get_PHA_type_dir(self, PHA_type):
@@ -98,7 +113,10 @@ def _create_base_structure(self):
             "monomer_units",
             "leap_templates",
         ]:
-            (pha_dir / subdir).mkdir(parents=True, exist_ok=True)
+            (pha_dir / subdir).mkdir(
+                parents=True,
+                exist_ok=True,
+            )
 
         return pha_dir
 
@@ -115,6 +133,10 @@ def _create_base_structure(self):
         return self.get_PHA_type_dir(PHA_type) / "leap_templates"
 
     def get_PHA_monomer_unit_files(self, PHA_type):
+        """
+        Return the parameter files for one PHA chemistry.
+        """
+
         monomer_units_dir = self.get_PHA_monomer_units_dir(PHA_type)
         trimer_dir = self.get_PHA_trimer_dir(PHA_type)
 
@@ -134,7 +156,14 @@ def _create_base_structure(self):
         return f"P{PHA_type}_{length}"
 
     def parse_built_PHA_name(self, polymer_name):
-        import re
+        """
+        Parse a polymer name such as P3HB_10.
+
+        Returns
+        -------
+        tuple
+            PHA type and polymer length.
+        """
 
         match = re.fullmatch(r"P(.+)_(\d+)", polymer_name)
 
@@ -150,18 +179,28 @@ def _create_base_structure(self):
         return PHA_type, length
 
     def get_built_PHA_dir(self, PHA_type, length):
-        polymer_name = self.get_built_PHA_name(PHA_type, length)
+        polymer_name = self.get_built_PHA_name(
+            PHA_type,
+            length,
+        )
+
         return self.built_PHAs_dir / polymer_name
 
     def create_built_PHA_dir(self, PHA_type, length):
-        build_dir = self.get_built_PHA_dir(PHA_type, length)
+        build_dir = self.get_built_PHA_dir(
+            PHA_type,
+            length,
+        )
 
         for subdir in [
             "leap",
             "amber",
             "gromacs",
         ]:
-            (build_dir / subdir).mkdir(parents=True, exist_ok=True)
+            (build_dir / subdir).mkdir(
+                parents=True,
+                exist_ok=True,
+            )
 
         return build_dir
 
@@ -175,8 +214,16 @@ def _create_base_structure(self):
         return self.get_built_PHA_dir(PHA_type, length) / "gromacs"
 
     def get_built_PHA_amber_files(self, polymer_name):
+        """
+        Return expected Amber files for an already-built polymer.
+        """
+
         PHA_type, length = self.parse_built_PHA_name(polymer_name)
-        amber_dir = self.get_built_PHA_amber_dir(PHA_type, length)
+
+        amber_dir = self.get_built_PHA_amber_dir(
+            PHA_type,
+            length,
+        )
 
         return {
             "amber_dir": amber_dir,
@@ -189,14 +236,20 @@ def _create_base_structure(self):
     # Dry single-chain PHA systems
     # ======================================================
 
-    def get_dry_PHAs_dir(self):
-        return self.dry_PHAs_dir
+    def get_PHA_dry_dir(self):
+        """
+        Return the parent directory for all dry PHA systems.
+        """
+
+        return self.PHA_dry_dir
 
     def get_dry_PHA_system_name(self, polymer_name):
         return f"{polymer_name}_dry"
 
     def get_dry_PHA_dir(self, polymer_name):
-        return self.dry_PHAs_dir / self.get_dry_PHA_system_name(polymer_name)
+        system_name = self.get_dry_PHA_system_name(polymer_name)
+
+        return self.get_PHA_dry_dir() / system_name
 
     def get_dry_PHA_inputs_dir(self, polymer_name):
         return self.get_dry_PHA_dir(polymer_name) / "inputs"
@@ -206,9 +259,22 @@ def _create_base_structure(self):
 
     def create_dry_PHA_dir(self, polymer_name):
         system_dir = self.get_dry_PHA_dir(polymer_name)
-        system_dir.mkdir(parents=True, exist_ok=True)
-        self.get_dry_PHA_inputs_dir(polymer_name).mkdir(parents=True, exist_ok=True)
-        self.get_dry_PHA_simulations_dir(polymer_name).mkdir(parents=True, exist_ok=True)
+
+        system_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.get_dry_PHA_inputs_dir(polymer_name).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.get_dry_PHA_simulations_dir(polymer_name).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
         return system_dir
 
     # ======================================================
@@ -217,40 +283,26 @@ def _create_base_structure(self):
 
     def get_PHA_solvated_dir(self):
         """
-        Return the parent directory containing all solvated PHA systems.
+        Return the parent directory for all solvated PHA systems.
         """
+
         return self.PHA_solvated_dir
 
     def get_solvated_PHA_system_name(self, polymer_name):
-        """
-        Return the standard name for a solvated PHA system.
-        """
         return f"{polymer_name}_solvated"
 
     def get_solvated_PHA_dir(self, polymer_name):
-        """
-        Return the directory for a specific solvated PHA system.
-        """
         system_name = self.get_solvated_PHA_system_name(polymer_name)
 
         return self.get_PHA_solvated_dir() / system_name
 
     def get_solvated_PHA_inputs_dir(self, polymer_name):
-        """
-        Return the inputs directory for a solvated PHA system.
-        """
         return self.get_solvated_PHA_dir(polymer_name) / "inputs"
 
     def get_solvated_PHA_simulations_dir(self, polymer_name):
-        """
-        Return the simulations directory for a solvated PHA system.
-        """
         return self.get_solvated_PHA_dir(polymer_name) / "simulations"
 
     def create_solvated_PHA_dir(self, polymer_name):
-        """
-        Create the directory structure for a solvated PHA system.
-        """
         system_dir = self.get_solvated_PHA_dir(polymer_name)
 
         system_dir.mkdir(
@@ -258,16 +310,12 @@ def _create_base_structure(self):
             exist_ok=True,
         )
 
-        self.get_solvated_PHA_inputs_dir(
-            polymer_name
-        ).mkdir(
+        self.get_solvated_PHA_inputs_dir(polymer_name).mkdir(
             parents=True,
             exist_ok=True,
         )
 
-        self.get_solvated_PHA_simulations_dir(
-            polymer_name
-        ).mkdir(
+        self.get_solvated_PHA_simulations_dir(polymer_name).mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -275,13 +323,25 @@ def _create_base_structure(self):
         return system_dir
 
     # ======================================================
-    # Solvated + ionised single-chain PHA systems
+    # Solvated and ionised single-chain PHA systems
     # ======================================================
 
-    def get_solvated_ions_PHAs_dir(self):
-        return self.solvated_ions_PHAs_dir
+    def get_PHA_solvated_ions_dir(self):
+        """
+        Return the parent directory for solvated and ionised PHA systems.
+        """
+
+        return self.PHA_solvated_ions_dir
 
     def format_ion_label(self, ion_names):
+        """
+        Convert ion names into a filesystem-safe label.
+
+        Example
+        -------
+        K+Cl- -> KpClm
+        """
+
         return (
             str(ion_names)
             .replace(" ", "")
@@ -290,6 +350,14 @@ def _create_base_structure(self):
         )
 
     def format_concentration_label(self, ion_concentration):
+        """
+        Convert concentration into a filesystem-safe label.
+
+        Example
+        -------
+        0.15 -> 0p15
+        """
+
         return str(ion_concentration).replace(".", "p")
 
     def get_solvated_ions_PHA_system_name(
@@ -299,9 +367,15 @@ def _create_base_structure(self):
         ion_concentration,
     ):
         ion_label = self.format_ion_label(ion_names)
-        concentration_label = self.format_concentration_label(ion_concentration)
 
-        return f"{polymer_name}_solvated_{ion_label}_{concentration_label}"
+        concentration_label = self.format_concentration_label(
+            ion_concentration
+        )
+
+        return (
+            f"{polymer_name}_solvated_"
+            f"{ion_label}_{concentration_label}"
+        )
 
     def get_solvated_ions_PHA_dir(
         self,
@@ -315,7 +389,7 @@ def _create_base_structure(self):
             ion_concentration,
         )
 
-        return self.solvated_ions_PHAs_dir / system_name
+        return self.get_PHA_solvated_ions_dir() / system_name
 
     def get_solvated_ions_PHA_inputs_dir(
         self,
@@ -359,19 +433,28 @@ def _create_base_structure(self):
             ion_concentration,
         )
 
-        system_dir.mkdir(parents=True, exist_ok=True)
+        system_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         self.get_solvated_ions_PHA_inputs_dir(
             polymer_name,
             ion_names,
             ion_concentration,
-        ).mkdir(parents=True, exist_ok=True)
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         self.get_solvated_ions_PHA_simulations_dir(
             polymer_name,
             ion_names,
             ion_concentration,
-        ).mkdir(parents=True, exist_ok=True)
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         return system_dir
 
@@ -379,44 +462,99 @@ def _create_base_structure(self):
     # PHA melts
     # ======================================================
 
-    def get_PHA_melt_name(self, polymer_names, number_of_polymers):
+    def get_PHA_melt_name(
+        self,
+        polymer_names,
+        number_of_polymers,
+    ):
         if len(polymer_names) != len(number_of_polymers):
             raise ValueError(
-                "polymer_names and number_of_polymers must have the same length."
+                "polymer_names and number_of_polymers must have "
+                "the same length."
             )
 
         name_parts = []
 
-        for polymer_name, number in zip(polymer_names, number_of_polymers):
-            name_parts.append(f"{number}_{polymer_name}")
+        for polymer_name, number in zip(
+            polymer_names,
+            number_of_polymers,
+        ):
+            name_parts.append(
+                f"{number}_{polymer_name}"
+            )
 
         return "_".join(name_parts) + "_melt"
 
-    def get_PHA_melt_dir(self, polymer_names, number_of_polymers):
-        melt_name = self.get_PHA_melt_name(polymer_names, number_of_polymers)
+    def get_PHA_melt_dir(
+        self,
+        polymer_names,
+        number_of_polymers,
+    ):
+        melt_name = self.get_PHA_melt_name(
+            polymer_names,
+            number_of_polymers,
+        )
+
         return self.PHA_melts_dir / melt_name
 
-    def create_PHA_melt_dir(self, polymer_names, number_of_polymers):
-        melt_dir = self.get_PHA_melt_dir(polymer_names, number_of_polymers)
-        melt_dir.mkdir(parents=True, exist_ok=True)
+    def create_PHA_melt_dir(
+        self,
+        polymer_names,
+        number_of_polymers,
+    ):
+        melt_dir = self.get_PHA_melt_dir(
+            polymer_names,
+            number_of_polymers,
+        )
+
+        melt_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         self.get_PHA_melt_inputs_dir(
             polymer_names,
             number_of_polymers,
-        ).mkdir(parents=True, exist_ok=True)
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         self.get_PHA_melt_simulations_dir(
             polymer_names,
             number_of_polymers,
-        ).mkdir(parents=True, exist_ok=True)
+        ).mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         return melt_dir
 
-    def get_PHA_melt_inputs_dir(self, polymer_names, number_of_polymers):
-        return self.get_PHA_melt_dir(polymer_names, number_of_polymers) / "inputs"
+    def get_PHA_melt_inputs_dir(
+        self,
+        polymer_names,
+        number_of_polymers,
+    ):
+        return (
+            self.get_PHA_melt_dir(
+                polymer_names,
+                number_of_polymers,
+            )
+            / "inputs"
+        )
 
-    def get_PHA_melt_simulations_dir(self, polymer_names, number_of_polymers):
-        return self.get_PHA_melt_dir(polymer_names, number_of_polymers) / "simulations"
+    def get_PHA_melt_simulations_dir(
+        self,
+        polymer_names,
+        number_of_polymers,
+    ):
+        return (
+            self.get_PHA_melt_dir(
+                polymer_names,
+                number_of_polymers,
+            )
+            / "simulations"
+        )
 
     def create_PHA_melt_simulation_run_dir(
         self,
@@ -427,14 +565,22 @@ def _create_base_structure(self):
         from datetime import datetime
 
         if timestamp is None:
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+            timestamp = datetime.now().strftime(
+                "%Y-%m-%d_%H%M%S"
+            )
 
         run_dir = (
-            self.get_PHA_melt_simulations_dir(polymer_names, number_of_polymers)
+            self.get_PHA_melt_simulations_dir(
+                polymer_names,
+                number_of_polymers,
+            )
             / timestamp
         )
 
-        run_dir.mkdir(parents=True, exist_ok=False)
+        run_dir.mkdir(
+            parents=True,
+            exist_ok=False,
+        )
 
         return run_dir
 
@@ -449,17 +595,30 @@ def _create_base_structure(self):
             number_of_polymers,
         )
 
-        simulations_dir.mkdir(parents=True, exist_ok=True)
+        simulations_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         run_name = run_name.strip().replace(" ", "_")
+
+        if not run_name:
+            raise ValueError("run_name cannot be empty.")
 
         counter = 1
 
         while True:
-            candidate_dir = simulations_dir / f"{run_name}_{counter:02d}"
+            candidate_dir = (
+                simulations_dir
+                / f"{run_name}_{counter:02d}"
+            )
 
             if not candidate_dir.exists():
-                candidate_dir.mkdir(parents=True, exist_ok=False)
+                candidate_dir.mkdir(
+                    parents=True,
+                    exist_ok=False,
+                )
+
                 return candidate_dir
 
             counter += 1
@@ -470,16 +629,22 @@ def _create_base_structure(self):
 
     def find_file(self, directory, extension):
         directory = Path(directory)
-        files = list(directory.glob(f"*.{extension}"))
 
-        if len(files) == 0:
+        files = sorted(
+            directory.glob(f"*.{extension}")
+        )
+
+        if not files:
             return None
 
         return files[0]
 
     def find_files(self, directory, extension):
         directory = Path(directory)
-        return sorted(directory.glob(f"*.{extension}"))
+
+        return sorted(
+            directory.glob(f"*.{extension}")
+        )
 
 class PHAResidueCodeManager:
     """
