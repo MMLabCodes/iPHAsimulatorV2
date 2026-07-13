@@ -25,13 +25,7 @@ from pathlib import Path
 import csv
 import itertools
 import re
-
-
-from pathlib import Path
-import csv
-import itertools
-import re
-
+import parmed as pmd
 
 class PHAFileManager:
     """
@@ -58,6 +52,7 @@ class PHAFileManager:
         # Database files
         self.residue_codes_csv = self.root_dir / "residue_codes.csv"
         self.polymer_smiles_csv = self.root_dir / "polymer_smiles.csv"
+        self.md_systems_csv = self.root_dir / "md_systems.csv"
 
         self._create_base_structure()
 
@@ -96,6 +91,12 @@ class PHAFileManager:
 
     def get_polymer_smiles_csv(self):
         return self.polymer_smiles_csv
+    
+    def get_md_systems_csv(self):
+        """
+        Return the path to md_systems.csv.
+        """
+        return self.md_systems_csv
 
     # ======================================================
     # PHA type and parameterisation directories
@@ -622,6 +623,175 @@ class PHAFileManager:
             counter += 1
 
     # ======================================================
+    # Molecular dynamics system registry
+    # ======================================================
+
+    def ensure_md_systems_csv_exists(self):
+        """
+        Create md_systems.csv if it does not already exist.
+        """
+
+        header = [
+            "system_name",
+            "system_type",
+            "number_of_atoms",
+        ]
+
+        if not self.md_systems_csv.exists():
+            self.md_systems_csv.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            with open(
+                self.md_systems_csv,
+                "w",
+                newline="",
+            ) as file:
+                writer = csv.writer(file)
+                writer.writerow(header)
+
+        return self.md_systems_csv
+
+    def load_md_systems(self):
+        """
+        Load all registered molecular dynamics systems.
+
+        Returns
+        -------
+        list[dict]
+            Rows from md_systems.csv.
+        """
+
+        self.ensure_md_systems_csv_exists()
+
+        with open(
+            self.md_systems_csv,
+            "r",
+            newline="",
+        ) as file:
+            reader = csv.DictReader(file)
+            return list(reader)
+
+    def md_system_exists(self, system_name):
+        """
+        Check whether a molecular dynamics system is already registered.
+        """
+
+        systems = self.load_md_systems()
+
+        return any(
+            row["system_name"] == system_name
+            for row in systems
+        )
+
+    def register_md_system(
+        self,
+        system_name,
+        system_type,
+        number_of_atoms=None,
+    ):
+        """
+        Add or update a system in md_systems.csv.
+
+        Parameters
+        ----------
+        system_name : str
+            Unique name of the prepared molecular dynamics system.
+
+        system_type : str
+            Type of system, for example:
+
+                dry
+                solvated
+                solvated_ions
+                melt
+
+        number_of_atoms : int, optional
+            Number of atoms in the system. If unavailable, the field is left
+            blank.
+        """
+
+        allowed_system_types = {
+            "dry",
+            "solvated",
+            "solvated_ions",
+            "melt",
+        }
+
+        if not isinstance(system_name, str) or not system_name.strip():
+            raise ValueError(
+                "system_name must be a non-empty string."
+            )
+
+        if system_type not in allowed_system_types:
+            raise ValueError(
+                f"Unsupported system type: {system_type}\n"
+                f"Allowed values: {sorted(allowed_system_types)}"
+            )
+
+        if number_of_atoms is not None:
+            number_of_atoms = int(number_of_atoms)
+
+            if number_of_atoms <= 0:
+                raise ValueError(
+                    "number_of_atoms must be greater than zero."
+                )
+
+        self.ensure_md_systems_csv_exists()
+
+        systems = self.load_md_systems()
+
+        new_row = {
+            "system_name": system_name.strip(),
+            "system_type": system_type,
+            "number_of_atoms": (
+                str(number_of_atoms)
+                if number_of_atoms is not None
+                else ""
+            ),
+        }
+
+        system_updated = False
+
+        for index, row in enumerate(systems):
+            if row["system_name"] == system_name:
+                systems[index] = new_row
+                system_updated = True
+                break
+
+        if not system_updated:
+            systems.append(new_row)
+
+        with open(
+            self.md_systems_csv,
+            "w",
+            newline="",
+        ) as file:
+            writer = csv.DictWriter(
+                file,
+                fieldnames=[
+                    "system_name",
+                    "system_type",
+                    "number_of_atoms",
+                ],
+            )
+
+            writer.writeheader()
+            writer.writerows(systems)
+
+        action = "Updated" if system_updated else "Registered"
+
+        print(
+            f"{action} MD system: "
+            f"{system_name} "
+            f"({system_type}, "
+            f"{number_of_atoms or 'unknown'} atoms)"
+        )
+
+        return new_row
+    
+    # ======================================================
     # General helpers
     # ======================================================
 
@@ -643,6 +813,24 @@ class PHAFileManager:
         return sorted(
             directory.glob(f"*.{extension}")
         )
+    
+    def count_atoms_from_amber_topology(prmtop_path):
+        """
+        Return the number of atoms stored in an Amber topology.
+        """
+
+        prmtop_path = Path(prmtop_path)
+
+        if not prmtop_path.exists():
+            raise FileNotFoundError(
+                f"Amber topology file not found:\n{prmtop_path}"
+                )
+
+        structure = pmd.load_file(
+            str(prmtop_path)
+            )
+
+        return len(structure.atoms)
 
 class PHAResidueCodeManager:
     """
