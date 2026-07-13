@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+iPHAsimulatorV2 Streamlit interface.
+
+Run from the project root with:
+
+    streamlit run pha_gui.py
+"""
+
 from pathlib import Path
 import json
 import os
@@ -12,16 +20,42 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 
 from src.iphasimulator.openmmscript_builder import OpenMMScriptBuilder
+from src.iphasimulator.pha_filepath_manager import PHAFileManager
 
 
-STRUCTURE_DATABASE = Path("structure_database")
+# ==========================================================
+# Project configuration
+# ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+STRUCTURE_DATABASE = PROJECT_ROOT / "structure_database"
 RESIDUE_CODES_CSV = STRUCTURE_DATABASE / "residue_codes.csv"
+MD_SYSTEMS_CSV = STRUCTURE_DATABASE / "md_systems.csv"
 
-MD_SCRIPT_DIR = Path("md_simulation_scripts")
-MD_SCRIPT_DIR.mkdir(parents=True, exist_ok=True)
+MD_SCRIPT_DIR = PROJECT_ROOT / "md_simulation_scripts"
+MD_SCRIPT_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
 
-AMBERTOOLS_PYTHON = Path.home() / "miniconda3/envs/AmberTools23/bin/python"
+AMBERTOOLS_PYTHON = (
+    Path.home()
+    / "miniconda3"
+    / "envs"
+    / "AmberTools23"
+    / "bin"
+    / "python"
+)
 
+paths = PHAFileManager(
+    STRUCTURE_DATABASE
+)
+
+
+# ==========================================================
+# Streamlit page configuration
+# ==========================================================
 
 st.set_page_config(
     page_title="iPHAsimulatorV2",
@@ -30,82 +64,137 @@ st.set_page_config(
 )
 
 
+# ==========================================================
+# Visual styling
+# ==========================================================
+
 st.markdown(
     """
 <style>
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #172554 100%);
+    background: linear-gradient(
+        135deg,
+        #0f172a 0%,
+        #111827 45%,
+        #172554 100%
+    );
     color: #e5e7eb;
 }
+
 .main-title {
     font-size: 3.2rem;
     font-weight: 900;
-    background: linear-gradient(90deg, #67e8f9, #a78bfa, #f472b6);
+    background: linear-gradient(
+        90deg,
+        #67e8f9,
+        #a78bfa,
+        #f472b6
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: -0.4rem;
 }
+
 .subtitle {
     color: #cbd5e1;
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
 }
+
 .card {
     background: rgba(15, 23, 42, 0.78);
     border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 22px;
     padding: 1.2rem;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
 }
+
 .sequence-chip {
     display: inline-block;
     padding: 0.35rem 0.7rem;
     margin: 0.2rem;
     border-radius: 999px;
-    background: linear-gradient(90deg, #0891b2, #7c3aed);
+    background: linear-gradient(
+        90deg,
+        #0891b2,
+        #7c3aed
+    );
     color: white;
     font-weight: 700;
     font-size: 0.9rem;
 }
+
 .workflow-chip {
     display: inline-block;
     padding: 0.4rem 0.8rem;
     margin: 0.25rem;
     border-radius: 999px;
-    background: linear-gradient(90deg, #0f766e, #2563eb);
+    background: linear-gradient(
+        90deg,
+        #0f766e,
+        #2563eb
+    );
     color: white;
     font-weight: 700;
     font-size: 0.9rem;
 }
+
+.system-chip {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    margin: 0.25rem;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        #7c3aed,
+        #db2777
+    );
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
 .small-muted {
     color: #94a3b8;
     font-size: 0.9rem;
 }
+
 .good-box {
     border-left: 5px solid #22c55e;
-    background: rgba(34,197,94,0.12);
+    background: rgba(34, 197, 94, 0.12);
     padding: 0.8rem 1rem;
     border-radius: 12px;
 }
+
 .warn-box {
     border-left: 5px solid #f59e0b;
-    background: rgba(245,158,11,0.12);
+    background: rgba(245, 158, 11, 0.12);
     padding: 0.8rem 1rem;
     border-radius: 12px;
 }
+
 .info-box {
     border-left: 5px solid #38bdf8;
-    background: rgba(56,189,248,0.12);
+    background: rgba(56, 189, 248, 0.12);
     padding: 0.8rem 1rem;
     border-radius: 12px;
 }
+
+.error-box {
+    border-left: 5px solid #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+}
+
 div.stButton > button {
     border-radius: 999px;
     font-weight: 700;
-    border: 1px solid rgba(103,232,249,0.45);
-    background: rgba(15,23,42,0.75);
+    border: 1px solid rgba(103, 232, 249, 0.45);
+    background: rgba(15, 23, 42, 0.75);
     color: #e0f2fe;
 }
+
 div.stButton > button:hover {
     border-color: #f472b6;
     color: white;
@@ -121,38 +210,197 @@ st.markdown(
     '<div class="main-title">🧬 iPHAsimulatorV2</div>',
     unsafe_allow_html=True,
 )
+
 st.markdown(
-    '<div class="subtitle">Interactive PHA polymer construction, OpenMM workflow design, and script generation.</div>',
+    """
+<div class="subtitle">
+Interactive PHA polymer construction, registered MD-system selection,
+OpenMM workflow design, and script generation.
+</div>
+""",
     unsafe_allow_html=True,
 )
 
 
+# ==========================================================
+# Database loading
+# ==========================================================
+
 @st.cache_data
-def load_available_PHA_monomers(residue_codes_csv):
-    df = pd.read_csv(residue_codes_csv)
-    mainchain_df = df[df["component"] == "mainchain"].copy()
-    mainchain_df = mainchain_df.dropna(subset=["PHA_type", "smiles"])
+def load_available_PHA_monomers(
+    residue_codes_csv,
+    modified_time,
+):
+    """
+    Load registered PHA monomers from residue_codes.csv.
+
+    modified_time is included so Streamlit invalidates the cache when
+    the CSV file changes.
+    """
+
+    del modified_time
+
+    df = pd.read_csv(
+        residue_codes_csv
+    )
+
+    mainchain_df = df[
+        df["component"] == "mainchain"
+    ].copy()
+
+    mainchain_df = mainchain_df.dropna(
+        subset=[
+            "PHA_type",
+            "smiles",
+        ]
+    )
+
     mainchain_df = mainchain_df[
-        mainchain_df["smiles"].astype(str).str.strip() != ""
+        mainchain_df["smiles"]
+        .astype(str)
+        .str.strip()
+        != ""
     ]
 
-    available_phas = sorted(mainchain_df["PHA_type"].unique())
+    available_phas = sorted(
+        mainchain_df["PHA_type"].unique()
+    )
+
     monomer_smiles = {
         row["PHA_type"]: row["smiles"]
         for _, row in mainchain_df.iterrows()
     }
 
-    return available_phas, monomer_smiles, mainchain_df
+    return (
+        available_phas,
+        monomer_smiles,
+        mainchain_df,
+    )
+
+
+def load_registered_md_systems():
+    """
+    Load registered MD systems from PHAFileManager.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Registered systems with the columns:
+
+            system_name
+            system_type
+            number_of_atoms
+    """
+
+    systems = paths.load_md_systems()
+
+    columns = [
+        "system_name",
+        "system_type",
+        "number_of_atoms",
+    ]
+
+    if not systems:
+        return pd.DataFrame(
+            columns=columns
+        )
+
+    systems_df = pd.DataFrame(
+        systems
+    )
+
+    for column in columns:
+        if column not in systems_df.columns:
+            systems_df[column] = ""
+
+    systems_df = systems_df[
+        columns
+    ].copy()
+
+    systems_df["system_name"] = (
+        systems_df["system_name"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+
+    systems_df["system_type"] = (
+        systems_df["system_type"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+
+    systems_df["number_of_atoms"] = pd.to_numeric(
+        systems_df["number_of_atoms"],
+        errors="coerce",
+    )
+
+    systems_df = systems_df[
+        systems_df["system_name"] != ""
+    ]
+
+    systems_df = systems_df.drop_duplicates(
+        subset=["system_name"],
+        keep="last",
+    )
+
+    systems_df = systems_df.sort_values(
+        by=[
+            "system_type",
+            "system_name",
+        ]
+    ).reset_index(
+        drop=True
+    )
+
+    return systems_df
 
 
 try:
-    available_phas, monomer_smiles, mainchain_df = load_available_PHA_monomers(
-        RESIDUE_CODES_CSV
+    residue_modified_time = (
+        RESIDUE_CODES_CSV.stat().st_mtime
+        if RESIDUE_CODES_CSV.exists()
+        else 0
     )
+
+    (
+        available_phas,
+        monomer_smiles,
+        mainchain_df,
+    ) = load_available_PHA_monomers(
+        RESIDUE_CODES_CSV,
+        residue_modified_time,
+    )
+
 except Exception as error:
-    st.error("Could not load available PHA monomers.")
-    st.code(str(error))
+    st.error(
+        "Could not load available PHA monomers."
+    )
+    st.code(
+        str(error)
+    )
     st.stop()
+
+
+try:
+    md_systems_df = load_registered_md_systems()
+
+except Exception as error:
+    st.error(
+        "Could not load registered MD systems."
+    )
+    st.code(
+        str(error)
+    )
+
+    md_systems_df = pd.DataFrame(
+        columns=[
+            "system_name",
+            "system_type",
+            "number_of_atoms",
+        ]
+    )
 
 
 # ==========================================================
@@ -174,61 +422,123 @@ if "generated_openmm_script" not in st.session_state:
 if "generated_openmm_script_path" not in st.session_state:
     st.session_state.generated_openmm_script_path = None
 
+if "generated_openmm_system_name" not in st.session_state:
+    st.session_state.generated_openmm_system_name = None
+
+if "generated_openmm_system_type" not in st.session_state:
+    st.session_state.generated_openmm_system_type = None
+
 
 # ==========================================================
 # Polymer helper functions
 # ==========================================================
 
 def get_polymer_name(sequence):
+    """
+    Generate a standard polymer name from a monomer sequence.
+    """
+
     if not sequence:
         return None
 
     unique_units = []
+
     for unit in sequence:
         if unit not in unique_units:
             unique_units.append(unit)
 
     if len(unique_units) == 1:
-        return f"P{unique_units[0]}_{len(sequence)}"
+        return (
+            f"P{unique_units[0]}_"
+            f"{len(sequence)}"
+        )
 
     return (
         "co_"
-        + "_".join([f"P{unit}" for unit in unique_units])
+        + "_".join(
+            f"P{unit}"
+            for unit in unique_units
+        )
         + f"_custom_{len(sequence)}"
     )
 
 
-def generate_polymer_smiles_from_sequence(sequence, smiles_lookup):
+def generate_polymer_smiles_from_sequence(
+    sequence,
+    smiles_lookup,
+):
+    """
+    Generate the polymer SMILES from the selected sequence.
+    """
+
     if not sequence:
         return None
 
     polymer_smiles = ""
-    for i, pha_type in enumerate(sequence):
+
+    for index, pha_type in enumerate(sequence):
         smiles = smiles_lookup[pha_type]
-        polymer_smiles += smiles if i == len(sequence) - 1 else smiles[:-1]
+
+        if index == len(sequence) - 1:
+            polymer_smiles += smiles
+        else:
+            polymer_smiles += smiles[:-1]
 
     return polymer_smiles
 
 
 def draw_monomer(pha_type):
-    mol = Chem.MolFromSmiles(monomer_smiles[pha_type])
+    """
+    Draw a selected monomer with RDKit.
+    """
+
+    mol = Chem.MolFromSmiles(
+        monomer_smiles[pha_type]
+    )
+
     if mol is None:
         return None
-    return Draw.MolToImage(mol, size=(420, 300), legend=pha_type)
+
+    return Draw.MolToImage(
+        mol,
+        size=(420, 300),
+        legend=pha_type,
+    )
 
 
-def draw_polymer(polymer_smiles, polymer_name):
-    mol = Chem.MolFromSmiles(polymer_smiles)
+def draw_polymer(
+    polymer_smiles,
+    polymer_name,
+):
+    """
+    Draw the generated polymer with RDKit.
+    """
+
+    mol = Chem.MolFromSmiles(
+        polymer_smiles
+    )
+
     if mol is None:
         return None
-    return Draw.MolToImage(mol, size=(1200, 360), legend=polymer_name)
+
+    return Draw.MolToImage(
+        mol,
+        size=(1200, 360),
+        legend=polymer_name,
+    )
 
 
 def build_polymer_subprocess(sequence):
+    """
+    Launch PHAPolymerBuilder in the AmberTools23 environment.
+    """
+
     build_code = r"""
 import sys
 import json
+
 from src.iphasimulator.build_pha import PHAPolymerBuilder
+
 
 root_dir = sys.argv[1]
 sequence = json.loads(sys.argv[2])
@@ -236,6 +546,7 @@ sequence = json.loads(sys.argv[2])
 builder = PHAPolymerBuilder(root_dir)
 
 unique_units = []
+
 for unit in sequence:
     if unit not in unique_units:
         unique_units.append(unit)
@@ -243,16 +554,32 @@ for unit in sequence:
 if len(unique_units) == 1:
     PHA_type = unique_units[0]
     length = len(sequence)
+
     print(f"Building homopolymer: P{PHA_type}_{length}")
-    output = builder.build_PHA_polymer(PHA_type=PHA_type, length=length)
+
+    output = builder.build_PHA_polymer(
+        PHA_type=PHA_type,
+        length=length,
+    )
 
 else:
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    if len(unique_units) > len(letters):
-        raise ValueError("Too many unique monomer types.")
 
-    unit_to_letter = {unit: letters[i] for i, unit in enumerate(unique_units)}
-    pattern = "".join(unit_to_letter[unit] for unit in sequence)
+    if len(unique_units) > len(letters):
+        raise ValueError(
+            "Too many unique monomer types."
+        )
+
+    unit_to_letter = {
+        unit: letters[index]
+        for index, unit in enumerate(unique_units)
+    }
+
+    pattern = "".join(
+        unit_to_letter[unit]
+        for unit in sequence
+    )
+
     length = len(sequence)
 
     print("Building copolymer.")
@@ -272,12 +599,20 @@ print(output)
 
     if not AMBERTOOLS_PYTHON.exists():
         raise FileNotFoundError(
-            f"Could not find AmberTools23 Python:\n{AMBERTOOLS_PYTHON}"
+            "Could not find AmberTools23 Python:\n"
+            f"{AMBERTOOLS_PYTHON}"
         )
 
     ambertools_bin = AMBERTOOLS_PYTHON.parent
-    env = dict(**os.environ)
-    env["PATH"] = f"{ambertools_bin}:{env.get('PATH', '')}"
+
+    env = dict(
+        os.environ
+    )
+
+    env["PATH"] = (
+        f"{ambertools_bin}:"
+        f"{env.get('PATH', '')}"
+    )
 
     command = [
         str(AMBERTOOLS_PYTHON),
@@ -289,7 +624,7 @@ print(output)
 
     return subprocess.run(
         command,
-        cwd=Path.cwd(),
+        cwd=PROJECT_ROOT,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -304,35 +639,53 @@ print(output)
 # ==========================================================
 
 def add_workflow_step(step):
-    st.session_state.openmm_steps.append(step)
+    st.session_state.openmm_steps.append(
+        step
+    )
 
 
 def move_workflow_step_up(index):
     if index <= 0:
         return
+
     steps = st.session_state.openmm_steps
-    steps[index - 1], steps[index] = steps[index], steps[index - 1]
+
+    steps[index - 1], steps[index] = (
+        steps[index],
+        steps[index - 1],
+    )
 
 
 def move_workflow_step_down(index):
     steps = st.session_state.openmm_steps
+
     if index >= len(steps) - 1:
         return
-    steps[index + 1], steps[index] = steps[index], steps[index + 1]
+
+    steps[index + 1], steps[index] = (
+        steps[index],
+        steps[index + 1],
+    )
 
 
 def remove_workflow_step(index):
-    st.session_state.openmm_steps.pop(index)
+    st.session_state.openmm_steps.pop(
+        index
+    )
 
 
 def build_openmm_script_builder(
-    polymer_names,
-    number_of_polymers,
+    system_name,
+    system_type,
     run_name,
 ):
+    """
+    Construct an OpenMMScriptBuilder from the GUI workflow.
+    """
+
     builder = OpenMMScriptBuilder(
-        polymer_names=polymer_names,
-        number_of_polymers=number_of_polymers,
+        system_name=system_name,
+        system_type=system_type,
         run_name=run_name,
     )
 
@@ -387,37 +740,88 @@ def build_openmm_script_builder(
                 restart_name=step["restart_name"],
             )
 
+        else:
+            raise ValueError(
+                "Unknown workflow step: "
+                f"{method}"
+            )
+
     return builder
 
-def get_next_md_script_path(run_name):
 
-    safe_run_name = run_name.strip().replace(" ", "_")
+def get_next_md_script_path(
+    run_name,
+    system_name=None,
+):
+    """
+    Return the next available generated-script path.
+    """
 
-    if safe_run_name == "":
+    safe_run_name = (
+        run_name
+        .strip()
+        .replace(" ", "_")
+    )
 
+    if not safe_run_name:
         safe_run_name = "OpenMM_Run"
+
+    if system_name:
+        safe_system_name = (
+            system_name
+            .strip()
+            .replace(" ", "_")
+        )
+
+        script_stem = (
+            f"{safe_system_name}_"
+            f"{safe_run_name}"
+        )
+
+    else:
+        script_stem = safe_run_name
 
     counter = 1
 
     while True:
-
-        script_path = MD_SCRIPT_DIR / f"{safe_run_name}_{counter:02d}.py"
+        script_path = (
+            MD_SCRIPT_DIR
+            / f"{script_stem}_{counter:02d}.py"
+        )
 
         if not script_path.exists():
-
             return script_path
 
         counter += 1
 
-def run_python_script_with_ambertools(script_path):
+
+def run_python_script_with_ambertools(
+    script_path,
+):
+    """
+    Run a generated Python script with AmberTools23.
+    """
+
     if not AMBERTOOLS_PYTHON.exists():
         raise FileNotFoundError(
-            f"Could not find AmberTools23 Python:\n{AMBERTOOLS_PYTHON}"
+            "Could not find AmberTools23 Python:\n"
+            f"{AMBERTOOLS_PYTHON}"
         )
 
+    script_path = Path(
+        script_path
+    ).resolve()
+
     ambertools_bin = AMBERTOOLS_PYTHON.parent
-    env = dict(**os.environ)
-    env["PATH"] = f"{ambertools_bin}:{env.get('PATH', '')}"
+
+    env = dict(
+        os.environ
+    )
+
+    env["PATH"] = (
+        f"{ambertools_bin}:"
+        f"{env.get('PATH', '')}"
+    )
 
     command = [
         str(AMBERTOOLS_PYTHON),
@@ -426,7 +830,7 @@ def run_python_script_with_ambertools(script_path):
 
     return subprocess.run(
         command,
-        cwd=Path.cwd(),
+        cwd=PROJECT_ROOT,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -437,38 +841,114 @@ def run_python_script_with_ambertools(script_path):
 
 
 def workflow_step_label(step):
+    """
+    Return a concise display label for a workflow step.
+    """
+
     method = step["method"]
 
     if method == "minimize_energy":
         return "Minimization"
 
     if method == "basic_NVT":
-        return f"Basic NVT · {step['temp']} K · {step['total_steps']} steps"
+        return (
+            f"Basic NVT · "
+            f"{step['temp']} K · "
+            f"{step['total_steps']} steps"
+        )
 
     if method == "basic_NPT":
         return (
-            f"Basic NPT · {step['temp']} K · "
-            f"{step['pressure']} atm · {step['total_steps']} steps"
+            f"Basic NPT · "
+            f"{step['temp']} K · "
+            f"{step['pressure']} atm · "
+            f"{step['total_steps']} steps"
         )
 
     if method == "anneal_NVT":
         return (
-            f"Anneal NVT · {step['start_temp']}→{step['max_temp']} K · "
+            f"Anneal NVT · "
+            f"{step['start_temp']}→"
+            f"{step['max_temp']} K · "
             f"{step['cycles']} cycles"
         )
 
     if method == "thermal_ramp":
-        direction = "Heat" if step["heating"] else "Cool"
+        direction = (
+            "Heat"
+            if step["heating"]
+            else "Cool"
+        )
+
         return (
-            f"{direction} ramp · {step['ensemble']} · "
-            f"{step['start_temp']}→{step['max_temp']} K · "
+            f"{direction} ramp · "
+            f"{step['ensemble']} · "
+            f"{step['start_temp']}→"
+            f"{step['max_temp']} K · "
             f"{step['quench_rate']} K"
         )
 
     return method
 
 
-polymer_name = get_polymer_name(st.session_state.sequence)
+def format_atom_count(value):
+    """
+    Format an optional atom count for display.
+    """
+
+    if pd.isna(value):
+        return "Unknown"
+
+    return f"{int(value):,}"
+
+
+def infer_input_format(
+    topology_file,
+    coordinate_file,
+):
+    """
+    Infer Amber or GROMACS from file extensions.
+    """
+
+    topology_suffix = (
+        Path(topology_file)
+        .suffix
+        .lower()
+    )
+
+    coordinate_suffix = (
+        Path(coordinate_file)
+        .suffix
+        .lower()
+    )
+
+    if (
+        topology_suffix == ".top"
+        and coordinate_suffix == ".gro"
+    ):
+        return "GROMACS"
+
+    if (
+        topology_suffix == ".prmtop"
+        and coordinate_suffix
+        in {
+            ".rst7",
+            ".inpcrd",
+        }
+    ):
+        return "Amber"
+
+    return "Unknown"
+
+
+# ==========================================================
+# Current polymer calculations
+# ==========================================================
+
+polymer_name = get_polymer_name(
+    st.session_state.sequence
+)
+
 polymer_smiles = generate_polymer_smiles_from_sequence(
     st.session_state.sequence,
     monomer_smiles,
@@ -480,25 +960,92 @@ polymer_smiles = generate_polymer_smiles_from_sequence(
 # ==========================================================
 
 with st.sidebar:
-    st.markdown("## ⚙️ Control Centre")
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.write("Structure database")
-    st.code(str(STRUCTURE_DATABASE))
-    st.write("AmberTools Python")
-    st.code(str(AMBERTOOLS_PYTHON))
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown(
+        "## ⚙️ Control Centre"
+    )
 
-    st.markdown("## 📊 Database")
-    st.metric("Available monomers", len(available_phas))
-    st.metric("Current length", len(st.session_state.sequence))
-    st.metric("Unique units", len(set(st.session_state.sequence)))
-    st.metric("OpenMM steps", len(st.session_state.openmm_steps))
+    st.markdown(
+        '<div class="card">',
+        unsafe_allow_html=True,
+    )
 
-    with st.expander("Show monomer table"):
-        st.dataframe(mainchain_df, use_container_width=True)
+    st.write(
+        "Project root"
+    )
+    st.code(
+        str(PROJECT_ROOT)
+    )
+
+    st.write(
+        "Structure database"
+    )
+    st.code(
+        str(STRUCTURE_DATABASE)
+    )
+
+    st.write(
+        "AmberTools Python"
+    )
+    st.code(
+        str(AMBERTOOLS_PYTHON)
+    )
+
+    st.markdown(
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        "## 📊 Database"
+    )
+
+    st.metric(
+        "Available monomers",
+        len(available_phas),
+    )
+
+    st.metric(
+        "Registered MD systems",
+        len(md_systems_df),
+    )
+
+    st.metric(
+        "Current polymer length",
+        len(st.session_state.sequence),
+    )
+
+    st.metric(
+        "OpenMM steps",
+        len(st.session_state.openmm_steps),
+    )
+
+    with st.expander(
+        "Show monomer table"
+    ):
+        st.dataframe(
+            mainchain_df,
+            use_container_width=True,
+        )
+
+    with st.expander(
+        "Show MD-system registry"
+    ):
+        st.dataframe(
+            md_systems_df,
+            use_container_width=True,
+        )
 
 
-tab_builder, tab_preview, tab_logs, tab_openmm = st.tabs(
+# ==========================================================
+# Main tabs
+# ==========================================================
+
+(
+    tab_builder,
+    tab_preview,
+    tab_logs,
+    tab_openmm,
+) = st.tabs(
     [
         "🧱 Polymer Builder",
         "🔬 Molecular Preview",
@@ -514,214 +1061,427 @@ tab_builder, tab_preview, tab_logs, tab_openmm = st.tabs(
 
 with tab_builder:
     top_metrics = st.columns(4)
-    top_metrics[0].metric("Sequence length", len(st.session_state.sequence))
-    top_metrics[1].metric("Unique monomers", len(set(st.session_state.sequence)))
+
+    top_metrics[0].metric(
+        "Sequence length",
+        len(st.session_state.sequence),
+    )
+
+    top_metrics[1].metric(
+        "Unique monomers",
+        len(
+            set(
+                st.session_state.sequence
+            )
+        ),
+    )
+
     top_metrics[2].metric(
         "Mode",
-        "Homo" if len(set(st.session_state.sequence)) <= 1 else "Co",
+        (
+            "Homo"
+            if len(
+                set(
+                    st.session_state.sequence
+                )
+            )
+            <= 1
+            else "Co"
+        ),
     )
-    top_metrics[3].metric("Build env", "AmberTools23")
 
-    st.markdown("### Available PHA Monomer Units")
+    top_metrics[3].metric(
+        "Build environment",
+        "AmberTools23",
+    )
+
+    st.markdown(
+        "### Available PHA Monomer Units"
+    )
 
     search = st.text_input(
         "Filter monomers",
-        placeholder="Try 3HB, 4HB, phenyl, fluor...",
+        placeholder=(
+            "Try 3HB, 4HB, phenyl, fluor..."
+        ),
     )
 
     filtered_phas = [
-        pha for pha in available_phas
+        pha
+        for pha in available_phas
         if search.lower() in pha.lower()
     ]
 
     cols = st.columns(6)
-    for i, pha in enumerate(filtered_phas):
-        with cols[i % 6]:
-            if st.button(f"➕ {pha}", use_container_width=True):
-                st.session_state.sequence.append(pha)
+
+    for index, pha in enumerate(
+        filtered_phas
+    ):
+        with cols[index % 6]:
+            if st.button(
+                f"➕ {pha}",
+                use_container_width=True,
+                key=f"add_monomer_{pha}",
+            ):
+                st.session_state.sequence.append(
+                    pha
+                )
+
                 st.session_state.preview_PHA = pha
+
                 st.rerun()
 
-    st.markdown("### Current Sequence")
+    st.markdown(
+        "### Current Sequence"
+    )
 
     if st.session_state.sequence:
         chip_html = "".join(
-            [
-                f'<span class="sequence-chip">{unit}</span>'
-                for unit in st.session_state.sequence
-            ]
+            (
+                f'<span class="sequence-chip">'
+                f"{unit}"
+                f"</span>"
+            )
+            for unit in st.session_state.sequence
         )
-        st.markdown(chip_html, unsafe_allow_html=True)
-    else:
+
         st.markdown(
-            '<div class="warn-box">Click monomer buttons above to start building a polymer sequence.</div>',
+            chip_html,
             unsafe_allow_html=True,
         )
 
-    control_cols = st.columns([1, 1, 1, 2])
+    else:
+        st.markdown(
+            """
+<div class="warn-box">
+Click monomer buttons above to start building a polymer sequence.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    control_cols = st.columns(
+        [
+            1,
+            1,
+            1,
+            2,
+        ]
+    )
 
     with control_cols[0]:
-        if st.button("↩️ Remove last", use_container_width=True):
+        if st.button(
+            "↩️ Remove last",
+            use_container_width=True,
+        ):
             if st.session_state.sequence:
                 st.session_state.sequence.pop()
                 st.rerun()
 
     with control_cols[1]:
-        if st.button("🧹 Clear", use_container_width=True):
+        if st.button(
+            "🧹 Clear",
+            use_container_width=True,
+        ):
             st.session_state.sequence = []
             st.session_state.preview_PHA = None
             st.rerun()
 
     with control_cols[2]:
         duplicate_n = st.number_input(
-            "Repeat current sequence",
+            "Repeat sequence",
             min_value=1,
             max_value=20,
             value=1,
         )
 
     with control_cols[3]:
-        if st.button("🔁 Apply repeat", use_container_width=True):
+        if st.button(
+            "🔁 Apply repeat",
+            use_container_width=True,
+        ):
             if st.session_state.sequence:
-                original = list(st.session_state.sequence)
-                st.session_state.sequence = original * int(duplicate_n)
+                original = list(
+                    st.session_state.sequence
+                )
+
+                st.session_state.sequence = (
+                    original
+                    * int(duplicate_n)
+                )
+
                 st.rerun()
 
     st.divider()
 
     if polymer_name:
-        st.markdown("### Generated Build Target")
-        st.code(polymer_name)
+        st.markdown(
+            "### Generated Build Target"
+        )
+
+        st.code(
+            polymer_name
+        )
 
     if polymer_smiles:
-        st.markdown("### Generated Polymer SMILES")
-        st.code(polymer_smiles)
+        st.markdown(
+            "### Generated Polymer SMILES"
+        )
+
+        st.code(
+            polymer_smiles
+        )
 
 
 # ==========================================================
-# Preview tab
+# Molecular Preview tab
 # ==========================================================
 
 with tab_preview:
-    col_a, col_b = st.columns([1, 2])
+    col_a, col_b = st.columns(
+        [
+            1,
+            2,
+        ]
+    )
 
     with col_a:
-        st.markdown("### Selected Monomer")
+        st.markdown(
+            "### Selected Monomer"
+        )
 
         if st.session_state.preview_PHA is None:
-            st.info("Click a monomer to preview it.")
+            st.info(
+                "Click a monomer to preview it."
+            )
+
         else:
             pha = st.session_state.preview_PHA
-            img = draw_monomer(pha)
+            image = draw_monomer(pha)
 
-            if img is None:
-                st.error(f"Could not draw {pha}")
+            if image is None:
+                st.error(
+                    f"Could not draw {pha}"
+                )
+
             else:
-                st.image(img)
-                st.markdown(f"### `{pha}`")
-                st.code(monomer_smiles[pha])
+                st.image(
+                    image
+                )
+
+                st.markdown(
+                    f"### `{pha}`"
+                )
+
+                st.code(
+                    monomer_smiles[pha]
+                )
 
     with col_b:
-        st.markdown("### Polymer Preview")
+        st.markdown(
+            "### Polymer Preview"
+        )
 
         if polymer_smiles is None:
-            st.info("No polymer sequence yet.")
-        else:
-            img = draw_polymer(polymer_smiles, polymer_name)
-
-            if img is None:
-                st.warning("RDKit could not render this polymer SMILES.")
-            else:
-                st.image(img, use_container_width=True)
-
-            st.markdown("### Polymer Summary")
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.write(f"**Name:** `{polymer_name}`")
-            st.write(f"**Length:** `{len(st.session_state.sequence)}`")
-            st.write(
-                f"**Unique monomers:** `{', '.join(sorted(set(st.session_state.sequence)))}`"
+            st.info(
+                "No polymer sequence yet."
             )
-            st.write(f"**SMILES characters:** `{len(polymer_smiles)}`")
-            st.markdown("</div>", unsafe_allow_html=True)
+
+        else:
+            image = draw_polymer(
+                polymer_smiles,
+                polymer_name,
+            )
+
+            if image is None:
+                st.warning(
+                    "RDKit could not render "
+                    "this polymer SMILES."
+                )
+
+            else:
+                st.image(
+                    image,
+                    use_container_width=True,
+                )
+
+            st.markdown(
+                "### Polymer Summary"
+            )
+
+            st.markdown(
+                '<div class="card">',
+                unsafe_allow_html=True,
+            )
+
+            st.write(
+                f"**Name:** `{polymer_name}`"
+            )
+
+            st.write(
+                "**Length:** "
+                f"`{len(st.session_state.sequence)}`"
+            )
+
+            st.write(
+                "**Unique monomers:** "
+                f"`{', '.join(sorted(set(st.session_state.sequence)))}`"
+            )
+
+            st.write(
+                "**SMILES characters:** "
+                f"`{len(polymer_smiles)}`"
+            )
+
+            st.markdown(
+                "</div>",
+                unsafe_allow_html=True,
+            )
 
 
 # ==========================================================
-# Build Console tab
+# Polymer Build Console tab
 # ==========================================================
 
 with tab_logs:
-    st.markdown("### Build Polymer")
+    st.markdown(
+        "### Build Polymer"
+    )
 
     st.markdown(
         """
 <div class="small-muted">
-This launches the backend polymer builder in the AmberTools23 environment. 
-The GUI environment only runs Streamlit and RDKit rendering.
+This launches the backend polymer builder in the AmberTools23 environment.
+The GUI environment handles Streamlit and RDKit rendering.
 </div>
 """,
         unsafe_allow_html=True,
     )
 
-    build_clicked = st.button("🚀 Build polymer now", use_container_width=True)
+    build_clicked = st.button(
+        "🚀 Build polymer now",
+        use_container_width=True,
+    )
 
     if build_clicked:
         if not st.session_state.sequence:
-            st.error("No monomers selected.")
+            st.error(
+                "No monomers selected."
+            )
+
         else:
-            st.info("Launching polymer build in AmberTools23 environment...")
+            st.info(
+                "Launching polymer build "
+                "in AmberTools23..."
+            )
 
             progress = st.progress(0)
             status = st.empty()
 
-            with st.spinner("Building polymer with PHAPolymerBuilder..."):
+            with st.spinner(
+                "Building polymer with "
+                "PHAPolymerBuilder..."
+            ):
                 try:
-                    status.write("Preparing subprocess...")
+                    status.write(
+                        "Preparing subprocess..."
+                    )
+
                     progress.progress(15)
 
-                    result = build_polymer_subprocess(st.session_state.sequence)
+                    result = build_polymer_subprocess(
+                        st.session_state.sequence
+                    )
 
                     progress.progress(85)
-                    status.write("Build subprocess finished.")
+
+                    status.write(
+                        "Build subprocess finished."
+                    )
 
                 except Exception as error:
                     progress.progress(100)
-                    st.error("Could not launch build subprocess.")
-                    st.code(str(error))
+
+                    st.error(
+                        "Could not launch "
+                        "the build subprocess."
+                    )
+
+                    st.code(
+                        str(error)
+                    )
+
                     st.stop()
 
             progress.progress(100)
 
             if result.returncode == 0:
-                st.success("Polymer build complete.")
+                st.success(
+                    "Polymer build complete."
+                )
+
                 st.balloons()
 
                 st.markdown(
-                    '<div class="good-box">Backend returned success.</div>',
+                    """
+<div class="good-box">
+Backend returned success.
+</div>
+""",
                     unsafe_allow_html=True,
                 )
 
                 if result.stdout:
-                    st.subheader("STDOUT")
-                    st.code(result.stdout)
+                    st.subheader(
+                        "STDOUT"
+                    )
+
+                    st.code(
+                        result.stdout
+                    )
 
             else:
-                st.error("Polymer build failed.")
+                st.error(
+                    "Polymer build failed."
+                )
 
                 if result.stdout:
-                    st.subheader("STDOUT")
-                    st.code(result.stdout)
+                    st.subheader(
+                        "STDOUT"
+                    )
+
+                    st.code(
+                        result.stdout
+                    )
 
                 if result.stderr:
-                    st.subheader("STDERR")
-                    st.code(result.stderr)
+                    st.subheader(
+                        "STDERR"
+                    )
+
+                    st.code(
+                        result.stderr
+                    )
 
     st.divider()
 
-    st.markdown("### Current command context")
-    st.write("AmberTools Python:")
-    st.code(str(AMBERTOOLS_PYTHON))
-    st.write("Working directory:")
-    st.code(str(Path.cwd()))
+    st.markdown(
+        "### Current command context"
+    )
+
+    st.write(
+        "AmberTools Python:"
+    )
+    st.code(
+        str(AMBERTOOLS_PYTHON)
+    )
+
+    st.write(
+        "Working directory:"
+    )
+    st.code(
+        str(PROJECT_ROOT)
+    )
 
 
 # ==========================================================
@@ -729,13 +1489,16 @@ The GUI environment only runs Streamlit and RDKit rendering.
 # ==========================================================
 
 with tab_openmm:
-    st.markdown("## ⚛️ OpenMM Simulation Script Builder")
+    st.markdown(
+        "## ⚛️ OpenMM Simulation Script Builder"
+    )
 
     st.markdown(
         """
 <div class="info-box">
-Build an ordered OpenMM workflow here. The GUI writes a normal Python script using 
-<code>OpenMMScriptBuilder</code>, then you can inspect it or run it with AmberTools23.
+Select any prepared system registered in <code>md_systems.csv</code>,
+construct an ordered OpenMM workflow, generate a normal Python script,
+and optionally run it with AmberTools23.
 </div>
 """,
         unsafe_allow_html=True,
@@ -743,33 +1506,263 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
 
     st.divider()
 
-    settings_col, workflow_col = st.columns([1, 1.4])
+    settings_col, workflow_col = st.columns(
+        [
+            1,
+            1.4,
+        ]
+    )
+
+    # ======================================================
+    # OpenMM settings and step creation
+    # ======================================================
 
     with settings_col:
-        st.markdown("### System Selection")
-
-        polymer_names_input = st.text_input(
-            "Polymer names",
-            value="P3HB_10",
-            help="Comma-separated, e.g. P3HB_10 or P3HB_10,P4HB_10",
+        st.markdown(
+            "### Registered MD System"
         )
 
-        polymer_counts_input = st.text_input(
-            "Number of polymers",
-            value="25",
-            help="Comma-separated counts matching polymer names, e.g. 25 or 25,25",
-        )
+        selected_system_name = None
+        selected_system_type = None
+        selected_system_row = None
+        selected_system_files = None
+
+        if md_systems_df.empty:
+            st.markdown(
+                """
+<div class="warn-box">
+No molecular-dynamics systems are registered yet.
+Build a dry, solvated, ionised, or melt system first.
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+        else:
+            available_system_types = sorted(
+                system_type
+                for system_type
+                in md_systems_df[
+                    "system_type"
+                ].dropna().unique()
+                if system_type
+            )
+
+            type_filter = st.selectbox(
+                "System type filter",
+                [
+                    "All",
+                    *available_system_types,
+                ],
+            )
+
+            if type_filter == "All":
+                filtered_systems_df = (
+                    md_systems_df.copy()
+                )
+
+            else:
+                filtered_systems_df = (
+                    md_systems_df[
+                        md_systems_df[
+                            "system_type"
+                        ]
+                        == type_filter
+                    ].copy()
+                )
+
+            if filtered_systems_df.empty:
+                st.warning(
+                    "No systems match "
+                    "the selected type."
+                )
+
+            else:
+                selected_system_name = st.selectbox(
+                    "Prepared MD system",
+                    filtered_systems_df[
+                        "system_name"
+                    ].tolist(),
+                )
+
+                selected_system_row = (
+                    filtered_systems_df[
+                        filtered_systems_df[
+                            "system_name"
+                        ]
+                        == selected_system_name
+                    ]
+                    .iloc[0]
+                )
+
+                selected_system_type = str(
+                    selected_system_row[
+                        "system_type"
+                    ]
+                )
+
+                try:
+                    selected_system_files = (
+                        paths.validate_md_system_files(
+                            system_name=(
+                                selected_system_name
+                            ),
+                            system_type=(
+                                selected_system_type
+                            ),
+                        )
+                    )
+
+                    system_files_valid = True
+
+                except Exception as error:
+                    selected_system_files = (
+                        paths.get_md_system_files(
+                            system_name=(
+                                selected_system_name
+                            ),
+                            system_type=(
+                                selected_system_type
+                            ),
+                        )
+                    )
+
+                    system_files_valid = False
+                    system_file_error = str(error)
+
+                atom_count_label = (
+                    format_atom_count(
+                        selected_system_row[
+                            "number_of_atoms"
+                        ]
+                    )
+                )
+
+                input_format = infer_input_format(
+                    selected_system_files[
+                        "topology_file"
+                    ],
+                    selected_system_files[
+                        "coordinate_file"
+                    ],
+                )
+
+                st.markdown(
+                    '<div class="card">',
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown(
+                    (
+                        '<span class="system-chip">'
+                        f"{selected_system_name}"
+                        "</span>"
+                    ),
+                    unsafe_allow_html=True,
+                )
+
+                st.write(
+                    "**System type:** "
+                    f"`{selected_system_type}`"
+                )
+
+                st.write(
+                    "**Number of atoms:** "
+                    f"`{atom_count_label}`"
+                )
+
+                st.write(
+                    "**Input format:** "
+                    f"`{input_format}`"
+                )
+
+                st.write(
+                    "**System directory:**"
+                )
+
+                st.code(
+                    str(
+                        selected_system_files[
+                            "system_dir"
+                        ]
+                    )
+                )
+
+                st.write(
+                    "**Topology file:**"
+                )
+
+                st.code(
+                    str(
+                        selected_system_files[
+                            "topology_file"
+                        ]
+                    )
+                )
+
+                st.write(
+                    "**Coordinate file:**"
+                )
+
+                st.code(
+                    str(
+                        selected_system_files[
+                            "coordinate_file"
+                        ]
+                    )
+                )
+
+                st.markdown(
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+
+                if system_files_valid:
+                    st.markdown(
+                        """
+<div class="good-box">
+The required topology and coordinate files were found.
+</div>
+""",
+                        unsafe_allow_html=True,
+                    )
+
+                else:
+                    st.markdown(
+                        """
+<div class="error-box">
+The registry entry exists, but one or more required files are missing.
+</div>
+""",
+                        unsafe_allow_html=True,
+                    )
+
+                    st.code(
+                        system_file_error
+                    )
 
         run_name_input = st.text_input(
             "Run name",
             value="Test",
-            help="Used to create directories such as Test_01, Test_02, Tg_01.",
+            help=(
+                "Creates numbered directories such as "
+                "Test_01, Test_02, Tg_01, or Anneal_01."
+            ),
         )
 
-        st.write("Generated scripts will be saved in:")
-        st.code(str(MD_SCRIPT_DIR))
+        st.write(
+            "Generated scripts will be saved in:"
+        )
 
-        st.markdown("### Add Workflow Step")
+        st.code(
+            str(MD_SCRIPT_DIR)
+        )
+
+        st.divider()
+
+        st.markdown(
+            "### Add Workflow Step"
+        )
 
         step_type = st.selectbox(
             "Step type",
@@ -784,12 +1777,24 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
 
         if step_type == "minimize_energy":
             st.markdown(
-                '<div class="small-muted">No parameters required.</div>',
+                """
+<div class="small-muted">
+No parameters are required for minimisation.
+</div>
+""",
                 unsafe_allow_html=True,
             )
 
-            if st.button("➕ Add minimization", use_container_width=True):
-                add_workflow_step({"method": "minimize_energy"})
+            if st.button(
+                "➕ Add minimization",
+                use_container_width=True,
+            ):
+                add_workflow_step(
+                    {
+                        "method": "minimize_energy",
+                    }
+                )
+
                 st.rerun()
 
         elif step_type == "basic_NVT":
@@ -800,6 +1805,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=1000,
                 key="add_nvt_steps",
             )
+
             temp = st.number_input(
                 "Temperature / K",
                 min_value=0,
@@ -807,33 +1813,47 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=10,
                 key="add_nvt_temp",
             )
+
             filename = st.text_input(
                 "Filename label",
                 value="NVT",
                 key="add_nvt_filename",
             )
+
             save_restart = st.checkbox(
                 "Save restart",
                 value=False,
                 key="add_nvt_restart",
             )
+
             restart_name = st.text_input(
                 "Restart name",
                 value="",
                 key="add_nvt_restart_name",
             )
 
-            if st.button("➕ Add Basic NVT", use_container_width=True):
+            if st.button(
+                "➕ Add Basic NVT",
+                use_container_width=True,
+            ):
                 add_workflow_step(
                     {
                         "method": "basic_NVT",
-                        "total_steps": int(total_steps),
+                        "total_steps": int(
+                            total_steps
+                        ),
                         "temp": float(temp),
                         "filename": filename,
-                        "save_restart": bool(save_restart),
-                        "restart_name": restart_name or None,
+                        "save_restart": bool(
+                            save_restart
+                        ),
+                        "restart_name": (
+                            restart_name
+                            or None
+                        ),
                     }
                 )
+
                 st.rerun()
 
         elif step_type == "basic_NPT":
@@ -844,6 +1864,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=1000,
                 key="add_npt_steps",
             )
+
             temp = st.number_input(
                 "Temperature / K",
                 min_value=0,
@@ -851,6 +1872,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=10,
                 key="add_npt_temp",
             )
+
             pressure = st.number_input(
                 "Pressure / atm",
                 min_value=0.0,
@@ -858,34 +1880,50 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=0.1,
                 key="add_npt_pressure",
             )
+
             filename = st.text_input(
                 "Filename label",
                 value="NPT",
                 key="add_npt_filename",
             )
+
             save_restart = st.checkbox(
                 "Save restart",
                 value=False,
                 key="add_npt_restart",
             )
+
             restart_name = st.text_input(
                 "Restart name",
                 value="",
                 key="add_npt_restart_name",
             )
 
-            if st.button("➕ Add Basic NPT", use_container_width=True):
+            if st.button(
+                "➕ Add Basic NPT",
+                use_container_width=True,
+            ):
                 add_workflow_step(
                     {
                         "method": "basic_NPT",
-                        "total_steps": int(total_steps),
+                        "total_steps": int(
+                            total_steps
+                        ),
                         "temp": float(temp),
-                        "pressure": float(pressure),
+                        "pressure": float(
+                            pressure
+                        ),
                         "filename": filename,
-                        "save_restart": bool(save_restart),
-                        "restart_name": restart_name or None,
+                        "save_restart": bool(
+                            save_restart
+                        ),
+                        "restart_name": (
+                            restart_name
+                            or None
+                        ),
                     }
                 )
+
                 st.rerun()
 
         elif step_type == "anneal_NVT":
@@ -896,13 +1934,15 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=10,
                 key="add_anneal_start",
             )
+
             max_temp = st.number_input(
-                "Max temperature / K",
+                "Maximum temperature / K",
                 min_value=0,
                 value=700,
                 step=10,
                 key="add_anneal_max",
             )
+
             cycles = st.number_input(
                 "Cycles",
                 min_value=1,
@@ -910,6 +1950,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=1,
                 key="add_anneal_cycles",
             )
+
             quench_rate = st.number_input(
                 "Temperature increment / K",
                 min_value=1,
@@ -917,6 +1958,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=1,
                 key="add_anneal_quench",
             )
+
             steps_per_cycle = st.number_input(
                 "Steps per cycle",
                 min_value=1,
@@ -924,66 +1966,107 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=10000,
                 key="add_anneal_steps",
             )
+
             filename = st.text_input(
                 "Filename label",
                 value="anneal_NVT",
                 key="add_anneal_filename",
             )
+
             save_restart = st.checkbox(
                 "Save restart",
                 value=False,
                 key="add_anneal_restart",
             )
+
             restart_name = st.text_input(
                 "Restart name",
                 value="",
                 key="add_anneal_restart_name",
             )
 
-            if st.button("➕ Add Anneal NVT", use_container_width=True):
+            if st.button(
+                "➕ Add Anneal NVT",
+                use_container_width=True,
+            ):
                 add_workflow_step(
                     {
                         "method": "anneal_NVT",
-                        "start_temp": float(start_temp),
-                        "max_temp": float(max_temp),
+                        "start_temp": float(
+                            start_temp
+                        ),
+                        "max_temp": float(
+                            max_temp
+                        ),
                         "cycles": int(cycles),
-                        "quench_rate": float(quench_rate),
-                        "steps_per_cycle": int(steps_per_cycle),
+                        "quench_rate": float(
+                            quench_rate
+                        ),
+                        "steps_per_cycle": int(
+                            steps_per_cycle
+                        ),
                         "filename": filename,
-                        "save_restart": bool(save_restart),
-                        "restart_name": restart_name or None,
+                        "save_restart": bool(
+                            save_restart
+                        ),
+                        "restart_name": (
+                            restart_name
+                            or None
+                        ),
                     }
                 )
+
                 st.rerun()
 
         elif step_type == "thermal_ramp":
             heating_choice = st.radio(
                 "Ramp direction",
-                ["Heating", "Cooling"],
+                [
+                    "Heating",
+                    "Cooling",
+                ],
                 horizontal=True,
                 key="add_ramp_direction",
             )
-            heating = heating_choice == "Heating"
+
+            heating = (
+                heating_choice
+                == "Heating"
+            )
 
             ensemble = st.selectbox(
                 "Ensemble",
-                ["NVT", "NPT"],
+                [
+                    "NVT",
+                    "NPT",
+                ],
                 key="add_ramp_ensemble",
             )
+
             start_temp = st.number_input(
                 "Start temperature / K",
                 min_value=0,
-                value=300 if heating else 700,
+                value=(
+                    300
+                    if heating
+                    else 700
+                ),
                 step=10,
                 key="add_ramp_start",
             )
+
             max_temp = st.number_input(
                 "Target temperature / K",
                 min_value=0,
-                value=700 if heating else 140,
+                value=(
+                    700
+                    if heating
+                    else 140
+                ),
                 step=10,
                 key="add_ramp_max",
             )
+
             quench_rate = st.number_input(
                 "Temperature increment / K",
                 min_value=1,
@@ -991,6 +2074,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=1,
                 key="add_ramp_quench",
             )
+
             total_steps = st.number_input(
                 "Total steps",
                 min_value=1,
@@ -998,6 +2082,7 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=10000,
                 key="add_ramp_steps",
             )
+
             pressure = st.number_input(
                 "Pressure / atm",
                 min_value=0.0,
@@ -1005,65 +2090,118 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                 step=0.1,
                 key="add_ramp_pressure",
             )
+
             filename = st.text_input(
                 "Filename label",
                 value="thermal_ramp",
                 key="add_ramp_filename",
             )
+
             save_restart = st.checkbox(
                 "Save restart",
                 value=False,
                 key="add_ramp_restart",
             )
+
             restart_name = st.text_input(
                 "Restart name",
                 value="",
                 key="add_ramp_restart_name",
             )
 
-            if st.button("➕ Add Thermal Ramp", use_container_width=True):
+            if st.button(
+                "➕ Add Thermal Ramp",
+                use_container_width=True,
+            ):
                 add_workflow_step(
                     {
                         "method": "thermal_ramp",
-                        "heating": bool(heating),
+                        "heating": bool(
+                            heating
+                        ),
                         "ensemble": ensemble,
-                        "start_temp": float(start_temp),
-                        "max_temp": float(max_temp),
-                        "quench_rate": float(quench_rate),
-                        "total_steps": int(total_steps),
-                        "pressure": float(pressure),
+                        "start_temp": float(
+                            start_temp
+                        ),
+                        "max_temp": float(
+                            max_temp
+                        ),
+                        "quench_rate": float(
+                            quench_rate
+                        ),
+                        "total_steps": int(
+                            total_steps
+                        ),
+                        "pressure": float(
+                            pressure
+                        ),
                         "filename": filename,
-                        "save_restart": bool(save_restart),
-                        "restart_name": restart_name or None,
+                        "save_restart": bool(
+                            save_restart
+                        ),
+                        "restart_name": (
+                            restart_name
+                            or None
+                        ),
                     }
                 )
+
                 st.rerun()
 
+    # ======================================================
+    # Current workflow and script actions
+    # ======================================================
+
     with workflow_col:
-        st.markdown("### Current OpenMM Workflow")
+        st.markdown(
+            "### Current OpenMM Workflow"
+        )
 
         if st.session_state.openmm_steps:
             chip_html = "".join(
-                [
-                    f'<span class="workflow-chip">{i + 1}. {workflow_step_label(step)}</span>'
-                    for i, step in enumerate(st.session_state.openmm_steps)
-                ]
+                (
+                    '<span class="workflow-chip">'
+                    f"{index + 1}. "
+                    f"{workflow_step_label(step)}"
+                    "</span>"
+                )
+                for index, step
+                in enumerate(
+                    st.session_state.openmm_steps
+                )
             )
-            st.markdown(chip_html, unsafe_allow_html=True)
+
+            st.markdown(
+                chip_html,
+                unsafe_allow_html=True,
+            )
+
         else:
             st.markdown(
-                '<div class="warn-box">No OpenMM workflow steps added yet. Start with minimization.</div>',
+                """
+<div class="warn-box">
+No OpenMM workflow steps have been added.
+Start with minimization.
+</div>
+""",
                 unsafe_allow_html=True,
             )
 
         st.divider()
 
-        for index, step in enumerate(st.session_state.openmm_steps):
+        for index, step in enumerate(
+            st.session_state.openmm_steps
+        ):
             with st.expander(
-                f"Step {index + 1}: {workflow_step_label(step)}",
+                (
+                    f"Step {index + 1}: "
+                    f"{workflow_step_label(step)}"
+                ),
                 expanded=True,
             ):
-                st.json(step)
+                st.json(
+                    step
+                )
 
                 button_cols = st.columns(4)
 
@@ -1073,7 +2211,9 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                         key=f"openmm_up_{index}",
                         use_container_width=True,
                     ):
-                        move_workflow_step_up(index)
+                        move_workflow_step_up(
+                            index
+                        )
                         st.rerun()
 
                 with button_cols[1]:
@@ -1082,7 +2222,9 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                         key=f"openmm_down_{index}",
                         use_container_width=True,
                     ):
-                        move_workflow_step_down(index)
+                        move_workflow_step_down(
+                            index
+                        )
                         st.rerun()
 
                 with button_cols[2]:
@@ -1091,13 +2233,18 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
                         key=f"openmm_remove_{index}",
                         use_container_width=True,
                     ):
-                        remove_workflow_step(index)
+                        remove_workflow_step(
+                            index
+                        )
                         st.rerun()
 
                 with button_cols[3]:
                     if st.button(
                         "📋 Duplicate",
-                        key=f"openmm_duplicate_{index}",
+                        key=(
+                            f"openmm_duplicate_"
+                            f"{index}"
+                        ),
                         use_container_width=True,
                     ):
                         st.session_state.openmm_steps.insert(
@@ -1111,16 +2258,27 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
         action_cols = st.columns(3)
 
         with action_cols[0]:
-            if st.button("🧹 Clear workflow", use_container_width=True):
+            if st.button(
+                "🧹 Clear workflow",
+                use_container_width=True,
+            ):
                 st.session_state.openmm_steps = []
+
                 st.session_state.generated_openmm_script = None
                 st.session_state.generated_openmm_script_path = None
+                st.session_state.generated_openmm_system_name = None
+                st.session_state.generated_openmm_system_type = None
+
                 st.rerun()
 
         with action_cols[1]:
             generate_clicked = st.button(
                 "📝 Generate script",
                 use_container_width=True,
+                disabled=(
+                    selected_system_name
+                    is None
+                ),
             )
 
         with action_cols[2]:
@@ -1131,106 +2289,271 @@ Build an ordered OpenMM workflow here. The GUI writes a normal Python script usi
 
         if generate_clicked:
             try:
-                polymer_names = [
-                    item.strip()
-                    for item in polymer_names_input.split(",")
-                    if item.strip()
-                ]
-
-                number_of_polymers = [
-                    int(item.strip())
-                    for item in polymer_counts_input.split(",")
-                    if item.strip()
-                ]
-
-                if len(polymer_names) != len(number_of_polymers):
+                if selected_system_name is None:
                     raise ValueError(
-                        "Polymer names and polymer counts must have the same length."
+                        "No registered MD system "
+                        "has been selected."
                     )
 
-                if not st.session_state.openmm_steps:
-                    raise ValueError("No OpenMM workflow steps have been added.")
-
-                if st.session_state.openmm_steps[0]["method"] != "minimize_energy":
+                if selected_system_type is None:
                     raise ValueError(
-                        "For now, the first OpenMM workflow step must be minimization."
+                        "The selected system does not "
+                        "have a valid system type."
                     )
 
-                script_builder = build_openmm_script_builder(
-                    polymer_names=polymer_names,
-                    number_of_polymers=number_of_polymers,
-                    run_name=run_name_input,
+                paths.validate_md_system_files(
+                    system_name=selected_system_name,
+                    system_type=selected_system_type,
                 )
 
-                output_script = get_next_md_script_path(run_name_input)
+                if not st.session_state.openmm_steps:
+                    raise ValueError(
+                        "No OpenMM workflow steps "
+                        "have been added."
+                    )
 
-                script_text = script_builder.to_script()
-                output_script = script_builder.write_script(output_script)
+                first_step = (
+                    st.session_state
+                    .openmm_steps[0]
+                    ["method"]
+                )
 
-                st.session_state.generated_openmm_script = script_text
-                st.session_state.generated_openmm_script_path = str(output_script)
+                if first_step != "minimize_energy":
+                    raise ValueError(
+                        "The first OpenMM workflow "
+                        "step must be minimization."
+                    )
 
-                st.success("Generated OpenMM simulation script.")
-                st.code(str(output_script))
+                script_builder = (
+                    build_openmm_script_builder(
+                        system_name=(
+                            selected_system_name
+                        ),
+                        system_type=(
+                            selected_system_type
+                        ),
+                        run_name=run_name_input,
+                    )
+                )
+
+                output_script = (
+                    get_next_md_script_path(
+                        run_name=run_name_input,
+                        system_name=(
+                            selected_system_name
+                        ),
+                    )
+                )
+
+                script_text = (
+                    script_builder.to_script()
+                )
+
+                output_script = (
+                    script_builder.write_script(
+                        output_script
+                    )
+                )
+
+                st.session_state.generated_openmm_script = (
+                    script_text
+                )
+
+                st.session_state.generated_openmm_script_path = (
+                    str(output_script)
+                )
+
+                st.session_state.generated_openmm_system_name = (
+                    selected_system_name
+                )
+
+                st.session_state.generated_openmm_system_type = (
+                    selected_system_type
+                )
+
+                st.success(
+                    "Generated OpenMM "
+                    "simulation script."
+                )
+
+                st.write(
+                    "Selected system:"
+                )
+
+                st.code(
+                    selected_system_name
+                )
+
+                st.write(
+                    "Generated script:"
+                )
+
+                st.code(
+                    str(output_script)
+                )
 
             except Exception as error:
-                st.error("Could not generate OpenMM script.")
-                st.code(str(error))
+                st.error(
+                    "Could not generate "
+                    "the OpenMM script."
+                )
 
-        if st.session_state.generated_openmm_script is not None:
-            st.markdown("### Generated Script Preview")
+                st.code(
+                    str(error)
+                )
+
+        if (
+            st.session_state
+            .generated_openmm_script
+            is not None
+        ):
+            st.markdown(
+                "### Generated Script Preview"
+            )
+
+            st.write(
+                "**System:** "
+                f"`{st.session_state.generated_openmm_system_name}`"
+            )
+
+            st.write(
+                "**System type:** "
+                f"`{st.session_state.generated_openmm_system_type}`"
+            )
+
             st.code(
-                st.session_state.generated_openmm_script,
+                st.session_state
+                .generated_openmm_script,
                 language="python",
             )
 
         if run_clicked:
-            if st.session_state.generated_openmm_script_path is None:
-                st.error("Generate a script before running it.")
+            generated_path = (
+                st.session_state
+                .generated_openmm_script_path
+            )
+
+            if generated_path is None:
+                st.error(
+                    "Generate a script before "
+                    "trying to run it."
+                )
+
             else:
-                script_path = Path(st.session_state.generated_openmm_script_path)
+                script_path = Path(
+                    generated_path
+                )
 
                 if not script_path.exists():
-                    st.error(f"Generated script does not exist:\n{script_path}")
+                    st.error(
+                        "Generated script does "
+                        "not exist:\n"
+                        f"{script_path}"
+                    )
+
                 else:
-                    st.info("Running generated OpenMM script with AmberTools23...")
+                    st.info(
+                        "Running generated OpenMM "
+                        "script with AmberTools23..."
+                    )
+
+                    st.write(
+                        "Generated for system:"
+                    )
+
+                    st.code(
+                        st.session_state
+                        .generated_openmm_system_name
+                    )
 
                     progress = st.progress(0)
                     status = st.empty()
 
-                    with st.spinner("Running OpenMM script..."):
+                    with st.spinner(
+                        "Running OpenMM script..."
+                    ):
                         try:
-                            status.write("Launching generated script...")
+                            status.write(
+                                "Launching generated "
+                                "script..."
+                            )
+
                             progress.progress(20)
 
-                            result = run_python_script_with_ambertools(script_path)
+                            result = (
+                                run_python_script_with_ambertools(
+                                    script_path
+                                )
+                            )
 
                             progress.progress(90)
-                            status.write("Script finished.")
+
+                            status.write(
+                                "Script finished."
+                            )
 
                         except Exception as error:
                             progress.progress(100)
-                            st.error("Could not run generated script.")
-                            st.code(str(error))
+
+                            st.error(
+                                "Could not run the "
+                                "generated script."
+                            )
+
+                            st.code(
+                                str(error)
+                            )
+
                             st.stop()
 
                     progress.progress(100)
 
                     if result.returncode == 0:
-                        st.success("Generated OpenMM script finished successfully.")
+                        st.success(
+                            "Generated OpenMM script "
+                            "finished successfully."
+                        )
+
                         st.balloons()
 
                         if result.stdout:
-                            st.subheader("STDOUT")
-                            st.code(result.stdout)
+                            st.subheader(
+                                "STDOUT"
+                            )
 
-                    else:
-                        st.error("Generated OpenMM script failed.")
-
-                        if result.stdout:
-                            st.subheader("STDOUT")
-                            st.code(result.stdout)
+                            st.code(
+                                result.stdout
+                            )
 
                         if result.stderr:
-                            st.subheader("STDERR")
-                            st.code(result.stderr)
+                            st.subheader(
+                                "STDERR / warnings"
+                            )
+
+                            st.code(
+                                result.stderr
+                            )
+
+                    else:
+                        st.error(
+                            "Generated OpenMM "
+                            "script failed."
+                        )
+
+                        if result.stdout:
+                            st.subheader(
+                                "STDOUT"
+                            )
+
+                            st.code(
+                                result.stdout
+                            )
+
+                        if result.stderr:
+                            st.subheader(
+                                "STDERR"
+                            )
+
+                            st.code(
+                                result.stderr
+                            )
