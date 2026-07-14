@@ -257,7 +257,67 @@ gmx --version
 obabel -V
 ```
 
-### 8. Start the Notebooks
+### 8. Merge Restarted GROMACS Outputs
+
+Long GROMACS simulations may produce several trajectory (`.xtc`) and energy
+(`.edr`) files after restarts. The merge module discovers the initial
+`step7_production` files, the optional unnumbered `step8_production_2us` files,
+and numbered continuation files such as `part0002` and `part0003`.
+
+The module can be run directly inside the directory containing the XTC and EDR
+files. First change into that directory and perform a dry run:
+
+```bash
+cd /path/to/system_directory
+python -m iphasimulator.trajectory_gromacs_merge --dry-run
+```
+
+The dry run prints the numerically ordered input files and planned commands but
+does not run GROMACS. Review that list carefully. To perform both trajectory and
+energy merging, run:
+
+```bash
+python -m iphasimulator.trajectory_gromacs_merge
+```
+
+Alternatively, pass the simulation directory while working elsewhere:
+
+```bash
+python -m iphasimulator.trajectory_gromacs_merge /path/to/system_directory
+```
+
+The trajectory filename records the highest continuation part included. For
+example, if `part0003` is the highest discovered XTC part, the outputs are:
+
+```text
+production_combined_003.xtc
+production_combined_003.edr
+```
+
+Both output suffixes record the highest part included in their respective merge.
+The suffix is numeric: `part0009` produces `_009.xtc` or `_009.edr`, and
+`part0010` produces `_010.xtc` or `_010.edr`. An unnumbered
+`step8_production_2us` file is treated as continuation 1; a step-7-only output
+uses `_000`.
+
+The module runs `gmx check` on every input and validates the final outputs. It
+preserves the original files, does not infer times from filenames, and does not
+use `-settime`. Existing combined outputs are protected by default.
+
+Optional flags:
+
+```text
+--trajectory-only   Merge only XTC files.
+--energy-only       Merge only EDR files.
+--skip-check        Skip input and output gmx check validation.
+--overwrite         Allow replacement of existing combined outputs.
+--dry-run           Print the planned commands without running GROMACS.
+```
+
+If continuation XTC files exist but continuation EDR files do not, the module
+still merges the trajectory and clearly reports that energy merging was skipped.
+
+### 9. Start the Notebooks
 
 Then start the notebooks from the repository root:
 
