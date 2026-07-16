@@ -27,21 +27,37 @@ from gui.polymer_helpers import (
 )
 from gui.state import clear_polymer_sequence
 from gui.styles import render_warning_box
+from pathlib import Path
 
-def _render_monomer_card(
+import streamlit as st
+
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit.Chem.rdMolDescriptors import CalcMolFormula
+
+def _get_monomer_information(
     pha_type,
     monomer_smiles,
+    gui_data,
 ):
     """
-    Render a monomer preview popover and an Add button.
+    Collect calculated and database-backed information for one monomer.
 
     Parameters
     ----------
     pha_type : str
-        Short PHA monomer name, for example ``3HB``.
+        Registered PHA type, for example ``3HB``.
 
     monomer_smiles : dict
-        Mapping of PHA names to monomer SMILES.
+        Mapping between PHA type and monomer SMILES.
+
+    gui_data : GUIData
+        Shared GUI data containing the filepath manager and monomer table.
+
+    Returns
+    -------
+    dict
+        Monomer properties and parameterisation status.
     """
 
     smiles = monomer_smiles.get(
@@ -49,13 +65,126 @@ def _render_monomer_card(
         "",
     )
 
+    molecule = Chem.MolFromSmiles(
+        smiles
+    )
+
+    if molecule is None:
+        molecular_formula = "Unavailable"
+        molecular_weight = None
+        stereocentre_count = None
+
+    else:
+        molecular_formula = CalcMolFormula(
+            molecule
+        )
+
+        molecular_weight = Descriptors.MolWt(
+            molecule
+        )
+
+        stereocentres = Chem.FindMolChiralCenters(
+            molecule,
+            includeUnassigned=True,
+        )
+
+        stereocentre_count = len(
+            stereocentres
+        )
+
+    residue_code = "Unavailable"
+
+    matching_rows = gui_data.mainchain_df[
+        gui_data.mainchain_df["PHA_type"] == pha_type
+    ]
+
+    if not matching_rows.empty:
+        first_row = matching_rows.iloc[0]
+
+        if "residue_code" in first_row.index:
+            value = first_row["residue_code"]
+
+            if value is not None and str(value).strip():
+                residue_code = str(value).strip()
+
+    parameter_files = (
+        gui_data.paths.get_PHA_monomer_unit_files(
+            pha_type
+        )
+    )
+
+    head_prepin_exists = Path(
+        parameter_files["head_prepin"]
+    ).exists()
+
+    mainchain_prepin_exists = Path(
+        parameter_files["mainchain_prepin"]
+    ).exists()
+
+    tail_prepin_exists = Path(
+        parameter_files["tail_prepin"]
+    ).exists()
+
+    frcmod_exists = Path(
+        parameter_files["frcmod"]
+    ).exists()
+
+    monomer_units_ready = all(
+        [
+            head_prepin_exists,
+            mainchain_prepin_exists,
+            tail_prepin_exists,
+        ]
+    )
+
+    polymer_builder_ready = (
+        monomer_units_ready
+        and frcmod_exists
+    )
+
+    return {
+        "smiles": smiles,
+        "formula": molecular_formula,
+        "molecular_weight": molecular_weight,
+        "stereocentre_count": stereocentre_count,
+        "residue_code": residue_code,
+        "head_prepin_exists": head_prepin_exists,
+        "mainchain_prepin_exists": mainchain_prepin_exists,
+        "tail_prepin_exists": tail_prepin_exists,
+        "frcmod_exists": frcmod_exists,
+        "monomer_units_ready": monomer_units_ready,
+        "polymer_builder_ready": polymer_builder_ready,
+    }
+
+def _render_monomer_card(
+    pha_type,
+    monomer_smiles,
+    gui_data,
+):
+    """
+    Render a detailed monomer information popover.
+
+    The popover contains calculated molecular properties,
+    parameterisation status and an Add button.
+    """
+
+    monomer_information = _get_monomer_information(
+        pha_type=pha_type,
+        monomer_smiles=monomer_smiles,
+        gui_data=gui_data,
+    )
+
     with st.popover(
         pha_type,
         use_container_width=True,
     ):
         st.markdown(
-            f"### {pha_type}"
+            f"## {pha_type}"
         )
+
+        # ==================================================
+        # Molecular structure
+        # ==================================================
 
         try:
             monomer_image = draw_monomer(
@@ -85,19 +214,152 @@ def _render_monomer_card(
                 "Structure preview unavailable."
             )
 
+        # ==================================================
+        # Calculated molecular properties
+        # ==================================================
+
         st.markdown(
-            "**Monomer SMILES**"
+            "### Molecular Information"
         )
 
-        if smiles:
+        property_columns = st.columns(2)
+
+        with property_columns[0]:
+            st.write(
+                "**Formula**"
+            )
+
             st.code(
-                smiles
+                monomer_information["formula"]
+            )
+
+            st.write(
+                "**Residue code**"
+            )
+
+            st.code(
+                monomer_information["residue_code"]
+            )
+
+        with property_columns[1]:
+            st.write(
+                "**Molecular weight**"
+            )
+
+            molecular_weight = (
+                monomer_information[
+                    "molecular_weight"
+                ]
+            )
+
+            if molecular_weight is None:
+                st.code(
+                    "Unavailable"
+                )
+
+            else:
+                st.code(
+                    f"{molecular_weight:.3f} g mol⁻¹"
+                )
+
+            st.write(
+                "**Stereocentres**"
+            )
+
+            stereocentre_count = (
+                monomer_information[
+                    "stereocentre_count"
+                ]
+            )
+
+            if stereocentre_count is None:
+                st.code(
+                    "Unavailable"
+                )
+
+            else:
+                st.code(
+                    str(stereocentre_count)
+                )
+
+        # ==================================================
+        # SMILES
+        # ==================================================
+
+        st.markdown(
+            "### Monomer SMILES"
+        )
+
+        if monomer_information["smiles"]:
+            st.code(
+                monomer_information["smiles"]
             )
 
         else:
-            st.caption(
-                "No SMILES entry is available."
+            st.warning(
+                "No monomer SMILES is available."
             )
+
+        # ==================================================
+        # Parameterisation status
+        # ==================================================
+
+        st.markdown(
+            "### Parameterisation Status"
+        )
+
+        status_rows = [
+            (
+                "Head prepin",
+                monomer_information[
+                    "head_prepin_exists"
+                ],
+            ),
+            (
+                "Mainchain prepin",
+                monomer_information[
+                    "mainchain_prepin_exists"
+                ],
+            ),
+            (
+                "Tail prepin",
+                monomer_information[
+                    "tail_prepin_exists"
+                ],
+            ),
+            (
+                "Force-field parameters",
+                monomer_information[
+                    "frcmod_exists"
+                ],
+            ),
+        ]
+
+        for status_name, status_value in status_rows:
+            if status_value:
+                st.success(
+                    f"✓ {status_name}"
+                )
+
+            else:
+                st.warning(
+                    f"✗ {status_name}"
+                )
+
+        if monomer_information["polymer_builder_ready"]:
+            st.success(
+                "✓ Ready for polymer building"
+            )
+
+        else:
+            st.error(
+                "This monomer is not yet fully ready "
+                "for polymer building."
+            )
+
+        # ==================================================
+        # Add monomer
+        # ==================================================
 
         if st.button(
             f"➕ Add {pha_type}",
@@ -113,7 +375,6 @@ def _render_monomer_card(
             )
 
             st.rerun()
-
     
 def render_polymer_builder_tab(
     gui_data: GUIData,
@@ -127,6 +388,136 @@ def render_polymer_builder_tab(
         Shared GUI data containing the available PHA monomers and the
         monomer-SMILES lookup.
     """
+    # ======================================================
+    # Page guidance
+    # ======================================================
+
+    st.markdown(
+        "## 🧱 Polymer Builder"
+    )
+
+    st.markdown(
+        """
+<div class="info-box">
+Construct homopolymer and copolymer sequences interactively before
+generating parameterised PHA structures.
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    with st.expander(
+        "📘 How to use this page",
+        expanded=False,
+    ):
+        st.markdown(
+            """
+### Workflow
+
+**1. Browse the registered monomers**
+
+Use the search box to filter the available PHA monomers.
+
+Click a monomer name to open its information panel. This shows:
+
+- the monomer structure
+- molecular formula and molecular weight
+- stereocentre count
+- residue code
+- monomer SMILES
+- parameterisation status
+
+**2. Build a polymer sequence**
+
+Press **Add** inside the monomer information panel to append that
+monomer to the current sequence.
+
+Continue adding monomers in the required order. This can be used to
+construct:
+
+- homopolymers
+- alternating copolymers
+- block copolymers
+- custom copolymer sequences
+
+**3. Edit the sequence**
+
+Use **Remove last** to remove the most recently added monomer.
+
+Use **Clear** to delete the complete sequence.
+
+Use **Repeat sequence** to duplicate the current sequence one or more
+times. This is useful for quickly generating longer chains or repeating
+copolymer patterns.
+
+**4. Review the generated polymer**
+
+The polymer name and polymer SMILES are updated automatically whenever
+the sequence changes.
+
+The ordered sequence can also be inspected in the sequence-details
+table.
+
+**5. Preview and build the polymer**
+
+Open the **Molecular Preview** tab to inspect the generated polymer
+structure.
+
+Open the **Build Console** tab when the sequence is ready to generate
+the parameterised polymer using AmberTools.
+"""
+        )
+
+        st.markdown(
+            "### Tips"
+        )
+
+        st.markdown(
+            """
+- A green parameterisation status means that the required monomer-unit
+  and force-field files were found.
+- Monomers that are not fully parameterised may not build successfully.
+- The order in which monomers are added determines the final copolymer
+  sequence.
+- Build short test polymers before generating very long chains.
+"""
+        )
+
+    st.markdown(
+        "### iPHAsimulator workflow"
+    )
+
+    workflow_columns = st.columns(6)
+
+    workflow_steps = [
+        ("1", "Choose monomers"),
+        ("2", "Build sequence"),
+        ("3", "Preview polymer"),
+        ("4", "Build polymer"),
+        ("5", "Prepare MD system"),
+        ("6", "Run simulation"),
+    ]
+
+    for column, (step_number, step_name) in zip(
+        workflow_columns,
+        workflow_steps,
+    ):
+        with column:
+            st.markdown(
+                f"""
+<div class="workflow-stage">
+    <div class="workflow-stage-number">
+        {step_number}
+    </div>
+    <div class="workflow-stage-label">
+        {step_name}
+    </div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+    st.divider()
 
     available_phas = gui_data.available_phas
     monomer_smiles = gui_data.monomer_smiles
@@ -226,6 +617,7 @@ def render_polymer_builder_tab(
                 _render_monomer_card(
                     pha_type=pha_type,
                     monomer_smiles=monomer_smiles,
+                    gui_data=gui_data,
                 )
 
     # ======================================================
