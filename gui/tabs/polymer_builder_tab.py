@@ -17,9 +17,7 @@ This tab allows the user to:
 """
 
 import streamlit as st
-from base64 import b64encode
 
-from io import BytesIO
 from gui.models import GUIData
 from gui.polymer_helpers import (
     draw_monomer,
@@ -30,92 +28,110 @@ from gui.polymer_helpers import (
 from gui.state import clear_polymer_sequence
 from gui.styles import render_warning_box
 
-def _monomer_image_to_base64(
+def _render_monomer_card(
     pha_type,
     monomer_smiles,
 ):
     """
-    Render a monomer with RDKit and return it as a base64 PNG string.
+    Render a monomer preview popover and an Add button.
 
-    This allows the image to be embedded inside a CSS hover tooltip.
+    Parameters
+    ----------
+    pha_type : str
+        Short PHA monomer name, for example ``3HB``.
+
+    monomer_smiles : dict
+        Mapping of PHA names to monomer SMILES.
     """
-
-    image = draw_monomer(
-        pha_type=pha_type,
-        monomer_smiles=monomer_smiles,
-        width=320,
-        height=240,
-    )
-
-    if image is None:
-        return None
-
-    image_buffer = BytesIO()
-
-    image.save(
-        image_buffer,
-        format="PNG",
-    )
-
-    return b64encode(
-        image_buffer.getvalue()
-    ).decode("utf-8")
-
-def _render_hoverable_monomer(
-    pha_type,
-    monomer_smiles,
-):
-    """
-    Render a monomer name with an image tooltip shown on mouse hover.
-    """
-
-    image_base64 = _monomer_image_to_base64(
-        pha_type=pha_type,
-        monomer_smiles=monomer_smiles,
-    )
 
     smiles = monomer_smiles.get(
         pha_type,
         "",
     )
 
-    if image_base64 is None:
-        tooltip_contents = (
-            '<div class="monomer-tooltip-text">'
-            "Structure preview unavailable"
-            "</div>"
+    with st.popover(
+        pha_type,
+        use_container_width=True,
+    ):
+        st.markdown(
+            f"### {pha_type}"
         )
 
-    else:
-        tooltip_contents = f"""
-        <img
-            src="data:image/png;base64,{image_base64}"
-            class="monomer-tooltip-image"
-            alt="{pha_type} structure"
-        >
-        <div class="monomer-tooltip-smiles">
-            {smiles}
-        </div>
-        """
+        try:
+            monomer_image = draw_monomer(
+                pha_type=pha_type,
+                monomer_smiles=monomer_smiles,
+            )
 
-    st.markdown(
-        f"""
-        <div class="monomer-hover-container">
-            <div class="monomer-hover-name">
-                {pha_type}
-            </div>
+        except Exception as error:
+            monomer_image = None
 
-            <div class="monomer-hover-tooltip">
-                <div class="monomer-tooltip-title">
-                    {pha_type}
-                </div>
+            st.error(
+                "Could not generate the monomer preview."
+            )
 
-                {tooltip_contents}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            st.code(
+                str(error)
+            )
+
+        if monomer_image is not None:
+            st.image(
+                monomer_image,
+                use_container_width=True,
+            )
+
+        else:
+            st.warning(
+                "Structure preview unavailable."
+            )
+
+        st.markdown(
+            "**Monomer SMILES**"
+        )
+
+        if smiles:
+            st.code(
+                smiles
+            )
+
+        else:
+            st.caption(
+                "No SMILES entry is available."
+            )
+
+        if st.button(
+            f"➕ Add {pha_type}",
+            use_container_width=True,
+            key=f"popover_add_{pha_type}",
+        ):
+            st.session_state.sequence.append(
+                pha_type
+            )
+
+            st.session_state.preview_PHA = (
+                pha_type
+            )
+
+            st.rerun()
+
+    if st.button(
+        "➕ Add",
+        use_container_width=True,
+        key=f"polymer_builder_add_{pha_type}",
+        help=(
+            f"Add {pha_type} to the current "
+            "polymer sequence."
+        ),
+    ):
+        st.session_state.sequence.append(
+            pha_type
+        )
+
+        st.session_state.preview_PHA = (
+            pha_type
+        )
+
+        st.rerun()
     
 def render_polymer_builder_tab(
     gui_data: GUIData,
@@ -210,52 +226,25 @@ def render_polymer_builder_tab(
     if not filtered_phas:
         st.info(
             "No registered PHA monomers match the current filter."
-            )
+        )
 
     else:
         number_of_columns = 6
 
         monomer_columns = st.columns(
             number_of_columns
-            )
+        )
 
         for index, pha_type in enumerate(
-                filtered_phas
-                ):
-            column_index = (
-                index
-                % number_of_columns
-                )
-
+            filtered_phas
+        ):
             with monomer_columns[
-                    column_index
-                    ]:
-                _render_hoverable_monomer(
+                index % number_of_columns
+            ]:
+                _render_monomer_card(
                     pha_type=pha_type,
                     monomer_smiles=monomer_smiles,
-                    )
-
-                if st.button(
-                        "➕ Add",
-                        use_container_width=True,
-                        key=(
-                            "polymer_builder_add_"
-                            f"{pha_type}"
-                            ),
-                        help=(
-                            f"Add {pha_type} to the "
-                            "current polymer sequence."
-                            ),
-                        ):
-                    st.session_state.sequence.append(
-                        pha_type
-                        )
-
-                    st.session_state.preview_PHA = (
-                        pha_type
-                        )
-
-                    st.rerun()
+                )
 
     # ======================================================
     # Current sequence
