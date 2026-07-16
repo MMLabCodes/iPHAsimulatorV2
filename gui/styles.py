@@ -234,6 +234,42 @@ div.stButton > button:hover {
     text-align: center;
     padding: 1rem;
 }
+.workflow-stage {
+    min-height: 105px;
+    padding: 0.8rem 0.45rem;
+    border: 1px solid rgba(103, 232, 249, 0.28);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.72);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.workflow-stage-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        #0891b2,
+        #7c3aed
+    );
+    color: white;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workflow-stage-label {
+    color: #e2e8f0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
 </style>
 """
 
