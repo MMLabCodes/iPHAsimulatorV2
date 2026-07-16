@@ -17,9 +17,12 @@ This tab allows the user to:
 """
 
 import streamlit as st
+from base64 import b64encode
 
+from io import BytesIO
 from gui.models import GUIData
 from gui.polymer_helpers import (
+    draw_monomer,
     generate_polymer_smiles_from_sequence,
     get_polymer_name,
     repeat_sequence,
@@ -27,7 +30,93 @@ from gui.polymer_helpers import (
 from gui.state import clear_polymer_sequence
 from gui.styles import render_warning_box
 
+def _monomer_image_to_base64(
+    pha_type,
+    monomer_smiles,
+):
+    """
+    Render a monomer with RDKit and return it as a base64 PNG string.
 
+    This allows the image to be embedded inside a CSS hover tooltip.
+    """
+
+    image = draw_monomer(
+        pha_type=pha_type,
+        monomer_smiles=monomer_smiles,
+        width=320,
+        height=240,
+    )
+
+    if image is None:
+        return None
+
+    image_buffer = BytesIO()
+
+    image.save(
+        image_buffer,
+        format="PNG",
+    )
+
+    return b64encode(
+        image_buffer.getvalue()
+    ).decode("utf-8")
+
+def _render_hoverable_monomer(
+    pha_type,
+    monomer_smiles,
+):
+    """
+    Render a monomer name with an image tooltip shown on mouse hover.
+    """
+
+    image_base64 = _monomer_image_to_base64(
+        pha_type=pha_type,
+        monomer_smiles=monomer_smiles,
+    )
+
+    smiles = monomer_smiles.get(
+        pha_type,
+        "",
+    )
+
+    if image_base64 is None:
+        tooltip_contents = (
+            '<div class="monomer-tooltip-text">'
+            "Structure preview unavailable"
+            "</div>"
+        )
+
+    else:
+        tooltip_contents = f"""
+        <img
+            src="data:image/png;base64,{image_base64}"
+            class="monomer-tooltip-image"
+            alt="{pha_type} structure"
+        >
+        <div class="monomer-tooltip-smiles">
+            {smiles}
+        </div>
+        """
+
+    st.markdown(
+        f"""
+        <div class="monomer-hover-container">
+            <div class="monomer-hover-name">
+                {pha_type}
+            </div>
+
+            <div class="monomer-hover-tooltip">
+                <div class="monomer-tooltip-title">
+                    {pha_type}
+                </div>
+
+                {tooltip_contents}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
 def render_polymer_builder_tab(
     gui_data: GUIData,
 ) -> None:
