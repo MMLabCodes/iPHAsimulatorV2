@@ -114,24 +114,6 @@ def _render_monomer_card(
 
             st.rerun()
 
-    if st.button(
-        "➕ Add",
-        use_container_width=True,
-        key=f"polymer_builder_add_{pha_type}",
-        help=(
-            f"Add {pha_type} to the current "
-            "polymer sequence."
-        ),
-    ):
-        st.session_state.sequence.append(
-            pha_type
-        )
-
-        st.session_state.preview_PHA = (
-            pha_type
-        )
-
-        st.rerun()
     
 def render_polymer_builder_tab(
     gui_data: GUIData,
