@@ -210,41 +210,50 @@ def render_polymer_builder_tab(
     if not filtered_phas:
         st.info(
             "No registered PHA monomers match the current filter."
-        )
+            )
 
     else:
         number_of_columns = 6
 
         monomer_columns = st.columns(
             number_of_columns
-        )
+            )
 
         for index, pha_type in enumerate(
-            filtered_phas
-        ):
+                filtered_phas
+                ):
             column_index = (
                 index
                 % number_of_columns
-            )
+                )
 
             with monomer_columns[
-                column_index
-            ]:
+                    column_index
+                    ]:
+                _render_hoverable_monomer(
+                    pha_type=pha_type,
+                    monomer_smiles=monomer_smiles,
+                    )
+
                 if st.button(
-                    f"➕ {pha_type}",
-                    use_container_width=True,
-                    key=(
-                        "polymer_builder_add_"
-                        f"{pha_type}"
-                    ),
-                ):
+                        "➕ Add",
+                        use_container_width=True,
+                        key=(
+                            "polymer_builder_add_"
+                            f"{pha_type}"
+                            ),
+                        help=(
+                            f"Add {pha_type} to the "
+                            "current polymer sequence."
+                            ),
+                        ):
                     st.session_state.sequence.append(
                         pha_type
-                    )
+                        )
 
                     st.session_state.preview_PHA = (
                         pha_type
-                    )
+                        )
 
                     st.rerun()
 

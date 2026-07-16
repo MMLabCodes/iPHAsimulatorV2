@@ -139,6 +139,101 @@ div.stButton > button:hover {
     color: white;
     transform: scale(1.02);
 }
+.monomer-hover-container {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+
+.monomer-hover-name {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem;
+    border-radius: 14px;
+    border: 1px solid rgba(103, 232, 249, 0.38);
+    background: rgba(15, 23, 42, 0.72);
+    color: #e0f2fe;
+    text-align: center;
+    font-weight: 750;
+    cursor: help;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.monomer-hover-name:hover {
+    border-color: #f472b6;
+    background: rgba(30, 41, 59, 0.95);
+    transform: translateY(-1px);
+}
+
+.monomer-hover-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    z-index: 9999;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%) translateY(5px);
+
+    width: 340px;
+    max-width: 80vw;
+    padding: 0.8rem;
+
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(167, 139, 250, 0.7);
+    border-radius: 18px;
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5);
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease,
+        visibility 0.15s ease;
+}
+
+.monomer-hover-container:hover .monomer-hover-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.monomer-tooltip-title {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.4rem;
+}
+
+.monomer-tooltip-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    background: white;
+}
+
+.monomer-tooltip-smiles {
+    margin-top: 0.55rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.9);
+    color: #cbd5e1;
+    font-family: monospace;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.monomer-tooltip-text {
+    color: #cbd5e1;
+    text-align: center;
+    padding: 1rem;
+}
 </style>
 """
 
