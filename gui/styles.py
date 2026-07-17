@@ -6,6 +6,7 @@ Visual styling for the iPHAsimulatorV2 Streamlit GUI.
 """
 
 import streamlit as st
+from pathlib import Path
 
 
 APP_CSS = """
@@ -298,23 +299,37 @@ def apply_styles():
 
 
 def render_header():
-    """
-    Render the application title and subtitle.
-    """
+
+    logo_path = Path(__file__).parent / "img" / "satisphaction_logo.png"
+
+    left, centre, right = st.columns([1,3,1])
+
+    with centre:
+
+        st.image(
+
+            str(logo_path),
+
+            width=500,
+
+        )
 
     st.markdown(
-        '<div class="main-title">🧬 iPHAsimulatorV2</div>',
-        unsafe_allow_html=True,
-    )
 
-    st.markdown(
         """
-<div class="subtitle">
+
+<div class="subtitle" style="text-align:center;">
+
 Interactive PHA polymer construction, registered MD-system selection,
+
 molecular visualisation, OpenMM workflow design, and script generation.
+
 </div>
+
 """,
+
         unsafe_allow_html=True,
+
     )
 
 
