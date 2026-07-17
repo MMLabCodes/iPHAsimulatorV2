@@ -271,6 +271,14 @@ div.stButton > button:hover {
     font-weight: 700;
     line-height: 1.2;
 }
+.header-subtitle {
+    max-width: 850px;
+    margin: -0.8rem auto 1.2rem auto;
+    color: #cbd5e1;
+    font-size: 1rem;
+    line-height: 1.55;
+    text-align: center;
+}
 </style>
 """
 
@@ -298,38 +306,38 @@ def apply_styles():
     )
 
 
+from pathlib import Path
+
+import streamlit as st
+
+
 def render_header():
+    """
+    Render the application logo and subtitle.
+    """
 
-    logo_path = Path(__file__).parent / "img" / "satisphaction_logo.png"
+    logo_path = (
+        Path(__file__).resolve().parent
+        / "img"
+        / "satisphaction_logo.png"
+    )
 
-    left, centre, right = st.columns([1,3,1])
+    left, centre, right = st.columns([1.5, 2, 1.5])
 
     with centre:
-
         st.image(
-
             str(logo_path),
-
-            width=500,
-
+            width=320,
         )
 
     st.markdown(
-
         """
-
-<div class="subtitle" style="text-align:center;">
-
-Interactive PHA polymer construction, registered MD-system selection,
-
-molecular visualisation, OpenMM workflow design, and script generation.
-
+<div class="header-subtitle">
+    Interactive PHA polymer construction, registered MD-system selection,
+    molecular visualisation, OpenMM workflow design, and script generation.
 </div>
-
 """,
-
         unsafe_allow_html=True,
-
     )
 
 
