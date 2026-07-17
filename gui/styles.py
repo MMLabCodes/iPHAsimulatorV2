@@ -271,14 +271,7 @@ div.stButton > button:hover {
     font-weight: 700;
     line-height: 1.2;
 }
-.header-subtitle {
-    max-width: 850px;
-    margin: -0.8rem auto 1.2rem auto;
-    color: #cbd5e1;
-    font-size: 1rem;
-    line-height: 1.55;
-    text-align: center;
-}
+
 </style>
 """
 
@@ -313,28 +306,19 @@ import streamlit as st
 
 def render_header():
     """
-    Render the application logo and subtitle.
+    Render the application title and subtitle.
     """
 
-    logo_path = (
-        Path(__file__).resolve().parent
-        / "img"
-        / "satisphaction_logo.png"
+    st.markdown(
+        '<div class="main-title">🧬 iPHAsimulatorV2</div>',
+        unsafe_allow_html=True,
     )
-
-    left, centre, right = st.columns([1.5, 2, 1.5])
-
-    with centre:
-        st.image(
-            str(logo_path),
-            width=320,
-        )
 
     st.markdown(
         """
-<div class="header-subtitle">
-    Interactive PHA polymer construction, registered MD-system selection,
-    molecular visualisation, OpenMM workflow design, and script generation.
+<div class="subtitle">
+Interactive PHA polymer construction, registered MD-system selection,
+molecular visualisation, OpenMM workflow design, and script generation.
 </div>
 """,
         unsafe_allow_html=True,
