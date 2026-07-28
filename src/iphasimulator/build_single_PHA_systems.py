@@ -9,7 +9,7 @@ PHA polymers.
 from pathlib import Path
 import subprocess
 
-from src.iphasimulator.pha_filepath_manager import PHAFileManager
+from .pha_filepath_manager import PHAFileManager
 
 
 AVOGADRO = 6.02214076e23
