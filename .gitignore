@@ -1,29 +1,100 @@
+# ============================================================
+# Operating system files
+# ============================================================
+
 .DS_Store
+
+# ============================================================
+# Python
+# ============================================================
+
 __pycache__/
 *.py[cod]
 .pytest_cache/
 *.egg-info/
 
-# Generated tutorial and workflow outputs.
-examples/output
+# ============================================================
+# IDEs
+# ============================================================
+
+.spyproject/
+.vscode/
+.idea/
+
+# ============================================================
+# Jupyter
+# ============================================================
+
+.ipynb_checkpoints/
 notebooks/.ipynb_checkpoints/
 
-# Generated PHA melts
+# ============================================================
+# Example outputs
+# ============================================================
 
-structure_database/PHA_melts/
+examples/output/
 
-# Generated built-polymer outputs
+# ============================================================
+# Temporary files
+# ============================================================
+
+*.bak
+*.tmp
+*.temp
+*~
+
+# ============================================================
+# Build artefacts
+# ============================================================
+
+build/
+dist/
+
+# ============================================================
+# Generated structure database
+# (These are rebuilt automatically by iPHAsimulator)
+# ============================================================
 
 structure_database/built_PHAs/
+structure_database/PHA_melts/
+structure_database/PHA_dry/
+structure_database/PHA_solvated/
+structure_database/PHA_solvated_ions/
+structure_database/temp/
 
-# Generated single-PHA systems
-
-structure_database/dry_phas/
-
-structure_database/solvated_phas/
-
-structure_database/solvated_ions_phas/
-
-# OpenMM outputs
+# ============================================================
+# Molecular dynamics trajectories
+# ============================================================
 
 *.dcd
+*.xtc
+*.trr
+*.cpt
+*.edr
+
+# ============================================================
+# Log files
+# ============================================================
+
+*.log
+
+# ============================================================
+# AmberTools temporary files
+# ============================================================
+
+ANTECHAMBER*
+ATOMTYPE.INF
+sqm.*
+leap.log
+
+# ============================================================
+# ACPYPE temporary outputs
+# ============================================================
+
+*.amb2gmx/
+
+# ============================================================
+# GROMACS backups
+# ============================================================
+
+*#
