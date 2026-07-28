@@ -255,13 +255,25 @@ class PHAMeltBuilder:
             density=density,
         )
 
+        number_of_atoms = self.paths.count_atoms_from_gromacs_gro(
+            polyply_result["gro"]
+        )
+
+        self.paths.register_md_system(
+            system_name=melt_name,
+            system_type="melt",
+            number_of_atoms=number_of_atoms,
+        )
+
         print("\nPolymer melt generation complete.")
-        print("Melt name: ", melt_name)
-        print("Melt dir:  ", melt_dir)
-        print("Density:   ", density)
+        print("Melt name:       ", melt_name)
+        print("Melt dir:        ", melt_dir)
+        print("Density:         ", density)
+        print("Number of atoms: ", number_of_atoms)
 
         return {
             "melt_name": melt_name,
+            "system_type": "melt",
             "melt_dir": melt_dir,
             "inputs_dir": inputs_dir,
             "simulations_dir": simulations_dir,
@@ -271,6 +283,7 @@ class PHAMeltBuilder:
             "polymer_names": polymer_names,
             "number_of_polymers": number_of_polymers,
             "density": density,
+            "number_of_atoms": number_of_atoms,
             "polymer_gromacs_files": polymer_gromacs_files,
             "polyply_result": polyply_result,
         }
