@@ -30,10 +30,15 @@ External programs required:
     - AmberTools: antechamber, parmchk2, prepgen, tleap
 """
 import subprocess
-from pathlib import Path
 import shutil
+from pathlib import Path
+
 from openbabel import pybel
-from src.iphasimulator.pha_filepath_manager import PHAFileManager, PHAResidueCodeManager
+
+from .pha_filepath_manager import (
+    PHAFileManager,
+    PHAResidueCodeManager,
+)
 
 class PHAPolymerBuilder:
     """
