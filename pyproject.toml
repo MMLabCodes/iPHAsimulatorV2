@@ -3,28 +3,34 @@ name = "iphasimulator"
 version = "0.1.0"
 description = "PHA-specific polymer builder and simulation preparation toolkit"
 requires-python = ">=3.10"
+
 dependencies = [
     "numpy",
     "scipy",
     "networkx",
     "pandas",
     "pyyaml",
-    "rdkit"
+    "rdkit",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "jupyterlab"
+    "jupyterlab",
 ]
+
 md = [
     "openmm",
     "parmed",
-    "mdtraj"
+    "mdtraj",
+    "matplotlib",
 ]
 
 [build-system]
-requires = ["setuptools"]
+requires = [
+    "setuptools>=68",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
