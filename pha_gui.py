@@ -38,6 +38,9 @@ from gui.tabs.polymer_builder_tab import (
 from gui.tabs.system_viewer_tab import (
     render_system_viewer_tab,
 )
+from gui.tabs.md_system_builder_tab import (
+    render as render_md_system_builder,
+)
 
 
 # ==========================================================
@@ -251,6 +254,7 @@ with st.sidebar:
     polymer_builder_tab,
     molecular_preview_tab,
     build_console_tab,
+    md_system_builder_tab,
     system_viewer_tab,
     openmm_builder_tab,
 ) = st.tabs(
@@ -258,6 +262,7 @@ with st.sidebar:
         "🧱 Polymer Builder",
         "🔬 Molecular Preview",
         "🖥 Build Console",
+        "MD System Builder",
         "🧬 MD System Viewer",
         "⚛️ OpenMM Script Builder",
     ]
@@ -292,7 +297,13 @@ with build_console_tab:
     render_build_console_tab(
         gui_data
     )
+    
+# ==========================================================
+# Build MD system 
+# ==========================================================
 
+with md_system_builder_tab:
+    render_md_system_builder()
 
 # ==========================================================
 # MD System Viewer
