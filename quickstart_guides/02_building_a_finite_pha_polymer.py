@@ -14,7 +14,7 @@ For a more detailed explanation of polymer construction,
 see Tutorial 02.
 """
 
-from src.iphasimulator.pha_builder import PHAPolymerBuilder
+from src.iphasimulator.build_pha import PHAPolymerBuilder
 
 
 # =============================================================================
