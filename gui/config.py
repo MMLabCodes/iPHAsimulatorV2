@@ -40,18 +40,24 @@ MD_SCRIPT_DIR.mkdir(
 
 
 # ==========================================================
-# External environments
+# External scientific environment
 # ==========================================================
 
-AMBERTOOLS_PYTHON = (
+IPHASIMULATOR_PYTHON = (
     Path.home()
     / "miniconda3"
     / "envs"
-    / "AmberTools23"
+    / "iphasimulator"
     / "bin"
     / "python"
 )
 
+# Temporary backwards-compatibility alias.
+# Existing GUI modules can continue using AMBERTOOLS_PYTHON
+# until they are updated.
+AMBERTOOLS_PYTHON = IPHASIMULATOR_PYTHON
+
+AMBERTOOLS_PYTHON = IPHASIMULATOR_PYTHON
 
 # ==========================================================
 # Shared backend objects

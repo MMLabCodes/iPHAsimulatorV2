@@ -12,7 +12,7 @@ Run this application from the project root with:
 import streamlit as st
 
 from gui.config import (
-    AMBERTOOLS_PYTHON,
+    IPHASIMULATOR_PYTHON,
     PROJECT_ROOT,
     STRUCTURE_DATABASE,
 )
@@ -39,7 +39,7 @@ from gui.tabs.system_viewer_tab import (
     render_system_viewer_tab,
 )
 from gui.tabs.md_system_builder_tab import (
-    render as render_md_system_builder,
+    render_md_system_builder_tab,
 )
 
 
@@ -262,7 +262,7 @@ with st.sidebar:
         "🧱 Polymer Builder",
         "🔬 Molecular Preview",
         "🖥 Build Console",
-        "MD System Builder",
+        "🤖 MD System Builder",
         "🧬 MD System Viewer",
         "⚛️ OpenMM Script Builder",
     ]
@@ -303,7 +303,7 @@ with build_console_tab:
 # ==========================================================
 
 with md_system_builder_tab:
-    render_md_system_builder()
+    render_md_system_builder_tab()
 
 # ==========================================================
 # MD System Viewer
