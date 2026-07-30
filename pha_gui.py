@@ -107,7 +107,7 @@ with st.sidebar:
     )
 
     st.code(
-        str(AMBERTOOLS_PYTHON)
+        str(IPHASIMULATOR_PYTHON)
     )
 
     st.markdown(
@@ -187,7 +187,7 @@ with st.sidebar:
                 "Structure database not found."
             )
 
-        if AMBERTOOLS_PYTHON.exists():
+        if IPHASIMULATOR_PYTHON.exists():
             st.success(
                 "AmberTools Python found."
             )
