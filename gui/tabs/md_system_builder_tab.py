@@ -19,10 +19,10 @@ from typing import Any
 import streamlit as st
 
 from gui.md_system_helpers import (
-    build_dry_system,
-    build_melt_system,
-    build_solvated_ions_system,
-    build_solvated_system,
+    build_dry_system_subprocess,
+    build_melt_system_subprocess,
+    build_solvated_ions_system_subprocess,
+    build_solvated_system_subprocess,
     get_available_built_polymers,
     get_salt_name,
     get_water_model_settings,
