@@ -4,7 +4,7 @@
 """
 Application-wide configuration for the iPHAsimulatorV2 GUI.
 """
-
+import os
 from pathlib import Path
 
 from src.iphasimulator.pha_filepath_manager import PHAFileManager
@@ -43,14 +43,19 @@ MD_SCRIPT_DIR.mkdir(
 # External scientific environment
 # ==========================================================
 
-IPHASIMULATOR_PYTHON = (
-    Path.home()
-    / "miniconda3"
-    / "envs"
-    / "iphasimulator"
-    / "bin"
-    / "python"
-)
+IPHASIMULATOR_PYTHON = Path(
+    os.environ.get(
+        "IPHASIMULATOR_PYTHON",
+        (
+            Path.home()
+            / "miniconda3"
+            / "envs"
+            / "iphasimulator"
+            / "bin"
+            / "python"
+        ),
+    )
+).expanduser()
 
 # Temporary backwards-compatibility alias.
 # Existing GUI modules can continue using AMBERTOOLS_PYTHON
