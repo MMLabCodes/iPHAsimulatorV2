@@ -464,6 +464,74 @@ def run_python_module_with_iphasimulator(
     )
 
 
+def submit_openmm_slurm_job(
+    simulation_script,
+):
+    """
+    Submit a generated OpenMM simulation script through Slurm.
+
+    Parameters
+    ----------
+    simulation_script : str or pathlib.Path
+        Path to the generated OpenMM Python script.
+
+    Returns
+    -------
+    subprocess.CompletedProcess
+        Result returned by the Slurm submission launcher.
+    """
+
+    simulation_script = Path(
+        simulation_script
+    ).expanduser().resolve()
+
+    if not simulation_script.exists():
+        raise FileNotFoundError(
+            "OpenMM simulation script not found:\n"
+            f"{simulation_script}"
+        )
+
+    if not simulation_script.is_file():
+        raise FileNotFoundError(
+            "OpenMM simulation script path is not a file:\n"
+            f"{simulation_script}"
+        )
+
+    if simulation_script.suffix.lower() != ".py":
+        raise ValueError(
+            "The OpenMM simulation script must end in '.py':\n"
+            f"{simulation_script}"
+        )
+
+    slurm_launcher = (
+        PROJECT_ROOT
+        / "cluster"
+        / "submit_openmm_job.sh"
+    ).resolve()
+
+    if not slurm_launcher.exists():
+        raise FileNotFoundError(
+            "Slurm submission launcher not found:\n"
+            f"{slurm_launcher}"
+        )
+
+    if not slurm_launcher.is_file():
+        raise FileNotFoundError(
+            "Slurm launcher path is not a file:\n"
+            f"{slurm_launcher}"
+        )
+
+    command = [
+        "bash",
+        str(slurm_launcher),
+        str(simulation_script),
+    ]
+
+    return run_subprocess(
+        command=command,
+        workdir=PROJECT_ROOT,
+        environment=build_iphasimulator_environment(),
+    )
 # ==========================================================
 # Temporary backwards-compatibility aliases
 # ==========================================================
