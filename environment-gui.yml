@@ -18,6 +18,10 @@ dependencies:
   - rdkit
   - parmed
   - pyzmq
+  - ipython_genutils
+  - ipywidgets
+  - traitlets
+  - widgetsnbextension
 
   - pip:
       - py3Dmol
