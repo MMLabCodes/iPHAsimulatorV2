@@ -43,6 +43,7 @@ from gui.styles import (
 )
 from gui.subprocess_helpers import (
     run_python_script_with_ambertools,
+    submit_openmm_slurm_job,
 )
 
 
@@ -1163,6 +1164,148 @@ def _run_generated_script():
             result.stderr
         )
 
+
+def _submit_generated_script_to_slurm():
+    """
+    Submit the currently generated OpenMM script to Slurm.
+    """
+
+    generated_path = (
+        st.session_state
+        .generated_openmm_script_path
+    )
+
+    if generated_path is None:
+        st.error(
+            "Generate a script before trying to submit it."
+        )
+
+        return
+
+    script_path = Path(
+        generated_path
+    ).expanduser().resolve()
+
+    if not script_path.exists():
+        st.error(
+            "The generated OpenMM script does not exist."
+        )
+
+        st.code(
+            str(script_path)
+        )
+
+        return
+
+    if not script_path.is_file():
+        st.error(
+            "The generated OpenMM script path is not a file."
+        )
+
+        st.code(
+            str(script_path)
+        )
+
+        return
+
+    st.info(
+        "Submitting the generated OpenMM script to Slurm..."
+    )
+
+    st.write(
+        "**Generated for system:**"
+    )
+
+    st.code(
+        str(
+            st.session_state
+            .generated_openmm_system_name
+        )
+    )
+
+    st.write(
+        "**Simulation script:**"
+    )
+
+    st.code(
+        str(script_path)
+    )
+
+    result = None
+
+    with st.spinner(
+        "Submitting Slurm job..."
+    ):
+        try:
+            result = submit_openmm_slurm_job(
+                script_path
+            )
+
+        except Exception as error:
+            st.error(
+                "The GUI could not submit the Slurm job."
+            )
+
+            st.code(
+                str(error)
+            )
+
+            return
+
+    if result.returncode == 0:
+        st.success(
+            "The OpenMM job was submitted successfully."
+        )
+
+    else:
+        st.error(
+            "Slurm job submission failed."
+        )
+
+    result_columns = st.columns(3)
+
+    result_columns[0].metric(
+        "Return code",
+        result.returncode,
+    )
+
+    result_columns[1].metric(
+        "STDOUT characters",
+        len(
+            result.stdout or ""
+        ),
+    )
+
+    result_columns[2].metric(
+        "STDERR characters",
+        len(
+            result.stderr or ""
+        ),
+    )
+
+    if result.stdout:
+        st.subheader(
+            "Slurm submission output"
+        )
+
+        st.code(
+            result.stdout,
+            language="text",
+        )
+
+    if result.stderr:
+        st.subheader(
+            (
+                "Slurm submission warnings"
+                if result.returncode == 0
+                else "Slurm submission errors"
+            )
+        )
+
+        st.code(
+            result.stderr,
+            language="text",
+        )
 
 def render_openmm_builder_tab(
     gui_data: GUIData,
