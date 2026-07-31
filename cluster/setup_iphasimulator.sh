@@ -1,0 +1,1 @@
+#!/bin/bashexport IPHA_STORAGE="/scratch/s.983045/iphasimulator"export CONDA_PKGS_DIRS="$IPHA_STORAGE/conda-pkgs"export IPHASIMULATOR_PYTHON="$IPHA_STORAGE/envs/iphasimulator/bin/python"
