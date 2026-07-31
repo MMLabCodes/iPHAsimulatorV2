@@ -12,7 +12,8 @@ This tab allows the user to:
 - reorder, duplicate, and remove workflow steps
 - generate an OpenMM Python script
 - preview the generated script
-- run the generated script with AmberTools Python
+- run the generated script in the iPHAsimulator environment
+- submit the generated script to a Slurm cluster
 """
 
 from pathlib import Path
@@ -42,7 +43,7 @@ from gui.styles import (
     render_warning_box,
 )
 from gui.subprocess_helpers import (
-    run_python_script_with_ambertools,
+    run_python_script_with_iphasimulator,
     submit_openmm_slurm_job,
 )
 
@@ -1326,8 +1327,9 @@ def render_openmm_builder_tab(
 
     render_info_box(
         "Select any prepared system registered in md_systems.csv, "
-        "construct an ordered OpenMM workflow, generate a normal Python "
-        "script, and optionally execute it with AmberTools23."
+        "construct an ordered OpenMM workflow, generate a Python script, "
+        "run it locally in the iPHAsimulator environment, or submit it "
+        "to Slurm."
     )
 
     st.divider()
@@ -1385,7 +1387,7 @@ def render_openmm_builder_tab(
 
         st.divider()
 
-        action_columns = st.columns(3)
+        action_columns = st.columns(4)
 
         with action_columns[0]:
             if st.button(
@@ -1409,9 +1411,26 @@ def render_openmm_builder_tab(
 
         with action_columns[2]:
             run_clicked = st.button(
-                "🚀 Run generated script",
+                "▶️ Run locally",
                 use_container_width=True,
+                disabled=(
+                    st.session_state
+                    .generated_openmm_script_path
+                    is None
+                ),
                 key="run_openmm_script",
+            )
+
+        with action_columns[3]:
+            submit_clicked = st.button(
+                "🚀 Submit to Slurm",
+                use_container_width=True,
+                disabled=(
+                    st.session_state
+                    .generated_openmm_script_path
+                    is None
+                ),
+                key="submit_openmm_slurm_job",
             )
 
         if generate_clicked:
@@ -1467,3 +1486,7 @@ def render_openmm_builder_tab(
 
         if run_clicked:
             _run_generated_script()
+            
+        
+        if submit_clicked:
+            _submit_generated_script_to_slurm()
