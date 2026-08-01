@@ -29,7 +29,7 @@ fi
 # =============================================================================
 
 # Resolve the repository root relative to this launcher rather than relying
-# on the directory from which the user launches it.
+# on the directory from which the launcher is called.
 SCRIPT_DIR="$(
     cd "$(dirname "${BASH_SOURCE[0]}")"
     pwd
@@ -57,12 +57,17 @@ JOB_FILE="${SCRIPT_DIRECTORY}/${SCRIPT_NAME}_${TIMESTAMP}.job"
 SLURM_OUTPUT="${SCRIPT_DIRECTORY}/slurm_${SCRIPT_NAME}_%j.out"
 SLURM_ERROR="${SCRIPT_DIRECTORY}/slurm_${SCRIPT_NAME}_%j.err"
 
+# =============================================================================
+# Scientific environment
+# =============================================================================
+
 IPHA_STORAGE="/scratch/s.983045/iphasimulator"
 IPHA_ENV="${IPHA_STORAGE}/envs/iphasimulator"
+IPHA_PYTHON="${IPHA_ENV}/bin/python"
 
-if [[ ! -x "${IPHA_ENV}/bin/python" ]]; then
+if [[ ! -x "$IPHA_PYTHON" ]]; then
     echo "iPHAsimulator Python was not found:"
-    echo "${IPHA_ENV}/bin/python"
+    echo "$IPHA_PYTHON"
     exit 1
 fi
 
@@ -72,6 +77,7 @@ echo "Simulation script : $SIMULATION_SCRIPT"
 echo "Script directory  : $SCRIPT_DIRECTORY"
 echo "Job file          : $JOB_FILE"
 echo "Environment       : $IPHA_ENV"
+echo "Python executable : $IPHA_PYTHON"
 echo
 
 # =============================================================================
@@ -102,12 +108,22 @@ set -euo pipefail
 # =============================================================================
 
 module purge
-module load mamba/4.14.0-0
 
 export IPHA_STORAGE="${IPHA_STORAGE}"
 export CONDA_PKGS_DIRS="\${IPHA_STORAGE}/conda-pkgs"
 
-source activate "${IPHA_ENV}"
+IPHA_ENV="${IPHA_ENV}"
+IPHA_PYTHON="${IPHA_PYTHON}"
+
+if [[ ! -x "\${IPHA_PYTHON}" ]]; then
+    echo "iPHAsimulator Python executable not found:"
+    echo "\${IPHA_PYTHON}"
+    exit 1
+fi
+
+# Put the scientific environment first on PATH so any external commands
+# launched by Python are also resolved from the correct environment.
+export PATH="\${IPHA_ENV}/bin:\${PATH}"
 
 # =============================================================================
 # Job information
@@ -121,8 +137,10 @@ echo "Slurm node         : \$SLURMD_NODENAME"
 echo "Submission dir     : \$SLURM_SUBMIT_DIR"
 echo "Simulation script  : ${SIMULATION_SCRIPT}"
 echo "Project root       : ${PROJECT_ROOT}"
-echo "Python executable  : \$(which python)"
-echo "Python version     : \$(python --version)"
+echo "Python executable  : \${IPHA_PYTHON}"
+echo "Python version     : \$(\"\${IPHA_PYTHON}\" --version)"
+echo "ParmEd version     : \$(\"\${IPHA_PYTHON}\" -c 'import parmed; print(parmed.__version__)')"
+echo "OpenMM version     : \$(\"\${IPHA_PYTHON}\" -c 'import openmm; print(openmm.__version__)')"
 echo "Start time         : \$(date)"
 echo "============================================================"
 
@@ -134,7 +152,7 @@ nvidia-smi || true
 
 cd "${PROJECT_ROOT}"
 
-python -u "${SIMULATION_SCRIPT}"
+"\${IPHA_PYTHON}" -u "${SIMULATION_SCRIPT}"
 
 echo
 echo "============================================================"
