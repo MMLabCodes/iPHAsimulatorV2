@@ -1086,7 +1086,6 @@ def _run_generated_script():
                 run_python_script_with_iphasimulator()
                     script_path
                 )
-            )
 
             progress.progress(90)
 
