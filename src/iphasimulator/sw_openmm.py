@@ -148,39 +148,83 @@ class BuildSimulation:
         """
         Select the OpenMM platform.
 
-        Parameters
-    ----------
-        platform_name : str, optional
-            Force a platform: "CUDA", "OpenCL", or "CPU".
-            """
+        Priority
+        --------
+        1. Explicit platform_name argument.
+        2. IPHA_OPENMM_PLATFORM environment variable.
+        3. CUDA.
+        4. OpenCL.
+        5. CPU.
+        """
 
-        if platform_name is not None:
-            platform = Platform.getPlatformByName(platform_name)
-            print(f"Using requested platform: {platform_name}")
+        import os
+        from openmm import Platform
+
+        requested_platform = (
+            platform_name
+            or os.environ.get("IPHA_OPENMM_PLATFORM")
+        )
+
+        if requested_platform is not None:
+
+            platform = Platform.getPlatformByName(
+                requested_platform
+            )
+
+            if requested_platform in {
+                "CUDA",
+                "OpenCL",
+            }:
+                try:
+                    platform.setPropertyDefaultValue(
+                        "Precision",
+                        "mixed",
+                    )
+                except Exception:
+                    pass
+
+            print(
+                f"Using requested platform: "
+                f"{requested_platform}"
+            )
+
             return platform
 
-        try:
-            platform = Platform.getPlatformByName("CUDA")
-            platform.setPropertyDefaultValue("Precision", "mixed")
-            print("Using CUDA platform.")
-            return platform
+        for candidate in [
+            "CUDA",
+            "OpenCL",
+            "CPU",
+        ]:
 
-        except Exception:
-            print("CUDA not available, trying OpenCL...")
+            try:
+                platform = Platform.getPlatformByName(
+                    candidate
+                )
 
-        try:
-            # OpenCL is mac GPUs
-            platform = Platform.getPlatformByName("OpenCL")
-            platform_properties = {"Precision": "mixed"}
-            print("Using OpenCL platform.")
-            return platform
+                if candidate in {
+                    "CUDA",
+                    "OpenCL",
+                }:
+                    try:
+                        platform.setPropertyDefaultValue(
+                            "Precision",
+                            "mixed",
+                        )
+                    except Exception:
+                        pass
 
-        except Exception:
-            print("OpenCL not available, falling back to CPU.")
+                print(
+                    f"Using {candidate} platform."
+                )
 
-        platform = Platform.getPlatformByName("CPU")
-        print("Using CPU platform.")
-        return platform
+                return platform
+
+            except Exception:
+                continue
+
+        raise RuntimeError(
+            "No usable OpenMM platform was found."
+        )
 
     def create_openmm_system(
         self,
