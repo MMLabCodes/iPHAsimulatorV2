@@ -1083,10 +1083,10 @@ def _run_generated_script():
             progress.progress(20)
 
             result = (
-                run_python_script_with_iphasimulator()
+                run_python_script_with_iphasimulator(
                     script_path
                 )
-
+            )
             progress.progress(90)
 
             status.write(
