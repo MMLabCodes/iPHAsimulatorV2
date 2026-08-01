@@ -78,6 +78,7 @@ echo "Script directory  : $SCRIPT_DIRECTORY"
 echo "Job file          : $JOB_FILE"
 echo "Environment       : $IPHA_ENV"
 echo "Python executable : $IPHA_PYTHON"
+echo "OpenMM platform   : OpenCL"
 echo
 
 # =============================================================================
@@ -121,9 +122,18 @@ if [[ ! -x "\${IPHA_PYTHON}" ]]; then
     exit 1
 fi
 
-# Put the scientific environment first on PATH so any external commands
-# launched by Python are also resolved from the correct environment.
+# Put the scientific environment first on PATH so external commands launched
+# by iPHAsimulator are resolved from the correct environment.
 export PATH="\${IPHA_ENV}/bin:\${PATH}"
+
+# CUDA currently fails on Sunbird because the installed CUDA runtime is newer
+# than the compute-node driver supports. OpenCL has been tested successfully
+# on the A100 GPU.
+export IPHA_OPENMM_PLATFORM="OpenCL"
+
+# Restrict CPU-thread use to the resources allocated by Slurm.
+export OMP_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-1}"
+export OPENMM_CPU_THREADS="\${SLURM_CPUS_PER_TASK:-1}"
 
 # =============================================================================
 # Job information
@@ -141,6 +151,8 @@ echo "Python executable  : \${IPHA_PYTHON}"
 echo "Python version     : \$(\"\${IPHA_PYTHON}\" --version)"
 echo "ParmEd version     : \$(\"\${IPHA_PYTHON}\" -c 'import parmed; print(parmed.__version__)')"
 echo "OpenMM version     : \$(\"\${IPHA_PYTHON}\" -c 'import openmm; print(openmm.__version__)')"
+echo "OpenMM platform    : \${IPHA_OPENMM_PLATFORM}"
+echo "CPU threads        : \${SLURM_CPUS_PER_TASK:-1}"
 echo "Start time         : \$(date)"
 echo "============================================================"
 
@@ -156,7 +168,7 @@ cd "${PROJECT_ROOT}"
 
 echo
 echo "============================================================"
-echo "Simulation finished"
+echo "Simulation finished successfully"
 echo "End time: \$(date)"
 echo "============================================================"
 EOF
@@ -166,4 +178,5 @@ chmod +x "$JOB_FILE"
 echo "Submitting job..."
 
 SUBMISSION_OUTPUT="$(sbatch "$JOB_FILE")"
+
 echo "$SUBMISSION_OUTPUT"
