@@ -1054,7 +1054,7 @@ def _run_generated_script():
         return
 
     st.info(
-        "Running the generated OpenMM script with AmberTools23..."
+        "Running the generated OpenMM script within the iphasimualator environment..."
     )
 
     st.write(
@@ -1083,7 +1083,7 @@ def _run_generated_script():
             progress.progress(20)
 
             result = (
-                run_python_script_with_ambertools(
+                run_python_script_with_iphasimulator()
                     script_path
                 )
             )
@@ -1434,59 +1434,121 @@ def render_openmm_builder_tab(
             )
 
         if generate_clicked:
+
             try:
+
                 (
+
                     output_script,
+
                     script_text,
+
                 ) = _generate_openmm_script(
+
                     gui_data=gui_data,
+
                     selected_system_name=(
+
                         selected_system_name
+
                     ),
+
                     selected_system_type=(
+
                         selected_system_type
+
                     ),
+
                     run_name=run_name,
+
                 )
 
                 st.session_state.generated_openmm_script = (
+
                     script_text
+
                 )
 
                 st.session_state.generated_openmm_script_path = (
+
                     str(output_script)
+
                 )
 
                 st.session_state.generated_openmm_system_name = (
+
                     selected_system_name
+
                 )
 
                 st.session_state.generated_openmm_system_type = (
+
                     selected_system_type
+
                 )
 
-                st.success(
-                    "Generated OpenMM simulation script."
+                st.session_state[
+
+                    "openmm_script_generation_message"
+
+                ] = (
+
+                    "Generated OpenMM simulation script:\n"
+
+                    f"{output_script}"
+
                 )
 
-                st.code(
-                    str(output_script)
-                )
+                st.rerun()
 
             except Exception as error:
+
                 st.error(
+
                     "Could not generate the OpenMM script."
+
                 )
 
                 st.code(
+
                     str(error)
+
                 )
+
+        generation_message = st.session_state.pop(
+
+            "openmm_script_generation_message",
+
+            None,
+
+        )
+
+        if generation_message is not None:
+
+            st.success(
+
+                "Generated OpenMM simulation script."
+
+            )
+
+            st.code(
+
+                generation_message.split(
+
+                    "\n",
+
+                    maxsplit=1,
+
+                )[-1]
+
+            )
 
         _render_generated_script_preview()
 
         if run_clicked:
+
             _run_generated_script()
-            
-        
+
         if submit_clicked:
+
             _submit_generated_script_to_slurm()
