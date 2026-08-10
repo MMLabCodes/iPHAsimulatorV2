@@ -14,6 +14,14 @@ files, prepares Amber/GAFF2 and GROMACS/OpenMM simulation inputs, supports HPC
 execution patterns, and provides early analysis and PHA-enzyme docking
 preparation notebooks.
 
+## Launch the GUI
+
+From the repository root, launch the Streamlit interface with:
+
+```bash
+python -m streamlit run pha_gui.py
+```
+
 ## What It Does
 
 iPHASimulator v2 currently provides:
