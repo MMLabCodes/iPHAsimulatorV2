@@ -35,6 +35,9 @@ from pathlib import Path
 
 from openbabel import pybel
 
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
 from .pha_filepath_manager import (
     PHAFileManager,
     PHAResidueCodeManager,
@@ -940,3 +943,508 @@ quit
         )
 
         return csv_path
+    
+    def prepare_molecule_3d(
+        self,
+        smiles,
+        optimization="none",
+        random_seed=0xC0FFEE,
+        num_conformers=100,
+    ):
+        """
+        Generate a 3D RDKit molecule from a SMILES string.
+
+        Parameters
+        ----------
+        smiles : str
+            Input molecular SMILES string.
+
+        optimization : {"none", "quick", "comprehensive"}, optional
+            Geometry-preparation strategy.
+
+            ``"none"``
+                Generate a single ETKDGv3 conformer without performing
+                an explicit molecular-mechanics geometry optimisation.
+
+                This is the fastest option and is intended primarily for
+                testing or for reproducing a minimally processed starting
+                geometry.
+
+            ``"quick"``
+                Generate one ETKDGv3 conformer and optimise it using MMFF94.
+                If MMFF94 parameters are unavailable for the molecule, UFF
+                is used as a fallback.
+
+                This provides a fast local geometry relaxation while keeping
+                the computational cost very low.
+
+            ``"comprehensive"``
+                Generate multiple ETKDGv3 conformers, optimise each conformer
+                using MMFF94, discard conformers that fail to converge, and
+                select the lowest-energy converged conformer.
+
+                If MMFF94 parameters are unavailable, UFF is used instead.
+
+                This method provides a more thorough conformational search
+                and is recommended when preparing final parameterisation
+                geometries for flexible PHA trimers.
+
+        random_seed : int, optional
+            Random seed used by RDKit conformer generation. A fixed seed
+            makes conformer generation reproducible.
+
+        num_conformers : int, optional
+            Number of conformers generated when
+            ``optimization="comprehensive"``.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            Molecule containing explicit hydrogens and a prepared 3D
+            conformer.
+
+        Raises
+        ------
+        ValueError
+            Raised if the SMILES cannot be parsed, if conformer embedding
+            fails, if an unsupported optimisation mode is requested, or if
+            no comprehensive-search conformer converges.
+
+        Notes
+        -----
+        ETKDGv3 is used for 3D conformer generation.
+
+        MMFF94 is preferred for geometry optimisation because it is generally
+        well suited to organic molecules. UFF is used as a fallback for
+        molecules for which MMFF94 parameters are unavailable.
+
+        The geometry optimisation performed here is classical
+        molecular-mechanics optimisation, not quantum-chemical optimisation.
+        """
+
+        optimization = str(
+            optimization
+        ).strip().lower()
+
+        valid_modes = {
+            "none",
+            "quick",
+            "comprehensive",
+        }
+
+        if optimization not in valid_modes:
+            raise ValueError(
+                "optimization must be one of: "
+                "'none', 'quick', or 'comprehensive'."
+            )
+
+        molecule = Chem.MolFromSmiles(
+            smiles
+        )
+
+        if molecule is None:
+            raise ValueError(
+                "RDKit could not parse the supplied SMILES."
+            )
+
+        molecule = Chem.AddHs(
+            molecule
+        )
+
+        if optimization == "none":
+            return self._prepare_single_conformer_no_optimization(
+                molecule=molecule,
+                random_seed=random_seed,
+            )
+
+        if optimization == "quick":
+            return self._prepare_single_conformer_optimized(
+                molecule=molecule,
+                random_seed=random_seed,
+            )
+
+        return self._prepare_comprehensive_conformer_search(
+            molecule=molecule,
+            random_seed=random_seed,
+            num_conformers=num_conformers,
+        )
+
+
+    def _prepare_single_conformer_no_optimization(
+        self,
+        molecule,
+        random_seed,
+    ):
+        """
+        Generate one ETKDGv3 conformer without force-field optimisation.
+
+        Parameters
+        ----------
+        molecule : rdkit.Chem.Mol
+            RDKit molecule containing explicit hydrogens.
+
+        random_seed : int
+            Random seed used during conformer generation.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            Molecule containing one embedded 3D conformer.
+
+        Raises
+        ------
+        ValueError
+            Raised if ETKDGv3 embedding fails after both the standard and
+            random-coordinate embedding attempts.
+        """
+
+        params = AllChem.ETKDGv3()
+
+        params.randomSeed = int(
+            random_seed
+        )
+
+        status = AllChem.EmbedMolecule(
+            molecule,
+            params,
+        )
+
+        if status != 0:
+            params.useRandomCoords = True
+
+            params.randomSeed = int(
+                random_seed
+            )
+
+            status = AllChem.EmbedMolecule(
+                molecule,
+                params,
+            )
+
+        if status != 0:
+            raise ValueError(
+                "RDKit ETKDGv3 embedding failed."
+            )
+
+        print(
+            "Generated ETKDGv3 conformer "
+            "without geometry optimisation."
+        )
+
+        return molecule
+
+
+    def _prepare_single_conformer_optimized(
+        self,
+        molecule,
+        random_seed,
+    ):
+        """
+        Generate one ETKDGv3 conformer and optimise its geometry.
+
+        MMFF94 is used when all required MMFF parameters are available.
+        Otherwise, the Universal Force Field (UFF) is used as a fallback.
+
+        Parameters
+        ----------
+        molecule : rdkit.Chem.Mol
+            RDKit molecule containing explicit hydrogens.
+
+        random_seed : int
+            Random seed used during conformer generation.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            Molecule containing the optimised 3D conformer.
+
+        Raises
+        ------
+        ValueError
+            Raised if conformer generation fails.
+
+        RuntimeError
+            Raised if the selected force-field optimisation does not converge.
+
+        Notes
+        -----
+        This performs a local molecular-mechanics geometry optimisation.
+        It does not perform a conformational search and therefore optimises
+        only the single ETKDGv3 starting conformer.
+        """
+
+        params = AllChem.ETKDGv3()
+
+        params.randomSeed = int(
+            random_seed
+        )
+
+        status = AllChem.EmbedMolecule(
+            molecule,
+            params,
+        )
+
+        if status != 0:
+            params.useRandomCoords = True
+
+            params.randomSeed = int(
+                random_seed
+            )
+
+            status = AllChem.EmbedMolecule(
+                molecule,
+                params,
+            )
+
+        if status != 0:
+            raise ValueError(
+                "RDKit ETKDGv3 embedding failed."
+            )
+
+        if AllChem.MMFFHasAllMoleculeParams(
+            molecule
+        ):
+            forcefield_name = "MMFF94"
+
+            convergence_status = (
+                AllChem.MMFFOptimizeMolecule(
+                    molecule,
+                    mmffVariant="MMFF94",
+                    maxIters=1000,
+                )
+            )
+
+        elif AllChem.UFFHasAllMoleculeParams(
+            molecule
+        ):
+            forcefield_name = "UFF"
+
+            convergence_status = (
+                AllChem.UFFOptimizeMolecule(
+                    molecule,
+                    maxIters=1000,
+                )
+            )
+
+        else:
+            raise RuntimeError(
+                "Neither MMFF94 nor UFF has all required "
+                "parameters for this molecule."
+            )
+
+        if convergence_status != 0:
+            raise RuntimeError(
+                f"{forcefield_name} geometry optimisation "
+                "did not converge."
+            )
+
+        print(
+            "Quick geometry optimisation complete."
+        )
+
+        print(
+            "Force field:",
+            forcefield_name,
+        )
+
+        return molecule
+
+
+    def _prepare_comprehensive_conformer_search(
+        self,
+        molecule,
+        random_seed,
+        num_conformers,
+    ):
+        """
+        Perform a multi-conformer geometry search and select the lowest-energy
+        converged conformer.
+
+        Parameters
+        ----------
+        molecule : rdkit.Chem.Mol
+            RDKit molecule containing explicit hydrogens.
+
+        random_seed : int
+            Random seed used during ETKDGv3 conformer generation.
+
+        num_conformers : int
+            Number of conformers to generate.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            A molecule containing only the selected lowest-energy conformer.
+
+        Raises
+        ------
+        ValueError
+            Raised if ``num_conformers`` is less than one or if conformer
+            generation produces no structures.
+
+        RuntimeError
+            Raised if neither MMFF94 nor UFF can parameterise the molecule,
+            or if no generated conformer successfully converges.
+
+        Notes
+        -----
+        ETKDGv3 is used to generate an ensemble of starting conformers.
+
+        Every conformer is independently optimised using MMFF94 when
+        available. UFF is used as a fallback.
+
+        Conformers that do not converge are excluded from selection.
+
+        The final conformer is the converged structure with the lowest
+        molecular-mechanics energy among the generated ensemble.
+        """
+
+        num_conformers = int(
+            num_conformers
+        )
+
+        if num_conformers < 1:
+            raise ValueError(
+                "num_conformers must be at least 1."
+            )
+
+        params = AllChem.ETKDGv3()
+
+        params.randomSeed = int(
+            random_seed
+        )
+
+        params.pruneRmsThresh = 0.5
+
+        params.numThreads = 0
+
+        conformer_ids = list(
+            AllChem.EmbedMultipleConfs(
+                molecule,
+                numConfs=num_conformers,
+                params=params,
+            )
+        )
+
+        if not conformer_ids:
+            raise ValueError(
+                "RDKit failed to generate any conformers."
+            )
+
+        if AllChem.MMFFHasAllMoleculeParams(
+            molecule
+        ):
+            forcefield_name = "MMFF94"
+
+            results = (
+                AllChem.MMFFOptimizeMoleculeConfs(
+                    molecule,
+                    numThreads=0,
+                    maxIters=1000,
+                    mmffVariant="MMFF94",
+                )
+            )
+
+        elif AllChem.UFFHasAllMoleculeParams(
+            molecule
+        ):
+            forcefield_name = "UFF"
+
+            results = (
+                AllChem.UFFOptimizeMoleculeConfs(
+                    molecule,
+                    numThreads=0,
+                    maxIters=1000,
+                )
+            )
+
+        else:
+            raise RuntimeError(
+                "Neither MMFF94 nor UFF has all required "
+                "parameters for this molecule."
+            )
+
+        converged_results = []
+
+        for conformer_id, result in zip(
+            conformer_ids,
+            results,
+        ):
+            convergence_status = result[0]
+            energy = result[1]
+
+            if convergence_status == 0:
+                converged_results.append(
+                    (
+                        conformer_id,
+                        energy,
+                    )
+                )
+
+        if not converged_results:
+            raise RuntimeError(
+                "No conformers converged during the "
+                "comprehensive geometry optimisation."
+            )
+
+        best_conformer_id, best_energy = min(
+            converged_results,
+            key=lambda item: item[1],
+        )
+
+        selected_molecule = Chem.Mol(
+            molecule
+        )
+
+        selected_conformer = molecule.GetConformer(
+            int(
+                best_conformer_id
+            )
+        )
+
+        selected_molecule.RemoveAllConformers()
+
+        selected_molecule.AddConformer(
+            selected_conformer,
+            assignId=True,
+        )
+
+        print(
+            "Comprehensive geometry optimisation complete."
+        )
+
+        print(
+            "Force field:",
+            forcefield_name,
+        )
+
+        print(
+            "Requested conformers:",
+            num_conformers,
+        )
+
+        print(
+            "Generated conformers:",
+            len(
+                conformer_ids
+            ),
+        )
+
+        print(
+            "Converged conformers:",
+            len(
+                converged_results
+            ),
+        )
+
+        print(
+            "Selected conformer:",
+            best_conformer_id,
+        )
+
+        print(
+            "Selected energy:",
+            best_energy,
+        )
+
+        return selected_molecule
