@@ -190,7 +190,7 @@ root_dir : str or pathlib.Path, optional
 
         if geometry_optimization == "comprehensive":
             print("Conformers:   ", num_conformers)
-         return {
+        return {
             "PHA_type": PHA_type,
             "trimer_name": trimer_name,
             "trimer_code": trimer_code,
