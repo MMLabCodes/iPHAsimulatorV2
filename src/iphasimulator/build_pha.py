@@ -416,30 +416,85 @@ root_dir : str or pathlib.Path, optional
         print('PDB:        ', pdb_file)
         return {'PHA_type': PHA_type, 'length': length, 'built_name': built_name, 'sequence_codes': sequence_codes, 'sequence_string': sequence_string, 'leap_file': leap_file, 'leap_log': leap_log, 'prmtop_file': prmtop_file, 'rst7_file': rst7_file, 'pdb_file': pdb_file}
 
-    def smiles_to_pdb(self, smiles, output_pdb):
+    def smiles_to_pdb(
+        self,
+        smiles,
+        output_pdb,
+        geometry_optimization="none",
+        random_seed=0xC0FFEE,
+        num_conformers=100,
+    ):
         """
-        Convert a SMILES string into a 3D PDB structure.
+        Convert a SMILES string into a three-dimensional PDB structure.
 
         Parameters
         ----------
         smiles : str
-            Input SMILES string.
+            Input molecular SMILES string.
 
         output_pdb : str or pathlib.Path
-            Path where the generated PDB file should be written.
+            Path where the generated PDB file will be written.
+
+        geometry_optimization : {"none", "quick", "comprehensive"}, optional
+            Geometry preparation strategy.
+
+            ``"none"``
+                Generate one ETKDGv3 conformer without explicit force-field
+                optimisation.
+
+            ``"quick"``
+                Generate one ETKDGv3 conformer and locally optimise it using
+                MMFF94. UFF is used as a fallback if MMFF94 parameters are
+                unavailable.
+
+            ``"comprehensive"``
+                Generate multiple ETKDGv3 conformers, optimise each one,
+                discard unconverged conformers, and select the lowest-energy
+                converged geometry.
+
+        random_seed : int, optional
+            Random seed used during conformer generation. A fixed value makes
+            the generated structures reproducible.
+
+        num_conformers : int, optional
+            Number of conformers generated when
+            ``geometry_optimization="comprehensive"``.
 
         Returns
         -------
         pathlib.Path
             Path to the generated PDB file.
+
+        Notes
+        -----
+        The 3D molecule is prepared using RDKit.
+
+        ETKDGv3 is used for conformer generation. Depending on the selected
+        geometry-preparation mode, the structure may then be optimised using
+        MMFF94 or UFF before being written to PDB.
+
+        This method performs molecular-mechanics geometry preparation only.
+        It does not perform quantum-chemical geometry optimisation.
         """
-        output_pdb = Path(output_pdb)
-        molecule = pybel.readstring('smi', smiles)
-        molecule.make3D()
-        pdb_string = molecule.write('pdb')
-        
-        with open(output_pdb, 'w') as f:
-            f.write(pdb_string)
+
+        output_pdb = Path(
+            output_pdb
+        )
+
+        molecule = self.prepare_molecule_3d(
+            smiles=smiles,
+            optimization=geometry_optimization,
+            random_seed=random_seed,
+            num_conformers=num_conformers,
+        )
+
+        Chem.MolToPDBFile(
+            molecule,
+            str(
+                output_pdb
+            ),
+        )
+
         return output_pdb
 
     def replace_pdb_residue_name(self, pdb_file, old_resname, new_resname):
