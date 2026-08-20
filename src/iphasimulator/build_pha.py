@@ -69,35 +69,78 @@ root_dir : str or pathlib.Path, optional
         self.paths = PHAFileManager(root_dir)
         self.residue_codes = PHAResidueCodeManager(self.paths)
 
-    def parameterise_trimer(self, PHA_type, trimer_name, trimer_smiles, monomer_smiles, forcefield='gaff2', charge_model='abcg2'):
+    def parameterise_trimer(
+        self,
+        PHA_type,
+        trimer_name,
+        trimer_smiles,
+        monomer_smiles,
+        forcefield="gaff2",
+        charge_model="abcg2",
+        geometry_optimization="none",
+        random_seed=0xC0FFEE,
+        num_conformers=100,
+    ):
         """
         Parameterise a PHA trimer using AmberTools.
 
         Parameters
         ----------
         PHA_type : str
-            PHA type name, e.g. "3HB".
+            PHA type name, for example ``"3HB"``.
 
         trimer_name : str
-            Name of the trimer, e.g. "P3HB_3".
+            Name assigned to the trimer, for example ``"P3HB_3"``.
 
         trimer_smiles : str
-            SMILES string for the trimer.
+            SMILES representation of the PHA trimer.
 
         monomer_smiles : str
-            SMILES string for the monomer unit. This is stored in the residue
-            code database for the head, mainchain and tail components.
+            SMILES representation of the monomer unit. This is stored in the
+            residue-code database for subsequent polymer construction.
 
         forcefield : str, optional
-            Amber atom type set to use with antechamber.
+            Amber atom-type set used by Antechamber. The default is
+            ``"gaff2"``.
 
         charge_model : str, optional
-            Charge model to use with antechamber.
+            Atomic charge model used by Antechamber. The default is
+            ``"abcg2"``.
+
+        geometry_optimization : {"none", "quick", "comprehensive"}, optional
+            Geometry preparation method applied before charge assignment.
+
+            ``"none"``
+                Generate one ETKDGv3 conformer but perform no explicit
+                force-field geometry optimisation.
+
+            ``"quick"``
+                Generate one ETKDGv3 conformer and optimise it using MMFF94.
+                UFF is used if MMFF94 parameters are unavailable.
+
+            ``"comprehensive"``
+                Generate multiple ETKDGv3 conformers, optimise them using
+                MMFF94 or UFF, discard unconverged conformers, and use the
+                lowest-energy converged geometry for parameterisation.
+
+        random_seed : int, optional
+            Random seed used during conformer generation.
+
+        num_conformers : int, optional
+            Number of conformers generated when
+            ``geometry_optimization="comprehensive"``.
 
         Returns
         -------
         dict
-            Paths to the generated trimer files and residue information.
+            Paths to the generated trimer files together with residue and
+            geometry-preparation information.
+
+        Notes
+        -----
+        Geometry preparation occurs before the first Antechamber command.
+        Therefore the atomic charges requested through ``charge_model`` are
+        assigned using the selected prepared trimer geometry.
         """
         self.paths.create_PHA_type_dir(PHA_type)
         self.residue_codes.register_PHA_type(PHA_type=PHA_type, trimer_name=trimer_name, trimer_smiles=trimer_smiles, monomer_smiles=monomer_smiles)
@@ -115,7 +158,13 @@ root_dir : str or pathlib.Path, optional
         temp_dir = self.paths.get_temp_dir().resolve()
         temp_dir.mkdir(parents=True, exist_ok=True)
         
-        self.smiles_to_pdb(trimer_smiles, pdb_file)
+        self.smiles_to_pdb(
+            smiles=trimer_smiles,
+            output_pdb=pdb_file,
+            geometry_optimization=geometry_optimization,
+            random_seed=random_seed,
+            num_conformers=num_conformers,
+        )
         self.replace_pdb_residue_name(pdb_file=pdb_file, old_resname='UNL', new_resname=trimer_code)
         
         antechamber_mol2_command = f'antechamber -i {pdb_file} -fi pdb -o {mol2_file} -fo mol2 -c {charge_model.lower()} -at {forcefield.lower()} -s 2'
@@ -136,8 +185,29 @@ root_dir : str or pathlib.Path, optional
         print('FRCMOD:       ', frcmod_file)
         print('AC:           ', ac_file)
         print('Temp dir:     ', temp_dir)
-        return {'PHA_type': PHA_type, 'trimer_name': trimer_name, 'trimer_code': trimer_code, 'pdb_file': pdb_file, 'mol2_file': mol2_file, 'frcmod_file': frcmod_file, 'ac_file': ac_file, 'temp_dir': temp_dir}
+        print("Geometry opt: ", geometry_optimization)
+        print("Random seed:  ", random_seed)
 
+        if geometry_optimization == "comprehensive":
+            print("Conformers:   ", num_conformers)
+         return {
+            "PHA_type": PHA_type,
+            "trimer_name": trimer_name,
+            "trimer_code": trimer_code,
+            "pdb_file": pdb_file,
+            "mol2_file": mol2_file,
+            "frcmod_file": frcmod_file,
+            "ac_file": ac_file,
+            "temp_dir": temp_dir,
+            "geometry_optimization": geometry_optimization,
+            "random_seed": random_seed,
+            "num_conformers": (
+                num_conformers
+                if geometry_optimization == "comprehensive"
+                else None
+            ),
+        }
+   
     def generate_polymer_prepins(self, PHA_type):
         """
         Generate head, mainchain and tail prepin files for a PHA type.
