@@ -427,6 +427,14 @@ root_dir : str or pathlib.Path, optional
         """
         Convert a SMILES string into a three-dimensional PDB structure.
 
+        Open Babel is always used to generate the initial three-dimensional
+        structure. This preserves the atom ordering used by the original
+        iPHAsimulator PHA parameterisation workflow and therefore maintains
+        compatibility with existing prepgen definition files.
+
+        RDKit may optionally be used to optimise the molecular coordinates,
+        but it does not define the final atom ordering.
+
         Parameters
         ----------
         smiles : str
@@ -436,66 +444,677 @@ root_dir : str or pathlib.Path, optional
             Path where the generated PDB file will be written.
 
         geometry_optimization : {"none", "quick", "comprehensive"}, optional
-            Geometry preparation strategy.
+            Geometry-preparation strategy.
 
             ``"none"``
-                Generate one ETKDGv3 conformer without explicit force-field
-                optimisation.
+                Use the structure generated directly by Open Babel
+                ``make3D()``. No additional RDKit optimisation is performed.
+
+                Note that Open Babel ``make3D()`` itself performs its normal
+                internal geometry preparation.
 
             ``"quick"``
-                Generate one ETKDGv3 conformer and locally optimise it using
-                MMFF94. UFF is used as a fallback if MMFF94 parameters are
-                unavailable.
+                Generate the initial structure with Open Babel, import that
+                exact structure into RDKit, and perform a local MMFF94
+                geometry optimisation.
+
+                UFF is used as a fallback if MMFF94 parameters are not
+                available.
 
             ``"comprehensive"``
-                Generate multiple ETKDGv3 conformers, optimise each one,
-                discard unconverged conformers, and select the lowest-energy
-                converged geometry.
+                Generate the initial molecule and atom ordering with Open
+                Babel, then use RDKit ETKDGv3 to generate multiple
+                conformers.
+
+                Each conformer is optimised using MMFF94, or UFF as a
+                fallback. The lowest-energy converged conformer is selected.
+
+                The selected coordinates are copied back onto the original
+                Open Babel molecule so that the Open Babel atom ordering is
+                retained in the final PDB.
 
         random_seed : int, optional
-            Random seed used during conformer generation. A fixed value makes
-            the generated structures reproducible.
+            Random seed used by RDKit for reproducible conformer generation.
 
         num_conformers : int, optional
-            Number of conformers generated when
-            ``geometry_optimization="comprehensive"``.
+            Number of conformers requested when using comprehensive geometry
+            optimisation.
 
         Returns
         -------
         pathlib.Path
             Path to the generated PDB file.
 
+        Raises
+        ------
+        ValueError
+            Raised if an unsupported geometry optimisation mode is requested
+            or if the molecular structure cannot be transferred to RDKit.
+
+        RuntimeError
+            Raised if force-field optimisation fails or if the Open Babel and
+            RDKit molecules do not contain equivalent atom ordering.
+
         Notes
         -----
-        The 3D molecule is prepared using RDKit.
+        The final PDB is always written from the Open Babel molecule.
 
-        ETKDGv3 is used for conformer generation. Depending on the selected
-        geometry-preparation mode, the structure may then be optimised using
-        MMFF94 or UFF before being written to PDB.
+        This is intentional. Existing PHA prepgen definition files depend on
+        the atom ordering historically produced by Open Babel.
 
-        This method performs molecular-mechanics geometry preparation only.
-        It does not perform quantum-chemical geometry optimisation.
+        RDKit therefore acts only as a geometry optimisation engine.
         """
 
         output_pdb = Path(
             output_pdb
         )
 
-        molecule = self.prepare_molecule_3d(
-            smiles=smiles,
-            optimization=geometry_optimization,
-            random_seed=random_seed,
-            num_conformers=num_conformers,
+        geometry_optimization = str(
+            geometry_optimization
+        ).strip().lower()
+
+        valid_modes = {
+            "none",
+            "quick",
+            "comprehensive",
+        }
+
+        if geometry_optimization not in valid_modes:
+            raise ValueError(
+                "geometry_optimization must be one of: "
+                "'none', 'quick', or 'comprehensive'."
+            )
+
+        # -----------------------------------------------------
+        # Generate the initial molecule using Open Babel.
+        #
+        # Open Babel defines the atom ordering that must be
+        # preserved for the existing prepgen definitions.
+        # -----------------------------------------------------
+
+        babel_molecule = pybel.readstring(
+            "smi",
+            smiles,
         )
 
-        Chem.MolToPDBFile(
-            molecule,
-            str(
-                output_pdb
+        babel_molecule.make3D()
+
+        # -----------------------------------------------------
+        # No additional optimisation
+        # -----------------------------------------------------
+
+        if geometry_optimization == "none":
+
+            print(
+                "Generated 3D structure using Open Babel "
+                "without additional RDKit optimisation."
+            )
+
+        # -----------------------------------------------------
+        # RDKit geometry preparation
+        # -----------------------------------------------------
+
+        else:
+
+            rdkit_molecule = (
+                self._openbabel_molecule_to_rdkit(
+                    babel_molecule
+                )
+            )
+
+            if geometry_optimization == "quick":
+
+                rdkit_molecule = (
+                    self._prepare_single_conformer_optimized(
+                        molecule=rdkit_molecule,
+                    )
+                )
+
+            elif geometry_optimization == "comprehensive":
+
+                rdkit_molecule = (
+                    self._prepare_comprehensive_conformer_search(
+                        molecule=rdkit_molecule,
+                        random_seed=random_seed,
+                        num_conformers=num_conformers,
+                    )
+                )
+
+            # Copy only the coordinates back to the original
+            # Open Babel molecule.
+            self._copy_rdkit_coordinates_to_openbabel(
+                rdkit_molecule=rdkit_molecule,
+                babel_molecule=babel_molecule,
+            )
+
+        # -----------------------------------------------------
+        # Write the final PDB using Open Babel.
+        # -----------------------------------------------------
+
+        pdb_string = babel_molecule.write(
+            "pdb"
+        )
+
+        with open(
+            output_pdb,
+            "w",
+        ) as file:
+            file.write(
+                pdb_string
+            )
+
+        return output_pdb
+
+    def _openbabel_molecule_to_rdkit(
+        self,
+        babel_molecule,
+    ):
+        """
+        Convert an Open Babel molecule into an RDKit molecule while
+        preserving the Open Babel atom ordering.
+
+        Parameters
+        ----------
+        babel_molecule : pybel.Molecule
+            Open Babel molecule containing explicit three-dimensional
+            coordinates.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            RDKit representation of the same molecule.
+
+        Raises
+        ------
+        ValueError
+            Raised if RDKit cannot read the Open Babel-generated PDB
+            representation.
+
+        RuntimeError
+            Raised if the resulting molecule does not contain the same number
+            or sequence of elements as the Open Babel molecule.
+
+        Notes
+        -----
+        The conversion is performed through an in-memory PDB block generated
+        by Open Babel.
+
+        Because the PDB is produced directly from the Open Babel molecule,
+        its atom sequence provides the reference ordering. The ordering is
+        validated explicitly before any coordinate transfer is allowed.
+        """
+
+        pdb_block = babel_molecule.write(
+            "pdb"
+        )
+
+        rdkit_molecule = Chem.MolFromPDBBlock(
+            pdb_block,
+            sanitize=True,
+            removeHs=False,
+        )
+
+        if rdkit_molecule is None:
+            raise ValueError(
+                "RDKit could not read the Open Babel-generated "
+                "PDB structure."
+            )
+
+        babel_atoms = list(
+            babel_molecule.atoms
+        )
+
+        rdkit_atoms = list(
+            rdkit_molecule.GetAtoms()
+        )
+
+        if len(babel_atoms) != len(rdkit_atoms):
+            raise RuntimeError(
+                "Open Babel and RDKit atom counts differ. "
+                f"Open Babel: {len(babel_atoms)}, "
+                f"RDKit: {len(rdkit_atoms)}."
+            )
+
+        for index, (
+            babel_atom,
+            rdkit_atom,
+        ) in enumerate(
+            zip(
+                babel_atoms,
+                rdkit_atoms,
+            )
+        ):
+
+            babel_atomic_number = (
+                babel_atom.atomicnum
+            )
+
+            rdkit_atomic_number = (
+                rdkit_atom.GetAtomicNum()
+            )
+
+            if (
+                babel_atomic_number
+                != rdkit_atomic_number
+            ):
+                raise RuntimeError(
+                    "Open Babel and RDKit atom ordering differs "
+                    f"at atom {index + 1}: "
+                    f"Open Babel atomic number "
+                    f"{babel_atomic_number}, "
+                    f"RDKit atomic number "
+                    f"{rdkit_atomic_number}."
+                )
+
+        return rdkit_molecule
+
+    def _copy_rdkit_coordinates_to_openbabel(
+        self,
+        rdkit_molecule,
+        babel_molecule,
+    ):
+        """
+        Copy coordinates from an RDKit conformer onto an Open Babel molecule.
+
+        Only Cartesian coordinates are transferred. Atom names, atom order,
+        bonding information, residue information, and other Open Babel
+        properties are left unchanged.
+
+        Parameters
+        ----------
+        rdkit_molecule : rdkit.Chem.Mol
+            RDKit molecule containing the geometry that should be transferred.
+
+        babel_molecule : pybel.Molecule
+            Original Open Babel molecule whose atom ordering should be
+            retained.
+
+        Raises
+        ------
+        RuntimeError
+            Raised if the molecules contain different atom counts, different
+            atomic-number sequences, or if the RDKit molecule does not contain
+            a conformer.
+
+        Notes
+        -----
+        The RDKit molecule is constructed directly from the Open Babel PDB
+        representation before optimisation. Therefore atom indices are
+        expected to correspond exactly.
+
+        This function validates that assumption before transferring any
+        coordinates.
+        """
+
+        if rdkit_molecule.GetNumConformers() == 0:
+            raise RuntimeError(
+                "RDKit molecule does not contain a conformer."
+            )
+
+        rdkit_atoms = list(
+            rdkit_molecule.GetAtoms()
+        )
+
+        babel_atoms = list(
+            babel_molecule.atoms
+        )
+
+        if len(rdkit_atoms) != len(babel_atoms):
+            raise RuntimeError(
+                "Cannot transfer coordinates because the "
+                "Open Babel and RDKit atom counts differ."
+            )
+
+        conformer = rdkit_molecule.GetConformer()
+
+        for index, (
+            rdkit_atom,
+            babel_atom,
+        ) in enumerate(
+            zip(
+                rdkit_atoms,
+                babel_atoms,
+            )
+        ):
+
+            if (
+                rdkit_atom.GetAtomicNum()
+                != babel_atom.atomicnum
+            ):
+                raise RuntimeError(
+                    "Cannot transfer coordinates because atom "
+                    f"{index + 1} differs between RDKit and "
+                    "Open Babel."
+                )
+
+            position = conformer.GetAtomPosition(
+                index
+            )
+
+            babel_atom.OBAtom.SetVector(
+                float(position.x),
+                float(position.y),
+                float(position.z),
+            )
+
+    def _prepare_single_conformer_optimized(
+        self,
+        molecule,
+    ):
+        """
+        Perform a local molecular-mechanics optimisation of an existing
+        three-dimensional conformer.
+
+        Parameters
+        ----------
+        molecule : rdkit.Chem.Mol
+            RDKit molecule containing the Open Babel-generated starting
+            geometry.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            Molecule containing the locally optimised conformer.
+
+        Raises
+        ------
+        RuntimeError
+            Raised if neither MMFF94 nor UFF can parameterise the molecule,
+            or if the optimisation does not converge.
+
+        Notes
+        -----
+        MMFF94 is preferred for organic molecules.
+
+        UFF is used as a fallback if complete MMFF94 parameters are not
+        available.
+
+        Unlike the comprehensive method, this method does not generate a
+        conformer ensemble. It simply relaxes the geometry originally
+        generated by Open Babel.
+        """
+
+        if molecule.GetNumConformers() == 0:
+            raise RuntimeError(
+                "The RDKit molecule does not contain a "
+                "starting 3D conformer."
+            )
+
+        if AllChem.MMFFHasAllMoleculeParams(
+            molecule
+        ):
+
+            forcefield_name = "MMFF94"
+
+            convergence_status = (
+                AllChem.MMFFOptimizeMolecule(
+                    molecule,
+                    mmffVariant="MMFF94",
+                    maxIters=1000,
+                )
+            )
+
+        elif AllChem.UFFHasAllMoleculeParams(
+            molecule
+        ):
+
+            forcefield_name = "UFF"
+
+            convergence_status = (
+                AllChem.UFFOptimizeMolecule(
+                    molecule,
+                    maxIters=1000,
+                )
+            )
+
+        else:
+
+            raise RuntimeError(
+                "Neither MMFF94 nor UFF has all required "
+                "parameters for this molecule."
+            )
+
+        if convergence_status != 0:
+
+            raise RuntimeError(
+                f"{forcefield_name} geometry optimisation "
+                "did not converge."
+            )
+
+        print(
+            "Quick geometry optimisation complete."
+        )
+
+        print(
+            "Force field:",
+            forcefield_name,
+        )
+
+        return molecule
+    
+    def _prepare_comprehensive_conformer_search(
+        self,
+        molecule,
+        random_seed,
+        num_conformers,
+    ):
+        """
+        Perform a multi-conformer molecular-mechanics search and select the
+        lowest-energy converged geometry.
+
+        Parameters
+        ----------
+        molecule : rdkit.Chem.Mol
+            RDKit representation of the Open Babel-generated molecule.
+
+            The molecular graph and atom ordering originate from Open Babel,
+            but RDKit is free to generate new conformational coordinates.
+
+        random_seed : int
+            Random seed used during ETKDGv3 conformer generation.
+
+        num_conformers : int
+            Number of conformers requested.
+
+        Returns
+        -------
+        rdkit.Chem.Mol
+            Molecule containing only the lowest-energy converged conformer
+            found during the search.
+
+        Raises
+        ------
+        ValueError
+            Raised if fewer than one conformer is requested or if RDKit fails
+            to generate any conformers.
+
+        RuntimeError
+            Raised if neither MMFF94 nor UFF can parameterise the molecule,
+            or if none of the generated conformers converge.
+
+        Notes
+        -----
+        ETKDGv3 is used to sample molecular conformations.
+
+        Each generated conformer is then independently optimised with MMFF94.
+        UFF is used as a fallback when complete MMFF94 parameters are not
+        available.
+
+        Only converged conformers are considered during energy ranking.
+
+        The lowest-energy converged conformer is retained.
+
+        After this function returns, its coordinates can be copied back onto
+        the original Open Babel molecule. This allows comprehensive RDKit
+        conformational searching without changing the historical Open Babel
+        atom ordering required by the PHA prepgen workflow.
+        """
+
+        num_conformers = int(
+            num_conformers
+        )
+
+        if num_conformers < 1:
+            raise ValueError(
+                "num_conformers must be at least 1."
+            )
+
+        params = AllChem.ETKDGv3()
+
+        params.randomSeed = int(
+            random_seed
+        )
+
+        params.pruneRmsThresh = 0.5
+
+        params.numThreads = 0
+
+        conformer_ids = list(
+            AllChem.EmbedMultipleConfs(
+                molecule,
+                numConfs=num_conformers,
+                params=params,
+            )
+        )
+
+        if not conformer_ids:
+            raise ValueError(
+                "RDKit failed to generate any conformers."
+            )
+
+        if AllChem.MMFFHasAllMoleculeParams(
+            molecule
+        ):
+
+            forcefield_name = "MMFF94"
+
+            results = (
+                AllChem.MMFFOptimizeMoleculeConfs(
+                    molecule,
+                    numThreads=0,
+                    maxIters=1000,
+                    mmffVariant="MMFF94",
+                )
+            )
+
+        elif AllChem.UFFHasAllMoleculeParams(
+            molecule
+        ):
+
+            forcefield_name = "UFF"
+
+            results = (
+                AllChem.UFFOptimizeMoleculeConfs(
+                    molecule,
+                    numThreads=0,
+                    maxIters=1000,
+                )
+            )
+
+        else:
+
+            raise RuntimeError(
+                "Neither MMFF94 nor UFF has all required "
+                "parameters for this molecule."
+            )
+
+        converged_results = []
+
+        for conformer_id, result in zip(
+            conformer_ids,
+            results,
+        ):
+
+            convergence_status = (
+                result[0]
+            )
+
+            energy = (
+                result[1]
+            )
+
+            if convergence_status == 0:
+
+                converged_results.append(
+                    (
+                        conformer_id,
+                        energy,
+                    )
+                )
+
+        if not converged_results:
+
+            raise RuntimeError(
+                "No conformers converged during the "
+                "comprehensive geometry optimisation."
+            )
+
+        (
+            best_conformer_id,
+            best_energy,
+        ) = min(
+            converged_results,
+            key=lambda item: item[1],
+        )
+
+        selected_molecule = Chem.Mol(
+            molecule
+        )
+
+        selected_conformer = (
+            molecule.GetConformer(
+                int(
+                    best_conformer_id
+                )
+            )
+        )
+
+        selected_molecule.RemoveAllConformers()
+
+        selected_molecule.AddConformer(
+            selected_conformer,
+            assignId=True,
+        )
+
+        print(
+            "Comprehensive geometry optimisation complete."
+        )
+
+        print(
+            "Force field:",
+            forcefield_name,
+        )
+
+        print(
+            "Requested conformers:",
+            num_conformers,
+        )
+
+        print(
+            "Generated conformers:",
+            len(
+                conformer_ids
             ),
         )
 
-        return output_pdb
+        print(
+            "Converged conformers:",
+            len(
+                converged_results
+            ),
+        )
+
+        print(
+            "Selected conformer:",
+            best_conformer_id,
+        )
+
+        print(
+            "Selected energy:",
+            best_energy,
+        )
+
+        return selected_molecule
 
     def replace_pdb_residue_name(self, pdb_file, old_resname, new_resname):
         """
@@ -1069,195 +1688,6 @@ quit
 
         return csv_path
     
-    def prepare_molecule_3d(
-        self,
-        smiles,
-        optimization="none",
-        random_seed=0xC0FFEE,
-        num_conformers=100,
-    ):
-        """
-        Generate a 3D RDKit molecule from a SMILES string.
-
-        Parameters
-        ----------
-        smiles : str
-            Input molecular SMILES string.
-
-        optimization : {"none", "quick", "comprehensive"}, optional
-            Geometry-preparation strategy.
-
-            ``"none"``
-                Generate a single ETKDGv3 conformer without performing
-                an explicit molecular-mechanics geometry optimisation.
-
-                This is the fastest option and is intended primarily for
-                testing or for reproducing a minimally processed starting
-                geometry.
-
-            ``"quick"``
-                Generate one ETKDGv3 conformer and optimise it using MMFF94.
-                If MMFF94 parameters are unavailable for the molecule, UFF
-                is used as a fallback.
-
-                This provides a fast local geometry relaxation while keeping
-                the computational cost very low.
-
-            ``"comprehensive"``
-                Generate multiple ETKDGv3 conformers, optimise each conformer
-                using MMFF94, discard conformers that fail to converge, and
-                select the lowest-energy converged conformer.
-
-                If MMFF94 parameters are unavailable, UFF is used instead.
-
-                This method provides a more thorough conformational search
-                and is recommended when preparing final parameterisation
-                geometries for flexible PHA trimers.
-
-        random_seed : int, optional
-            Random seed used by RDKit conformer generation. A fixed seed
-            makes conformer generation reproducible.
-
-        num_conformers : int, optional
-            Number of conformers generated when
-            ``optimization="comprehensive"``.
-
-        Returns
-        -------
-        rdkit.Chem.Mol
-            Molecule containing explicit hydrogens and a prepared 3D
-            conformer.
-
-        Raises
-        ------
-        ValueError
-            Raised if the SMILES cannot be parsed, if conformer embedding
-            fails, if an unsupported optimisation mode is requested, or if
-            no comprehensive-search conformer converges.
-
-        Notes
-        -----
-        ETKDGv3 is used for 3D conformer generation.
-
-        MMFF94 is preferred for geometry optimisation because it is generally
-        well suited to organic molecules. UFF is used as a fallback for
-        molecules for which MMFF94 parameters are unavailable.
-
-        The geometry optimisation performed here is classical
-        molecular-mechanics optimisation, not quantum-chemical optimisation.
-        """
-
-        optimization = str(
-            optimization
-        ).strip().lower()
-
-        valid_modes = {
-            "none",
-            "quick",
-            "comprehensive",
-        }
-
-        if optimization not in valid_modes:
-            raise ValueError(
-                "optimization must be one of: "
-                "'none', 'quick', or 'comprehensive'."
-            )
-
-        molecule = Chem.MolFromSmiles(
-            smiles
-        )
-
-        if molecule is None:
-            raise ValueError(
-                "RDKit could not parse the supplied SMILES."
-            )
-
-        molecule = Chem.AddHs(
-            molecule
-        )
-
-        if optimization == "none":
-            return self._prepare_single_conformer_no_optimization(
-                molecule=molecule,
-                random_seed=random_seed,
-            )
-
-        if optimization == "quick":
-            return self._prepare_single_conformer_optimized(
-                molecule=molecule,
-                random_seed=random_seed,
-            )
-
-        return self._prepare_comprehensive_conformer_search(
-            molecule=molecule,
-            random_seed=random_seed,
-            num_conformers=num_conformers,
-        )
-
-
-    def _prepare_single_conformer_no_optimization(
-        self,
-        molecule,
-        random_seed,
-    ):
-        """
-        Generate one ETKDGv3 conformer without force-field optimisation.
-
-        Parameters
-        ----------
-        molecule : rdkit.Chem.Mol
-            RDKit molecule containing explicit hydrogens.
-
-        random_seed : int
-            Random seed used during conformer generation.
-
-        Returns
-        -------
-        rdkit.Chem.Mol
-            Molecule containing one embedded 3D conformer.
-
-        Raises
-        ------
-        ValueError
-            Raised if ETKDGv3 embedding fails after both the standard and
-            random-coordinate embedding attempts.
-        """
-
-        params = AllChem.ETKDGv3()
-
-        params.randomSeed = int(
-            random_seed
-        )
-
-        status = AllChem.EmbedMolecule(
-            molecule,
-            params,
-        )
-
-        if status != 0:
-            params.useRandomCoords = True
-
-            params.randomSeed = int(
-                random_seed
-            )
-
-            status = AllChem.EmbedMolecule(
-                molecule,
-                params,
-            )
-
-        if status != 0:
-            raise ValueError(
-                "RDKit ETKDGv3 embedding failed."
-            )
-
-        print(
-            "Generated ETKDGv3 conformer "
-            "without geometry optimisation."
-        )
-
-        return molecule
-
 
     def _prepare_single_conformer_optimized(
         self,
