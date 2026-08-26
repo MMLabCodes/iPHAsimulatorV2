@@ -146,7 +146,7 @@ class BuildSimulation:
 
     def get_platform(self, platform_name=None):
         """
-        Select the OpenMM platform.
+        Select and configure the OpenMM platform.
 
         Priority
         --------
@@ -155,6 +155,27 @@ class BuildSimulation:
         3. CUDA.
         4. OpenCL.
         5. CPU.
+
+        Precision
+        ---------
+        CUDA
+            Mixed precision.
+
+        OpenCL
+            Single precision.
+
+        CPU
+            OpenMM default precision.
+
+        Parameters
+        ----------
+        platform_name : str, optional
+            Explicit OpenMM platform to use.
+
+        Returns
+        -------
+        openmm.Platform
+            Configured OpenMM platform.
         """
 
         import os
@@ -162,8 +183,47 @@ class BuildSimulation:
 
         requested_platform = (
             platform_name
-            or os.environ.get("IPHA_OPENMM_PLATFORM")
+            or os.environ.get(
+                "IPHA_OPENMM_PLATFORM"
+            )
         )
+
+        # ---------------------------------------------------------
+        # Helper for platform-specific configuration
+        # ---------------------------------------------------------
+
+        def configure_platform(
+            platform,
+            name,
+        ):
+
+            if name == "CUDA":
+
+                platform.setPropertyDefaultValue(
+                    "Precision",
+                    "mixed",
+                )
+
+                print(
+                    "CUDA precision: mixed"
+                )
+
+            elif name == "OpenCL":
+
+                platform.setPropertyDefaultValue(
+                    "Precision",
+                    "single",
+                )
+
+                print(
+                    "OpenCL precision: single"
+                )
+
+            return platform
+
+        # ---------------------------------------------------------
+        # Explicitly requested platform
+        # ---------------------------------------------------------
 
         if requested_platform is not None:
 
@@ -171,17 +231,10 @@ class BuildSimulation:
                 requested_platform
             )
 
-            if requested_platform in {
-                "CUDA",
-                "OpenCL",
-            }:
-                try:
-                    platform.setPropertyDefaultValue(
-                        "Precision",
-                        "mixed",
-                    )
-                except Exception:
-                    pass
+            platform = configure_platform(
+                platform,
+                requested_platform,
+            )
 
             print(
                 f"Using requested platform: "
@@ -190,6 +243,10 @@ class BuildSimulation:
 
             return platform
 
+        # ---------------------------------------------------------
+        # Automatic platform selection
+        # ---------------------------------------------------------
+
         for candidate in [
             "CUDA",
             "OpenCL",
@@ -197,21 +254,17 @@ class BuildSimulation:
         ]:
 
             try:
-                platform = Platform.getPlatformByName(
-                    candidate
+
+                platform = (
+                    Platform.getPlatformByName(
+                        candidate
+                    )
                 )
 
-                if candidate in {
-                    "CUDA",
-                    "OpenCL",
-                }:
-                    try:
-                        platform.setPropertyDefaultValue(
-                            "Precision",
-                            "mixed",
-                        )
-                    except Exception:
-                        pass
+                platform = configure_platform(
+                    platform,
+                    candidate,
+                )
 
                 print(
                     f"Using {candidate} platform."
@@ -221,6 +274,10 @@ class BuildSimulation:
 
             except Exception:
                 continue
+
+        # ---------------------------------------------------------
+        # Nothing worked
+        # ---------------------------------------------------------
 
         raise RuntimeError(
             "No usable OpenMM platform was found."
