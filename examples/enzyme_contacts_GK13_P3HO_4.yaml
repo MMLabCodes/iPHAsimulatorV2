@@ -1,0 +1,24 @@
+# Verified matching full-system inputs. Never append continuation/source XTCs.
+topology: /Users/k20098771/Data/MD_projects/PHA/MD_data/gromacs/PHA_Enzyme/GK13_P3HO_4_gromacs/step7_production.tpr
+trajectory: /Users/k20098771/Data/MD_projects/PHA/MD_data/gromacs/PHA_Enzyme/GK13_P3HO_4_gromacs/production_combined_1us.xtc
+# Relative paths are resolved against this YAML's directory.
+output_root: output/enzyme_contacts
+label: GK13–P3HO_4
+protein_selection: protein
+# TPR: one LIG residue (resindex 245, resid 246, seg_1_LIG), 99 atoms,
+# 41 heavy atoms (32 C + 9 O). Corresponding topol.top includes toppar/LIG.itp.
+pha_selection: resname LIG and segid seg_1_LIG
+modes: [all_heavy, sidechain_heavy]
+# Explicit inclusive window: null end means the actual final stored timestamp.
+# Verified available range: 0–1480.5 ns; do not infer it from the filename.
+# No equilibration period is removed and no convergence is assumed.
+start_ns: 0.0
+end_ns: null
+# null = all stored frames (verified 0.1 ns spacing). To reduce sampling, use
+# an integer multiple of the native interval, e.g. 1.0 ns.
+sample_interval_ns: null
+primary_cutoff_A: 4.5
+extra_cutoffs_A: [4.0, 5.0]
+# A small preview spread across the entire chosen window. --full disables this.
+preview_frames: 31
+distance_block_size: 1024

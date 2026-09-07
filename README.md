@@ -35,6 +35,8 @@ iPHASimulator v2 currently provides:
 - HPC workflow helpers for repeatable simulation execution.
 - GROMACS trajectory preprocessing for analysis-ready trajectories.
 - Basic polymer trajectory analysis.
+- Residue-to-PHA minimum-distance heatmaps and sampled contact occupancies for
+  existing enzyme–PHA trajectories; see [the contact workflow](docs/enzyme_contacts.md).
 - PHA-enzyme docking input preparation for manual HADDOCK workflows.
 
 DFT workflows are not documented as a current v2 capability.
@@ -337,6 +339,14 @@ Generated structures, parameter files, simulation inputs, trajectories, and logs
 are written under `examples/output/`, which is ignored by Git.
 
 ## Testing the Installation
+
+For the enzyme–PHA contact workflow, open
+[`md_simulation_scripts/02_PHA_enzyme_contacts.ipynb`](md_simulation_scripts/02_PHA_enzyme_contacts.ipynb)
+or run `python examples/run_enzyme_contacts.py examples/enzyme_contacts_GK13_P3HO_4.yaml`.
+This defaults to a labelled preview. Add `--full` for every configured sampled
+frame. Install the optional dependencies with `python -m pip install -e ".[analysis]"`
+if needed. See [configuration, verified inputs and validation](docs/enzyme_contacts.md)
+before interpreting results.
 
 The main verification suite is in `tests/`. After installing the package, run the
 tests from the repository root with `pytest`:
