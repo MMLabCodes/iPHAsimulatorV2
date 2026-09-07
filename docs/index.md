@@ -67,7 +67,4 @@ contributing_docs
 ```
 
 Source: [MMLabCodes/iPHAsimulatorV2](https://github.com/MMLabCodes/iPHAsimulatorV2).
-The tutorial/API layout follows the approach of
-[Polymer Simulator](https://polymersimulator.readthedocs.io/en/latest/)
-and [PySoftK](https://alejandrosantanabonilla.github.io/pysoftk/).
 The capabilities documented here are specific to this repository.
