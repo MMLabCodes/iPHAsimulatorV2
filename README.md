@@ -1,5 +1,11 @@
 # iPHASimulator v2
 
+Documentation: [homepage](docs/index.md), [installation](docs/installation.md),
+[P3HB_4 quick-start](docs/quickstart.md), and
+[editing, local preview and GitHub Pages](docs/contributing_docs.md).
+The [current capability audit](docs/capabilities.md) records existing import
+blockers that affect some workflows described below.
+
 <p align="center">
   <img src="docs/logo.png" alt="iPHAsimulator logo" width="400"/>
 </p>
@@ -341,7 +347,7 @@ are written under `examples/output/`, which is ignored by Git.
 ## Testing the Installation
 
 For the enzyme–PHA contact workflow, open
-[`md_simulation_scripts/02_PHA_enzyme_contacts.ipynb`](md_simulation_scripts/02_PHA_enzyme_contacts.ipynb)
+[`md_simulation_scripts/02_PHA_enzyme_contacts.ipynb`](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/md_simulation_scripts/02_PHA_enzyme_contacts.ipynb)
 or run `python examples/run_enzyme_contacts.py examples/enzyme_contacts_GK13_P3HO_4.yaml`.
 This defaults to a labelled preview. Add `--full` for every configured sampled
 frame. Install the optional dependencies with `python -m pip install -e ".[analysis]"`
@@ -463,7 +469,7 @@ tests/       Automated tests for builders, export, MD workflow helpers,
 ## Developer Documentation
 
 - [Developer guide](docs/developer_guide.md)
-- [Notebook guide](notebooks/README.md)
+- [Notebook guide](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/README.md)
 
 ## Roadmap
 

@@ -27,3 +27,9 @@ structure_database/solvated_ions_phas/
 # OpenMM outputs
 
 *.dcd
+
+# Documentation environments, generated API sources and built sites.
+.venv-docs/
+docs/_build/
+docs/autoapi/
+docs/.doctrees/

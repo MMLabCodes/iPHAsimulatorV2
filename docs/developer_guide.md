@@ -1,5 +1,11 @@
 # iPHASimulator v2 Design
 
+> **Historical design notes:** this document is preserved from the earlier
+> implementation. Some scope/status statements below predate the current
+> GROMACS, packing, GUI and docking-preparation code. Use
+> [current capabilities and blockers](capabilities.md) for the inspected status,
+> and [documentation maintenance](contributing_docs.md) to edit or build the site.
+
 ## Scope
 
 This package builds PHA oligomers and prepares them for molecular simulation.

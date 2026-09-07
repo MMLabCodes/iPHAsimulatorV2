@@ -1,0 +1,12 @@
+/* Keep the familiar RTD navigation; give technical tables room to breathe. */
+.wy-nav-content { max-width: 1100px; }
+.wy-side-nav-search > a img.logo { max-width: 220px; padding: 8px; background: white; border-radius: 6px; }
+.wy-side-nav-search input[type=text] { border-color: #438695; }
+.rst-content .wy-table-responsive table td,
+.rst-content .wy-table-responsive table th { white-space: normal; }
+.rst-content code.literal { color: #176071; }
+.rst-content .admonition { border-radius: 3px; }
+.rst-content h1, .rst-content h2 { color: #163b46; }
+@media (max-width: 768px) {
+  .wy-nav-content { padding: 1.5em; }
+}
