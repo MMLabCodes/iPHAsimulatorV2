@@ -284,7 +284,8 @@ def calculate_chain_distance_descriptors(
 
         descriptors[output_index] = (
             self_distance_array(
-                heavy_atoms.positions
+                heavy_atoms.positions,
+                box=universe.dimensions,
             )
         )
 
