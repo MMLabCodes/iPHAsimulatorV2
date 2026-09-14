@@ -43,14 +43,15 @@ class EpsilonEstimate:
     distances : numpy.ndarray
         Sorted k-nearest-neighbour distances.
 
-    knee_index : int
+    knee_index : int | None
         Index of the detected knee in the sorted distance curve.
+        None if knee detection fails and the percentil fallback is used.
     """
 
     eps: float
     neighbor_rank: int
     distances: np.ndarray
-    knee_index: int
+    knee_index: int | None
 
 
 @dataclass(frozen=True)
@@ -308,7 +309,9 @@ def cluster_chain_pca(
 
 def cluster_all_chain_pca(
     pca_results: dict[str, ChainPCAResult],
-    min_samples: int,
+    k: int = 6,
+    min_samples: int = 6,
+    n_temperatures: int = 57,
 ) -> dict[str, ChainClusteringResult]:
     """
     Cluster PCA results independently for all polymer chains.
@@ -318,8 +321,25 @@ def cluster_all_chain_pca(
     pca_results : dict
         Dictionary mapping segment IDs to ChainPCAResult objects.
 
-    min_samples : int
+    k : int, optional
+        Number of nearest neighbours used to construct the
+        k-distance curve for automatic epsilon estimation.
+
+        Default:
+            6
+
+    min_samples : int, optional
         DBSCAN minimum-samples parameter.
+
+        Default:
+            6
+
+    n_temperatures : int, optional
+        Number of nominal temperature blocks represented in the
+        trajectory.
+
+        Default:
+            57
 
     Returns
     -------
@@ -343,7 +363,9 @@ def cluster_all_chain_pca(
 
         results[segment_id] = cluster_chain_pca(
             pca_result=pca_result,
+            k=k,
             min_samples=min_samples,
+            n_temperatures=n_temperatures,
         )
 
     return results
