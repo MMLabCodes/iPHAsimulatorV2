@@ -50,6 +50,7 @@ workflows/gaff2
 workflows/simulation
 workflows/hpc
 workflows/trajectory
+enzyme_trajectory_processing
 workflows/analysis
 workflows/docking
 notebooks

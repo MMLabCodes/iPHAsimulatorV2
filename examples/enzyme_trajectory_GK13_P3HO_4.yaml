@@ -1,0 +1,22 @@
+# Copy these settings into the system's analysis/instrcution.txt.
+# Paths below are relative to THAT instruction file, not this example or notebook.
+schema_version: 1
+input_trajectory: ../production_combined_1us.xtc
+structure: ../step6.2_npt.tpr
+index: ../index.ndx
+stride: 100                    # Frames 0, 100, 200, ...; not a time interval
+pbc: none                      # none, mol, whole, res, atom
+center: false                  # Enable only after your visual inspection
+center_group: SOLU             # Enzyme + LIG: 3800 atoms in this index
+fit: none                      # none, rot+trans, translation
+fit_group: enzyme_ca           # Used only if fit is enabled
+output_group: SYSTEM           # Keep all 137360 atoms, including solvent/ions
+custom_groups:                 # Explicit selections; raw index is never edited
+  enzyme: protein
+  enzyme_ca: protein and name CA
+  pha: resname LIG
+output_dir: processed          # analysis/processed/ because this file lives in analysis/
+prepare_vmd: true
+overwrite: false              # true archives an earlier owned result before replacement
+dry_run: false                # true validates/plans without writing outputs
+gmx: gmx

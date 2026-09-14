@@ -12,6 +12,9 @@ dependencies = [
     "rdkit"
 ]
 
+[project.scripts]
+ipha-process-trajectory = "iphasimulator.trajectory_processing:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest",
