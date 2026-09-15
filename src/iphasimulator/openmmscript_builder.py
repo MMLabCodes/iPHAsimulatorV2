@@ -17,6 +17,8 @@ coordinate files for each system type.
 """
 
 from pathlib import Path
+from copy import deepcopy
+import json
 import textwrap
 
 
@@ -55,7 +57,8 @@ class OpenMMScriptBuilder:
             Tg         -> Tg_01
             Annealing  -> Annealing_01
     """
-
+    workflow_format_version = 1
+    
     supported_system_types = {
         "dry",
         "solvated",
@@ -68,27 +71,92 @@ class OpenMMScriptBuilder:
         system_name,
         system_type,
         run_name="Test",
+        workflow_name=None,
     ):
-        if not isinstance(system_name, str) or not system_name.strip():
+        """
+        Create an OpenMM workflow builder.
+
+        Parameters
+        ----------
+        system_name : str
+            Name of the registered MD system.
+
+        system_type : str
+            Registered system type.
+
+        run_name : str, optional
+            Prefix used when creating numbered simulation run
+            directories.
+
+            Example:
+
+                broad_tg_sim
+
+            may generate:
+
+                broad_tg_sim_01
+                broad_tg_sim_02
+                broad_tg_sim_03
+
+        workflow_name : str, optional
+            Human-readable name for the reusable workflow.
+
+            If omitted, run_name is used.
+        """
+
+        if (
+            not isinstance(system_name, str)
+            or not system_name.strip()
+        ):
             raise ValueError(
                 "system_name must be a non-empty string."
             )
 
-        if system_type not in self.supported_system_types:
+        if (
+            system_type
+            not in self.supported_system_types
+        ):
             raise ValueError(
                 f"Unsupported system type: {system_type}\n"
                 f"Supported values: "
                 f"{sorted(self.supported_system_types)}"
             )
 
-        if not isinstance(run_name, str) or not run_name.strip():
+        if (
+            not isinstance(run_name, str)
+            or not run_name.strip()
+        ):
             raise ValueError(
                 "run_name must be a non-empty string."
             )
 
-        self.system_name = system_name.strip()
-        self.system_type = system_type
-        self.run_name = run_name.strip()
+        if workflow_name is None:
+            workflow_name = run_name
+
+        if (
+            not isinstance(workflow_name, str)
+            or not workflow_name.strip()
+        ):
+            raise ValueError(
+                "workflow_name must be a non-empty string."
+            )
+
+        self.system_name = (
+            system_name.strip()
+        )
+
+        self.system_type = (
+            system_type
+        )
+
+        self.run_name = (
+            run_name.strip()
+        )
+
+        self.workflow_name = (
+            workflow_name.strip()
+        )
+
         self.steps = []
 
     # ======================================================
@@ -215,6 +283,569 @@ class OpenMMScriptBuilder:
                 "restart_name": restart_name,
             }
         )
+        
+    # ======================================================
+    # Workflow persistence
+    # ======================================================
+
+    def to_dict(self):
+        """
+        Return the complete workflow definition as a dictionary.
+
+        The returned dictionary contains all information required
+        to reconstruct the OpenMMScriptBuilder later.
+
+        Returns
+        -------
+        dict
+            Serialisable workflow definition.
+        """
+
+        return {
+            "workflow_format_version":
+                self.workflow_format_version,
+
+            "workflow_name":
+                self.workflow_name,
+
+            "system_name":
+                self.system_name,
+
+            "system_type":
+                self.system_type,
+
+            "run_name":
+                self.run_name,
+
+            "steps":
+                deepcopy(
+                    self.steps
+                ),
+        }
+
+
+    @classmethod
+    def from_dict(
+        cls,
+        workflow_data,
+    ):
+        """
+        Reconstruct an OpenMMScriptBuilder from a dictionary.
+
+        Parameters
+        ----------
+        workflow_data : dict
+            Workflow definition previously generated using
+            ``to_dict()``.
+
+        Returns
+        -------
+        OpenMMScriptBuilder
+            Reconstructed workflow builder.
+        """
+
+        if not isinstance(
+            workflow_data,
+            dict,
+        ):
+            raise TypeError(
+                "workflow_data must be a dictionary."
+            )
+
+
+        required_fields = {
+            "system_name",
+            "system_type",
+            "run_name",
+            "steps",
+        }
+
+
+        missing_fields = (
+            required_fields
+            - set(
+                workflow_data
+            )
+        )
+
+
+        if missing_fields:
+
+            raise ValueError(
+                "Workflow definition is missing required "
+                "fields: "
+                f"{sorted(missing_fields)}"
+            )
+
+
+        workflow_version = (
+            workflow_data.get(
+                "workflow_format_version",
+                1,
+            )
+        )
+
+
+        if (
+            workflow_version
+            != cls.workflow_format_version
+        ):
+            raise ValueError(
+                "Unsupported workflow format version: "
+                f"{workflow_version}. "
+                "Current supported version: "
+                f"{cls.workflow_format_version}."
+            )
+
+
+        workflow_name = (
+            workflow_data.get(
+                "workflow_name",
+                workflow_data["run_name"],
+            )
+        )
+
+
+        builder = cls(
+            system_name=(
+                workflow_data[
+                    "system_name"
+                ]
+            ),
+            system_type=(
+                workflow_data[
+                    "system_type"
+                ]
+            ),
+            run_name=(
+                workflow_data[
+                    "run_name"
+                ]
+            ),
+            workflow_name=(
+                workflow_name
+            ),
+        )
+
+
+        steps = (
+            workflow_data[
+                "steps"
+            ]
+        )
+
+
+        if not isinstance(
+            steps,
+            list,
+        ):
+            raise TypeError(
+                "Workflow 'steps' must be a list."
+            )
+
+
+        builder.steps = deepcopy(
+            steps
+        )
+
+
+        builder.validate(
+            require_steps=False
+        )
+
+
+        return builder
+
+
+    def save_workflow(
+        self,
+        output_file,
+    ):
+        """
+        Save the reusable workflow definition as JSON.
+
+        Parameters
+        ----------
+        output_file : str or pathlib.Path
+            Destination JSON file.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the saved workflow definition.
+        """
+
+        self.validate(
+            require_steps=False
+        )
+
+
+        output_file = Path(
+            output_file
+        )
+
+
+        output_file.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+
+        workflow_data = (
+            self.to_dict()
+        )
+
+
+        with open(
+            output_file,
+            "w",
+            encoding="utf-8",
+        ) as file:
+
+            json.dump(
+                workflow_data,
+                file,
+                indent=4,
+            )
+
+
+        print(
+            "OpenMM workflow written to:\n"
+            f"{output_file}"
+        )
+
+
+        return output_file
+
+
+    @classmethod
+    def load_workflow(
+        cls,
+        workflow_file,
+    ):
+        """
+        Load a reusable OpenMM workflow from JSON.
+
+        Parameters
+        ----------
+        workflow_file : str or pathlib.Path
+            Saved workflow JSON file.
+
+        Returns
+        -------
+        OpenMMScriptBuilder
+            Reconstructed workflow builder.
+        """
+
+        workflow_file = Path(
+            workflow_file
+        )
+
+
+        if not workflow_file.exists():
+
+            raise FileNotFoundError(
+                "Workflow file not found:\n"
+                f"{workflow_file}"
+            )
+
+
+        with open(
+            workflow_file,
+            "r",
+            encoding="utf-8",
+        ) as file:
+
+            workflow_data = (
+                json.load(
+                    file
+                )
+            )
+
+
+        builder = cls.from_dict(
+            workflow_data
+        )
+
+
+        return builder
+    
+    # ======================================================
+    # Workflow validation
+    # ======================================================
+
+    def validate(
+        self,
+        require_steps=True,
+    ):
+        """
+        Validate the configured OpenMM workflow.
+
+        Parameters
+        ----------
+        require_steps : bool, optional
+            If True, the workflow must contain at least one
+            simulation step.
+
+            False is useful when saving an unfinished workflow.
+
+        Returns
+        -------
+        bool
+            True when the workflow is valid.
+        """
+
+        if not isinstance(
+            self.steps,
+            list,
+        ):
+            raise TypeError(
+                "Workflow steps must be stored as a list."
+            )
+
+
+        if len(self.steps) == 0:
+
+            if require_steps:
+
+                raise ValueError(
+                    "The workflow does not contain any "
+                    "simulation steps."
+                )
+
+            return True
+
+
+        supported_methods = {
+            "minimize_energy",
+            "basic_NVT",
+            "basic_NPT",
+            "anneal_NVT",
+            "thermal_ramp",
+        }
+
+
+        required_step_fields = {
+            "minimize_energy": {
+                "method",
+            },
+
+            "basic_NVT": {
+                "method",
+                "total_steps",
+                "temp",
+                "filename",
+                "save_restart",
+                "restart_name",
+            },
+
+            "basic_NPT": {
+                "method",
+                "total_steps",
+                "temp",
+                "pressure",
+                "filename",
+                "save_restart",
+                "restart_name",
+            },
+
+            "anneal_NVT": {
+                "method",
+                "start_temp",
+                "max_temp",
+                "cycles",
+                "quench_rate",
+                "steps_per_cycle",
+                "filename",
+                "save_restart",
+                "restart_name",
+            },
+
+            "thermal_ramp": {
+                "method",
+                "heating",
+                "ensemble",
+                "start_temp",
+                "max_temp",
+                "quench_rate",
+                "total_steps",
+                "pressure",
+                "filename",
+                "save_restart",
+                "restart_name",
+            },
+        }
+
+
+        # --------------------------------------------------
+        # Validate first step
+        # --------------------------------------------------
+
+        first_step = (
+            self.steps[0]
+        )
+
+
+        if not isinstance(
+            first_step,
+            dict,
+        ):
+            raise TypeError(
+                "Workflow step 1 must be a dictionary."
+            )
+
+
+        if (
+            first_step.get(
+                "method"
+            )
+            != "minimize_energy"
+        ):
+            raise ValueError(
+                "The first workflow step must currently "
+                "be minimization."
+            )
+
+
+        # --------------------------------------------------
+        # Validate every step
+        # --------------------------------------------------
+
+        for step_index, step in enumerate(
+            self.steps,
+            start=1,
+        ):
+
+            if not isinstance(
+                step,
+                dict,
+            ):
+                raise TypeError(
+                    f"Workflow step {step_index} "
+                    "must be a dictionary."
+                )
+
+
+            method = (
+                step.get(
+                    "method"
+                )
+            )
+
+
+            if method is None:
+
+                raise ValueError(
+                    f"Workflow step {step_index} "
+                    "does not define a method."
+                )
+
+
+            if (
+                method
+                not in supported_methods
+            ):
+
+                raise ValueError(
+                    f"Unsupported workflow method "
+                    f"in step {step_index}: "
+                    f"{method}"
+                )
+
+
+            required_fields = (
+                required_step_fields[
+                    method
+                ]
+            )
+
+
+            missing_fields = (
+                required_fields
+                - set(
+                    step
+                )
+            )
+
+
+            if missing_fields:
+
+                raise ValueError(
+                    f"Workflow step {step_index} "
+                    f"({method}) is missing fields: "
+                    f"{sorted(missing_fields)}"
+                )
+
+
+            # ----------------------------------------------
+            # Common simulation-step checks
+            # ----------------------------------------------
+
+            if (
+                "total_steps" in step
+                and step["total_steps"] <= 0
+            ):
+                raise ValueError(
+                    f"Workflow step {step_index}: "
+                    "total_steps must be greater than zero."
+                )
+
+
+            if (
+                "steps_per_cycle" in step
+                and step[
+                    "steps_per_cycle"
+                ] <= 0
+            ):
+                raise ValueError(
+                    f"Workflow step {step_index}: "
+                    "steps_per_cycle must be greater "
+                    "than zero."
+                )
+
+
+            if (
+                "filename" in step
+                and (
+                    not isinstance(
+                        step["filename"],
+                        str,
+                    )
+                    or not step[
+                        "filename"
+                    ].strip()
+                )
+            ):
+                raise ValueError(
+                    f"Workflow step {step_index}: "
+                    "filename must be a non-empty string."
+                )
+
+
+            # ----------------------------------------------
+            # Thermal-ramp checks
+            # ----------------------------------------------
+
+            if (
+                method
+                == "thermal_ramp"
+            ):
+
+                if (
+                    step["ensemble"]
+                    not in {
+                        "NVT",
+                        "NPT",
+                    }
+                ):
+                    raise ValueError(
+                        f"Workflow step {step_index}: "
+                        "thermal-ramp ensemble must be "
+                        "'NVT' or 'NPT'."
+                    )
+
+
+        return True
 
     # ======================================================
     # Script output
@@ -262,7 +893,7 @@ class OpenMMScriptBuilder:
         """
         Return the complete generated OpenMM Python script.
         """
-
+        self.validate()
         step_code = self._build_steps_code()
 
         return f'''#!/usr/bin/env python3
@@ -272,6 +903,9 @@ class OpenMMScriptBuilder:
 Generated OpenMM simulation script.
 
 Generated automatically by OpenMMScriptBuilder.
+
+Workflow name:
+    {self.workflow_name}
 
 System name:
     {self.system_name}
@@ -322,6 +956,8 @@ if __name__ == "__main__":
     system_name = {self.system_name!r}
     system_type = {self.system_type!r}
     run_name = {self.run_name!r}
+    
+    workflow_name = {self.workflow_name!r}
 
     system_files = paths.get_md_system_files(
         system_name=system_name,
@@ -355,6 +991,7 @@ if __name__ == "__main__":
     print("=" * 80)
     print("Project root:           ", PROJECT_ROOT)
     print("Structure database:     ", STRUCTURE_DATABASE)
+    print("Workflow name:          ", workflow_name)
     print("System name:            ", system_name)
     print("System type:            ", system_type)
     print("System directory:       ", system_dir)
