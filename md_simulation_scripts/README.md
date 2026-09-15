@@ -1,7 +1,7 @@
 # Simulation analysis scripts
 
-Two workflows live here. Trajectory preparation needs only **Bash and GROMACS**.
-Enzyme-contact analysis uses the Python package and its analysis dependencies.
+Trajectory preparation needs only **Bash and GROMACS**. The research analysis
+and enzyme-contact notebooks use Python analysis dependencies.
 
 ```text
 md_simulation_scripts/
@@ -9,10 +9,12 @@ md_simulation_scripts/
 ├── trajectory_preparation/
 │   ├── process_trajectory.sh
 │   └── instrcution.txt
-└── enzyme_contacts/
-    ├── enzyme_contacts.ipynb
-    ├── run_enzyme_contacts.py
-    └── GK13_P3HO_4.yaml
+├── enzyme_contacts/
+│   ├── enzyme_contacts.ipynb
+│   ├── run_enzyme_contacts.py
+│   └── GK13_P3HO_4.yaml
+└── enzyme_pha_analysis/
+    └── enzyme_pha_analysis.ipynb
 ```
 
 ## 1. Prepare a new simulation's analysis folder
@@ -194,6 +196,47 @@ interface is separate from the Bash `STRIDE`, which only controls the VMD file.
 The moved YAML preserves its original raw inputs and the ignored
 `examples/output/enzyme_contacts/` result location. Each contact run creates a
 new result directory. See [the contact guide](../docs/enzyme_contacts.md).
+
+## 6. Compare the four enzyme–PHA research systems
+
+Open [enzyme_pha_analysis/enzyme_pha_analysis.ipynb](enzyme_pha_analysis/enzyme_pha_analysis.ipynb)
+using the `ipha_clean` environment. It analyses GK13/ANC45 with P3HO₄/P3HB₄, using
+each system's raw-folder `production_combined_1us.edr` and `step7_production.tpr`
+and the verified **`analysis/processed_protein_centered.xtc`**. Preparation has
+already been completed for these research systems; the notebook does not repeat it.
+
+Set `STRIDE` in the first code cell (initially 100) and run all cells. `START_NS=0` and
+`END_NS=1000` restrict every figure and CSV to the same 0–1000 ns window. The first
+sampled frame is the backbone RMSD reference. Every EDR sample within this window
+is retained independently of trajectory stride. The plots follow notebook 12: a
+red dashed cumulative energy mean and a thicker RMSD rolling mean.
+`ROLLING_WINDOW_FRAMES=10` controls the trend over analysed samples for both RMSD
+and minimum distance; their rolling means are also exported in the CSVs.
+
+Each simulation's own `analysis/` folder receives three PNGs and matching CSVs:
+
+- `<system>_research_0_1000ns_total_energy`: total energy and cumulative sample mean, kJ/mol.
+- `<system>_research_0_1000ns_protein_backbone_rmsd`: N/CA/C backbone RMSD after alignment
+  to the first analysed frame, Å, plus its rolling mean.
+- `<system>_research_0_1000ns_enzyme_pha_min_distance`: minimum enzyme–PHA heavy-atom
+  distance with PBC, Å, calculated from unaligned coordinates and same-frame boxes,
+  plus a rolling mean of the per-frame minima.
+
+Time is in ns. The notebook defaults to `RUN_ANALYSIS=False`: Run All redraws plots
+from existing CSVs. For plot edits after restarting the kernel, run **1. Paths**,
+then **5. Plot settings**, then the separate **Figure 1**, **2**, or **3** cell.
+Edit plot colours/labels/axes directly in that cell. Plots keep left/bottom borders
+and hide top/right borders. `PLOT_ROLLING_WINDOW` controls the displayed mean;
+plotting replaces PNGs only, leaving CSVs unchanged. Set `SAVE_FIGURES=False` for
+preview only. For fresh calculations, set `RUN_ANALYSIS=True` and choose a new
+`OUTPUT_TAG` (or explicitly enable `OVERWRITE`).
+
+An energy extraction log and a JSON summary record inputs,
+selections, sampling and independent numerical checks. Existing results are
+protected by default; change `OUTPUT_TAG` for a new run, or explicitly enable
+`OVERWRITE`. Check the figures before interpreting drift, stability or contacts;
+the notebook does not establish binding or convergence. It uses teaching notebook
+12 only as a reference and does not modify teaching notebooks 01–12.
 
 ## What this replaces
 
