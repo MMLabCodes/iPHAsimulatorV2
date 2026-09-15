@@ -27,15 +27,21 @@ from gui.openmm_helpers import (
     build_openmm_script_builder,
     duplicate_workflow_step,
     format_atom_count,
+    get_available_openmm_workflows,
     get_next_md_script_path,
     infer_input_format,
+    load_openmm_workflow,
     move_workflow_step_down,
     move_workflow_step_up,
     remove_workflow_step,
+    save_openmm_workflow,
     validate_workflow,
     workflow_step_label,
 )
-from gui.state import clear_openmm_workflow
+from gui.state import (
+    clear_generated_openmm_script,
+    clear_openmm_workflow,
+)
 from gui.styles import (
     render_error_box,
     render_info_box,
@@ -47,6 +53,12 @@ from gui.subprocess_helpers import (
     submit_openmm_slurm_job,
 )
 
+def _invalidate_generated_openmm_script():
+    """
+    Invalidate the generated script when workflow metadata changes.
+    """
+
+    clear_generated_openmm_script()
 
 def _render_system_selection(
     gui_data: GUIData,
@@ -313,6 +325,275 @@ def _render_system_selection(
         selected_system_type,
         selected_system_files,
     )
+
+def _render_saved_workflow_controls(
+    gui_data,
+    selected_system_name,
+    selected_system_type,
+):
+    """
+    Render controls for loading an existing reusable OpenMM workflow.
+
+    The workflow list is scoped to the currently selected MD system.
+
+    Returns
+    -------
+    pathlib.Path or None
+        Currently selected workflow file, if one exists.
+    """
+
+    st.markdown(
+        "### Reusable Workflow"
+    )
+
+
+    if (
+        selected_system_name is None
+        or selected_system_type is None
+    ):
+        render_info_box(
+            "Select a registered MD system to view its saved workflows."
+        )
+
+        return None
+
+
+    try:
+
+        workflow_files = (
+            get_available_openmm_workflows(
+                paths=gui_data.paths,
+                system_name=selected_system_name,
+                system_type=selected_system_type,
+            )
+        )
+
+    except Exception as error:
+
+        render_error_box(
+            "Could not inspect saved workflows for this system."
+        )
+
+        st.code(
+            str(error)
+        )
+
+        return None
+
+
+    if not workflow_files:
+
+        render_info_box(
+            "No reusable workflows have been saved for this system yet."
+        )
+
+        return None
+
+
+    selected_workflow = st.selectbox(
+        "Saved workflow",
+        workflow_files,
+        format_func=lambda path: (
+            Path(path)
+            .name
+            .replace(
+                ".workflow.json",
+                "",
+            )
+        ),
+        key=(
+            f"openmm_saved_workflow_"
+            f"{selected_system_name}"
+        ),
+    )
+
+
+    st.caption(
+        f"{len(workflow_files)} saved workflow"
+        f"{'s' if len(workflow_files) != 1 else ''} found."
+    )
+
+
+    if st.button(
+        "📂 Load workflow",
+        use_container_width=True,
+        key=(
+            f"load_openmm_workflow_"
+            f"{selected_system_name}"
+        ),
+    ):
+
+        try:
+
+            builder = load_openmm_workflow(
+                workflow_path=selected_workflow,
+                expected_system_name=selected_system_name,
+                expected_system_type=selected_system_type,
+            )
+
+
+            st.session_state[
+                "openmm_workflow_load_message"
+            ] = (
+                f"Loaded workflow: "
+                f"{builder.workflow_name}"
+            )
+
+
+            st.rerun()
+
+        except Exception as error:
+
+            render_error_box(
+                "Could not load the selected OpenMM workflow."
+            )
+
+            st.code(
+                str(error)
+            )
+
+
+    return selected_workflow
+
+def _render_workflow_metadata_controls():
+    """
+    Render reusable-workflow and simulation-run naming controls.
+
+    Returns
+    -------
+    tuple[str, str]
+        workflow_name, run_name
+    """
+
+    st.markdown(
+        "### Workflow Settings"
+    )
+
+
+    workflow_name = st.text_input(
+        "Workflow name",
+        key="openmm_workflow_name",
+        help=(
+            "Human-readable name for the reusable workflow. "
+            "For example: Broad Tg, Folding Study, or "
+            "Quick Equilibration."
+        ),
+        on_change=_invalidate_generated_openmm_script,
+    )
+
+
+    run_name = st.text_input(
+        "Run name",
+        key="openmm_run_name",
+        help=(
+            "Prefix used to create numbered simulation directories. "
+            "For example, broad_tg_sim creates "
+            "broad_tg_sim_01, broad_tg_sim_02, and so on."
+        ),
+        on_change=_invalidate_generated_openmm_script,
+    )
+
+
+    return (
+        workflow_name,
+        run_name,
+    )
+
+def _render_workflow_file_actions(
+    gui_data,
+    selected_system_name,
+    selected_system_type,
+    workflow_name,
+    run_name,
+):
+    """
+    Render controls for saving or resetting the reusable workflow.
+    """
+
+    action_columns = st.columns(
+        2
+    )
+
+
+    with action_columns[0]:
+
+        if st.button(
+            "💾 Save workflow",
+            use_container_width=True,
+            disabled=(
+                selected_system_name is None
+            ),
+            key="save_openmm_workflow",
+        ):
+
+            try:
+
+                if not str(
+                    workflow_name
+                ).strip():
+
+                    raise ValueError(
+                        "Workflow name cannot be empty."
+                    )
+
+
+                if not str(
+                    run_name
+                ).strip():
+
+                    raise ValueError(
+                        "Run name cannot be empty."
+                    )
+
+
+                workflow_path = (
+                    save_openmm_workflow(
+                        paths=gui_data.paths,
+                        system_name=(
+                            selected_system_name
+                        ),
+                        system_type=(
+                            selected_system_type
+                        ),
+                        workflow_name=(
+                            workflow_name
+                        ),
+                        run_name=run_name,
+                    )
+                )
+
+
+                st.session_state[
+                    "openmm_workflow_save_message"
+                ] = str(
+                    workflow_path
+                )
+
+
+                st.rerun()
+
+            except Exception as error:
+
+                render_error_box(
+                    "Could not save the OpenMM workflow."
+                )
+
+                st.code(
+                    str(error)
+                )
+
+
+    with action_columns[1]:
+
+        if st.button(
+            "✨ New workflow",
+            use_container_width=True,
+            key="new_openmm_workflow",
+        ):
+
+            clear_openmm_workflow()
+
+            st.rerun()
 
 
 def _render_minimization_controls():
@@ -912,6 +1193,7 @@ def _generate_openmm_script(
     selected_system_name,
     selected_system_type,
     run_name,
+    workflow_name,
 ):
     """
     Validate the workflow and generate an OpenMM script.
@@ -936,6 +1218,11 @@ def _generate_openmm_script(
         raise ValueError(
             "run_name cannot be empty."
         )
+        
+    if not str(workflow_name).strip():
+        raise ValueError(
+            "workflow_name cannot be empty."
+    )
 
     gui_data.paths.validate_md_system_files(
         system_name=selected_system_name,
@@ -948,6 +1235,7 @@ def _generate_openmm_script(
         system_name=selected_system_name,
         system_type=selected_system_type,
         run_name=run_name,
+        workflow_name=workflow_name
     )
 
     output_script = get_next_md_script_path(
@@ -993,7 +1281,11 @@ def _render_generated_script_preview():
         "**System:** "
         f"`{st.session_state.generated_openmm_system_name}`"
     )
-
+    
+    st.write(
+        "**Workflow:** "
+        f"`{st.session_state.generated_openmm_workflow_name}`"
+    )     
     st.write(
         "**System type:** "
         f"`{st.session_state.generated_openmm_system_type}`"
@@ -1345,6 +1637,7 @@ def render_openmm_builder_tab(
     # ======================================================
 
     with settings_column:
+
         (
             selected_system_name,
             selected_system_type,
@@ -1353,27 +1646,127 @@ def render_openmm_builder_tab(
             gui_data
         )
 
+
         del selected_system_files
 
-        run_name = st.text_input(
-            "Run name",
-            value="Test",
-            help=(
-                "Creates numbered simulation directories such as "
-                "Test_01, Test_02, Tg_01, or Anneal_01."
+
+        st.divider()
+
+
+        # --------------------------------------------------
+        # Existing reusable workflows
+        # --------------------------------------------------
+
+        _render_saved_workflow_controls(
+            gui_data=gui_data,
+            selected_system_name=(
+                selected_system_name
             ),
-            key="openmm_run_name",
+            selected_system_type=(
+                selected_system_type
+            ),
         )
+
+
+        workflow_load_message = (
+            st.session_state.pop(
+                "openmm_workflow_load_message",
+                None,
+            )
+        )
+
+
+        if (
+            workflow_load_message
+            is not None
+        ):
+
+            render_success_box(
+                workflow_load_message
+            )
+
+
+        st.divider()
+
+
+        # --------------------------------------------------
+        # Workflow metadata
+        # --------------------------------------------------
+
+        (
+            workflow_name,
+            run_name,
+        ) = (
+            _render_workflow_metadata_controls()
+        )
+
+
+        _render_workflow_file_actions(
+            gui_data=gui_data,
+            selected_system_name=(
+                selected_system_name
+            ),
+            selected_system_type=(
+                selected_system_type
+            ),
+            workflow_name=workflow_name,
+            run_name=run_name,
+        )
+
+
+        workflow_save_message = (
+            st.session_state.pop(
+                "openmm_workflow_save_message",
+                None,
+            )
+        )
+
+
+        if (
+            workflow_save_message
+            is not None
+        ):
+
+            render_success_box(
+                "Reusable OpenMM workflow saved."
+            )
+
+            st.code(
+                workflow_save_message
+            )
+
+
+        loaded_workflow_path = (
+            st.session_state.get(
+                "openmm_loaded_workflow_path"
+            )
+        )
+
+
+        if loaded_workflow_path:
+
+            st.caption(
+                "Current saved workflow:"
+            )
+
+            st.code(
+                loaded_workflow_path
+            )
+
 
         st.write(
             "Generated scripts will be saved in:"
         )
 
         st.code(
-            str(MD_SCRIPT_DIR)
+            str(
+                MD_SCRIPT_DIR
+            )
         )
 
+
         st.divider()
+
 
         _render_step_creation_controls()
 
@@ -1459,6 +1852,7 @@ def render_openmm_builder_tab(
                     ),
 
                     run_name=run_name,
+                    workflow_name=workflow_name
 
                 )
 
@@ -1484,6 +1878,12 @@ def render_openmm_builder_tab(
 
                     selected_system_type
 
+                )
+                
+                st.session_state.generated_openmm_workflow_name = (
+                    
+                    workflow_name
+                    
                 )
 
                 st.session_state[
