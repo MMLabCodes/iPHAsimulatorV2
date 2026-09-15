@@ -854,7 +854,7 @@ class PHAFileManager:
         -------
         dict
             System directory, topology file, coordinate file, simulations
-            directory, and input format.
+            directory, resuable workflow directory and input format.
         """
 
         allowed_system_types = {
@@ -897,6 +897,8 @@ class PHAFileManager:
             coordinate_file = system_dir / f"{system_name}.gro"
             simulations_dir = system_dir / "simulations"
             topology_format = "gromacs"
+            
+        workflows_dir = system_dir / "simulation_workflows"
 
         return {
             "system_name": system_name,
@@ -905,8 +907,184 @@ class PHAFileManager:
             "topology_file": topology_file,
             "coordinate_file": coordinate_file,
             "simulations_dir": simulations_dir,
+            "workflows_dir": workflows_dir,
             "topology_format": topology_format,
         }
+    
+    # ======================================================
+    # Reusable MD simulation workflows
+    # ======================================================
+
+    def get_md_system_workflows_dir(
+        self,
+        system_name,
+        system_type,
+        create=False,
+    ):
+        """
+        Return the reusable simulation-workflow directory for an MD system.
+
+        Parameters
+        ----------
+        system_name : str
+            Registered MD system name.
+
+        system_type : str
+            Registered MD system type.
+
+        create : bool, optional
+            If True, create the workflow directory if required.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the system's simulation_workflows directory.
+        """
+
+        system_files = self.get_md_system_files(
+            system_name=system_name,
+            system_type=system_type,
+        )
+
+        workflows_dir = (
+            system_files[
+                "workflows_dir"
+            ]
+        )
+
+        if create:
+
+            workflows_dir.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+        return workflows_dir
+    
+    def get_md_system_workflow_path(
+        self,
+        system_name,
+        system_type,
+        workflow_name,
+        create_directory=False,
+    ):
+        """
+        Return the standard JSON path for a reusable simulation workflow.
+
+        Parameters
+        ----------
+        system_name : str
+            Registered MD system name.
+
+        system_type : str
+            Registered MD system type.
+
+        workflow_name : str
+            Human-readable workflow name.
+
+        create_directory : bool, optional
+            If True, create the simulation_workflows directory.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the workflow JSON file.
+        """
+
+        if (
+            not isinstance(
+                workflow_name,
+                str,
+            )
+            or not workflow_name.strip()
+        ):
+            raise ValueError(
+                "workflow_name must be a non-empty string."
+            )
+
+
+        workflow_label = (
+            workflow_name
+            .strip()
+        )
+
+
+        workflow_label = re.sub(
+            r"[^A-Za-z0-9._-]+",
+            "_",
+            workflow_label,
+        )
+
+
+        workflow_label = (
+            workflow_label
+            .strip("._-")
+        )
+
+
+        if not workflow_label:
+
+            raise ValueError(
+                "workflow_name does not contain any "
+                "valid filename characters."
+            )
+
+
+        workflows_dir = (
+            self.get_md_system_workflows_dir(
+                system_name=system_name,
+                system_type=system_type,
+                create=create_directory,
+            )
+        )
+
+
+        return (
+            workflows_dir
+            / f"{workflow_label}.workflow.json"
+        )
+
+    def list_md_system_workflows(
+        self,
+        system_name,
+        system_type,
+    ):
+        """
+        Return all saved reusable workflows for an MD system.
+
+        Parameters
+        ----------
+        system_name : str
+            Registered MD system name.
+
+        system_type : str
+            Registered MD system type.
+
+        Returns
+        -------
+        list[pathlib.Path]
+            Saved workflow JSON files, sorted by filename.
+        """
+
+        workflows_dir = (
+            self.get_md_system_workflows_dir(
+                system_name=system_name,
+                system_type=system_type,
+                create=False,
+            )
+        )
+
+
+        if not workflows_dir.exists():
+
+            return []
+
+
+        return sorted(
+            workflows_dir.glob(
+                "*.workflow.json"
+            )
+        )
 
     def create_named_md_system_simulation_run_dir(
         self,
