@@ -1,6 +1,6 @@
 # iPHASimulator v2
 
-Documentation: [homepage](docs/index.md), [installation](docs/installation.md),
+Documentation: [homepage](https://mmlabcodes.github.io/iPHAsimulatorV2/), [installation](docs/installation.md),
 [P3HB_4 quick-start](docs/quickstart.md), and
 [editing, local preview and GitHub Pages](docs/contributing_docs.md).
 The [current capability audit](docs/capabilities.md) records existing import
