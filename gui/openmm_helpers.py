@@ -4,13 +4,14 @@
 """
 OpenMM workflow helpers for the iPHAsimulatorV2 GUI.
 """
-
+from copy import deepcopy
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from gui.config import MD_SCRIPT_DIR
+from gui.state import clear_generated_openmm_script
 from src.iphasimulator.openmmscript_builder import OpenMMScriptBuilder
 
 
@@ -45,6 +46,8 @@ def add_workflow_step(step):
     st.session_state.openmm_steps.append(
         dict(step)
     )
+    
+    clear_generated_openmm_script()
 
 
 def remove_workflow_step(index):
@@ -63,6 +66,7 @@ def remove_workflow_step(index):
         index
     )
 
+    clear_generated_openmm_script()
 
 def move_workflow_step_up(index):
     """
@@ -84,6 +88,7 @@ def move_workflow_step_up(index):
         steps[index - 1],
     )
 
+    clear_generated_openmm_script()
 
 def move_workflow_step_down(index):
     """
@@ -105,6 +110,7 @@ def move_workflow_step_down(index):
         steps[index + 1],
     )
 
+    clear_generated_openmm_script()
 
 def duplicate_workflow_step(index):
     """
@@ -125,6 +131,7 @@ def duplicate_workflow_step(index):
         ),
     )
 
+    clear_generated_openmm_script()
 
 def validate_workflow(
     steps=None,
@@ -172,11 +179,14 @@ def build_openmm_script_builder(
     system_name,
     system_type,
     run_name,
+    workflow_name=None,
     steps=None,
 ):
     """
     Construct OpenMMScriptBuilder from a GUI workflow.
     """
+    if workflow_name is None:
+        workflow_name = run_name
 
     if steps is None:
         steps = st.session_state.openmm_steps
@@ -189,6 +199,7 @@ def build_openmm_script_builder(
         system_name=system_name,
         system_type=system_type,
         run_name=run_name,
+        workflow_name=workflow_name
     )
 
     for step in steps:
@@ -400,3 +411,175 @@ def infer_input_format(
         return "Amber"
 
     return "Unknown"
+
+def save_openmm_workflow(
+    paths,
+    system_name,
+    system_type,
+    workflow_name,
+    run_name,
+    steps=None,
+):
+    """
+    Save the current GUI OpenMM workflow as a reusable workflow.
+
+    Parameters
+    ----------
+    paths : PHAFileManager
+        Filepath manager.
+
+    system_name : str
+        Registered MD system name.
+
+    system_type : str
+        Registered MD system type.
+
+    workflow_name : str
+        Human-readable reusable workflow name.
+
+    run_name : str
+        Prefix used for numbered simulation runs.
+
+    steps : list[dict], optional
+        Workflow steps. If omitted, the current Streamlit workflow
+        is used.
+
+    Returns
+    -------
+    pathlib.Path
+        Saved workflow JSON path.
+    """
+
+    if steps is None:
+        steps = st.session_state.openmm_steps
+
+
+    builder = build_openmm_script_builder(
+        system_name=system_name,
+        system_type=system_type,
+        run_name=run_name,
+        workflow_name=workflow_name,
+        steps=steps,
+    )
+
+
+    workflow_path = (
+        paths.get_md_system_workflow_path(
+            system_name=system_name,
+            system_type=system_type,
+            workflow_name=workflow_name,
+            create_directory=True,
+        )
+    )
+
+
+    builder.save_workflow(
+        workflow_path
+    )
+
+
+    st.session_state.openmm_loaded_workflow_path = (
+        str(workflow_path)
+    )
+
+
+    return workflow_path
+
+def load_openmm_workflow(
+    workflow_path,
+    expected_system_name=None,
+    expected_system_type=None,
+):
+    """
+    Load a saved OpenMM workflow into the GUI session state.
+
+    Parameters
+    ----------
+    workflow_path : str or pathlib.Path
+        Saved workflow JSON file.
+
+    expected_system_name : str, optional
+        If supplied, require the workflow to belong to this system.
+
+    expected_system_type : str, optional
+        If supplied, require the workflow to use this system type.
+
+    Returns
+    -------
+    OpenMMScriptBuilder
+        Reconstructed workflow builder.
+    """
+
+    workflow_path = Path(
+        workflow_path
+    )
+
+
+    builder = (
+        OpenMMScriptBuilder.load_workflow(
+            workflow_path
+        )
+    )
+
+
+    if (
+        expected_system_name is not None
+        and builder.system_name
+        != expected_system_name
+    ):
+        raise ValueError(
+            "The selected workflow belongs to a different MD system.\n"
+            f"Expected: {expected_system_name}\n"
+            f"Workflow: {builder.system_name}"
+        )
+
+
+    if (
+        expected_system_type is not None
+        and builder.system_type
+        != expected_system_type
+    ):
+        raise ValueError(
+            "The selected workflow has a different MD system type.\n"
+            f"Expected: {expected_system_type}\n"
+            f"Workflow: {builder.system_type}"
+        )
+
+
+    st.session_state.openmm_steps = deepcopy(
+        builder.steps
+    )
+
+    st.session_state.openmm_workflow_name = (
+        builder.workflow_name
+    )
+
+    st.session_state.openmm_run_name = (
+        builder.run_name
+    )
+
+    st.session_state.openmm_loaded_workflow_path = (
+        str(workflow_path)
+    )
+
+
+    clear_generated_openmm_script()
+
+
+    return builder
+
+def get_available_openmm_workflows(
+    paths,
+    system_name,
+    system_type,
+):
+    """
+    Return reusable OpenMM workflows available for one MD system.
+    """
+
+    return (
+        paths.list_md_system_workflows(
+            system_name=system_name,
+            system_type=system_type,
+        )
+    )
