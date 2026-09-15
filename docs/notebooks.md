@@ -32,16 +32,17 @@ apply even if a notebook contains historical successful output.
 
 ## Execution and analysis
 
+For enzyme–PHA trajectory preparation, use the [standalone Bash templates](enzyme_trajectory_processing.md); the superseded GK13 preparation notebook is no longer needed.
+
 | Notebook | Download | Status / prerequisites |
 | --- | --- | --- |
 | [HPC execution and restart](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/07_hpc_workflows.ipynb) | {download}`07_hpc_workflows.ipynb <../notebooks/07_hpc_workflows.ipynb>` | Cluster-specific; configured runner imports blocked |
 | [Trajectory preprocessing](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/08_trajectory_preprocessing.ipynb) | {download}`08_trajectory_preprocessing.ipynb <../notebooks/08_trajectory_preprocessing.ipynb>` | Requires GROMACS and MD inputs |
-| [Configured enzyme–PHA trajectory processing](enzyme_trajectory_processing.md) | {download}`01_GK13_PHO4_trajactory_process.ipynb <../md_simulation_scripts/01_GK13_PHO4_trajactory_process.ipynb>` | Edit YAML instructions, then Run All; GROMACS and analysis dependencies |
 | [Basic polymer analysis](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/09_basic_polymer_analysis.ipynb) | {download}`09_basic_polymer_analysis.ipynb <../notebooks/09_basic_polymer_analysis.ipynb>` | MDTraj notebook workflow |
 | [Six-system MD benchmark](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/10_batch_md_benchmark.ipynb) | {download}`10_batch_md_benchmark.ipynb <../notebooks/10_batch_md_benchmark.ipynb>` | Fixed workflow assumptions; import blockers |
 | [Docking preparation](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/11_PHA_Enzyme_Docking.ipynb) | {download}`11_PHA_Enzyme_Docking.ipynb <../notebooks/11_PHA_Enzyme_Docking.ipynb>` | Manual; verify ligand-only input; benchmark import blocker |
 | [Enzyme/polymer stability](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/notebooks/12_enzyme_polymer_stable_analysis.ipynb) | {download}`12_enzyme_polymer_stable_analysis.ipynb <../notebooks/12_enzyme_polymer_stable_analysis.ipynb>` | Energy and RMSD diagnostics; system-specific inputs |
-| [PHA–enzyme contacts](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/md_simulation_scripts/02_PHA_enzyme_contacts.ipynb) | {download}`02_PHA_enzyme_contacts.ipynb <../md_simulation_scripts/02_PHA_enzyme_contacts.ipynb>` | Reusable, validated preview; matching TPR/XTC required |
+| [PHA–enzyme contacts](https://github.com/MMLabCodes/iPHAsimulatorV2/blob/main/md_simulation_scripts/enzyme_contacts/enzyme_contacts.ipynb) | {download}`enzyme_contacts.ipynb <../md_simulation_scripts/enzyme_contacts/enzyme_contacts.ipynb>` | Reusable, validated preview; matching TPR/XTC required |
 
 The two `01_APO_*` files in `md_simulation_scripts/` are currently empty
 placeholders. They are preserved but are not runnable tutorials.

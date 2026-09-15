@@ -1,9 +1,9 @@
 # Trajectory preprocessing
 
-For the **edit instruction file → Run All** enzyme–PHA workflow, use the
-[configuration-driven tutorial](../enzyme_trajectory_processing.md). It supports
-frame stride, explicit optional transformations, output protection and a read-only
-dry run. The older helper workflow below remains available unchanged.
+For the **standalone Bash/GROMACS** enzyme–PHA workflow, use the
+[preparation guide](../enzyme_trajectory_processing.md). It preserves all processed
+frames for analysis and writes a separate reduced trajectory for VMD. The shared
+Python helper workflow below remains available unchanged.
 
 **Inputs:** a matching GROMACS trajectory, topology and index. **Outputs:**
 centered/wrapped coordinates, an optional fitted trajectory and a representative

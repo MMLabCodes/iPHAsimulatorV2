@@ -12,13 +12,13 @@ root, run the preview:
 
 ```bash
 cd /Users/k20098771/opt/iPHASimulator_v2
-/opt/homebrew/Caskroom/miniconda/base/envs/ipha_clean/bin/python examples/run_enzyme_contacts.py examples/enzyme_contacts_GK13_P3HO_4.yaml
+/opt/homebrew/Caskroom/miniconda/base/envs/ipha_clean/bin/python md_simulation_scripts/enzyme_contacts/run_enzyme_contacts.py md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml
 ```
 
 Run the **full analysis** with:
 
 ```bash
-/opt/homebrew/Caskroom/miniconda/base/envs/ipha_clean/bin/python examples/run_enzyme_contacts.py examples/enzyme_contacts_GK13_P3HO_4.yaml --full
+/opt/homebrew/Caskroom/miniconda/base/envs/ipha_clean/bin/python md_simulation_scripts/enzyme_contacts/run_enzyme_contacts.py md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml --full
 ```
 
 With the supplied YAML, full means both modes on all 14,806 stored frames over
@@ -26,7 +26,7 @@ With the supplied YAML, full means both modes on all 14,806 stored frames over
 `python -m iphasimulator.analysis_contacts CONFIG --full` is equivalent.
 
 Alternatively open
-[`md_simulation_scripts/02_PHA_enzyme_contacts.ipynb`](../md_simulation_scripts/02_PHA_enzyme_contacts.ipynb),
+[`md_simulation_scripts/enzyme_contacts/enzyme_contacts.ipynb`](../md_simulation_scripts/enzyme_contacts/enzyme_contacts.ipynb),
 select a kernel using the `ipha_clean` interpreter, set `PREVIEW_FRAMES = None`
 in its configuration cell, and run that cell and all following cells. The
 notebook defaults to a 31-frame preview. Both interfaces use the same package
@@ -38,9 +38,16 @@ and an appropriate kernel. No package installation was needed for validation.
 
 ## Configuration and sampling
 
-Edit [`examples/enzyme_contacts_GK13_P3HO_4.yaml`](../examples/enzyme_contacts_GK13_P3HO_4.yaml).
+Edit [`md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml`](../md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml).
 Relative paths are resolved against the YAML file's directory. The reusable
 module contains no simulation-specific paths or ligand-residue assumption.
+
+After using the [standalone preparation workflow](enzyme_trajectory_processing.md),
+set `topology` to the matching production TPR and `trajectory` to the full
+`analysis/processed.xtc`, not its reduced VMD preview. The moved configuration
+and notebook retain their previous raw-input defaults and ignored output location.
+Centring/wrapping does not remove the need for the per-frame periodic-distance
+calculation below; do not supply rotationally fitted coordinates with an unrotated box.
 
 | Setting | Meaning |
 | --- | --- |

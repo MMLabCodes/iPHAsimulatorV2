@@ -1,0 +1,45 @@
+# GK13-P3HO_4: trajectory preparation
+#
+# RUN FROM THIS analysis FOLDER:
+#   bash process_trajectory.sh
+#
+# OPTIONAL CHECK (does not process or write trajectories):
+#   bash process_trajectory.sh --dry-run
+#
+# The script reads the settings below each time you run it.
+# Edit values after =, save this file, then run the command above.
+# Use plain values without quotes, spaces around =, or inline comments.
+# Relative paths are resolved from this analysis folder.
+#
+# Workflow:
+# 1. The combined raw XTC stays in the parent simulation folder.
+# 2. All frames are centred on SOLU and compact-wrapped with -pbc mol.
+#    SYSTEM is retained, including water and ions. No fitting is applied.
+# 3. Every 100th processed frame is saved separately for VMD.
+#
+# ANALYSIS: use processed.xtc. In MDAnalysis, u.trajectory[::100]
+# samples every 100th frame without changing the stored file.
+# Enzyme-PHA distance/contact calculations must still account for PBC.
+#
+# VMD: load step6.2_npt.gro, then add processed_every100.xtc to that molecule.
+# Use a GRO with the same atoms and ordering as the production TPR/XTC.
+#
+# Existing outputs are protected. To rerun, rename earlier outputs or set
+# new PROCESSED and PREVIEW filenames below. If a run fails, inspect any
+# partial output before deciding whether to rename or remove it.
+#
+# Requires GROMACS (gmx) in your active terminal environment.
+# No iPHASimulator package, Python, or notebook is needed for this script.
+# This is plain KEY=value data, not YAML; do not pass it to a Python YAML loader.
+# Retain the full system in OUTPUT_GROUP so the original TPR/index also match
+# processed.xtc in the second command. Do not select a solute-only subset here.
+
+INPUT=../production_combined_1us.xtc
+TPR=step7_production.tpr
+INDEX=index.ndx
+CENTER_GROUP=SOLU
+OUTPUT_GROUP=SYSTEM
+STRIDE=100
+PROCESSED=processed.xtc
+PREVIEW=processed_every100.xtc
+GMX=gmx

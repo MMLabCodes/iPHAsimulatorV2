@@ -12,7 +12,10 @@ the percentage of sampled frames below each contact cutoff.
 
 1. Open [the contact notebook](../notebooks.md#execution-and-analysis).
 2. Set `TPR_PATH`, `TRAJECTORY_PATH` and `OUTPUT_DIR` in step 1. Use a matching
-   TPR and one original production XTC; the local example uses `step6.2_npt.tpr`.
+   TPR and one original production XTC, or the full `processed.xtc` from the
+   [standalone preparation workflow](../enzyme_trajectory_processing.md). The
+   notebook retains its previous `step6.2_npt.tpr`/raw-XTC defaults; update both
+   paths for your prepared system.
 3. Review the protein/PHA selections, time window, sampling and cutoffs. The
    notebook starts with a 31-frame preview; `PREVIEW_FRAMES = None` requests the
    full selected analysis.
@@ -20,10 +23,10 @@ the percentage of sampled frames below each contact cutoff.
 5. Inspect `residue_summary.csv`, `distances.npz` and the saved provenance.
 
 For terminal runs, edit a copy of the
-{download}`contact configuration <../../examples/enzyme_contacts_GK13_P3HO_4.yaml>`:
+{download}`contact configuration <../../md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml>`:
 
 ```bash
-python examples/run_enzyme_contacts.py examples/enzyme_contacts_GK13_P3HO_4.yaml
+python md_simulation_scripts/enzyme_contacts/run_enzyme_contacts.py md_simulation_scripts/enzyme_contacts/GK13_P3HO_4.yaml
 ```
 
 Add `--full` for all configured sampled frames. The original YAML uses
