@@ -583,3 +583,78 @@ def get_available_openmm_workflows(
             system_type=system_type,
         )
     )
+
+def apply_openmm_workflow_to_system(
+    workflow_path,
+    target_system_name,
+    target_system_type,
+):
+    """
+    Apply a saved workflow from another compatible MD system.
+
+    The workflow steps, workflow name, and run name are copied,
+    while the target system name and type are replaced by the
+    currently selected system.
+    """
+
+    workflow_path = Path(
+        workflow_path
+    )
+
+
+    source_builder = (
+        OpenMMScriptBuilder.load_workflow(
+            workflow_path
+        )
+    )
+
+
+    if (
+        source_builder.system_type
+        != target_system_type
+    ):
+        raise ValueError(
+            "The workflow cannot currently be applied across "
+            "different MD system types.\n"
+            f"Workflow type: {source_builder.system_type}\n"
+            f"Target type: {target_system_type}"
+        )
+
+
+    target_builder = OpenMMScriptBuilder(
+        system_name=target_system_name,
+        system_type=target_system_type,
+        run_name=source_builder.run_name,
+        workflow_name=source_builder.workflow_name,
+    )
+
+
+    target_builder.steps = deepcopy(
+        source_builder.steps
+    )
+
+
+    target_builder.validate()
+
+
+    st.session_state.openmm_steps = deepcopy(
+        target_builder.steps
+    )
+
+    st.session_state.openmm_workflow_name = (
+        target_builder.workflow_name
+    )
+
+    st.session_state.openmm_run_name = (
+        target_builder.run_name
+    )
+
+
+    # This workflow has not yet been saved for the target system.
+    st.session_state.openmm_loaded_workflow_path = None
+
+
+    clear_generated_openmm_script()
+
+
+    return target_builder

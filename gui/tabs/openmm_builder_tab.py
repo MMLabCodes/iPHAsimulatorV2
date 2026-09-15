@@ -37,6 +37,7 @@ from gui.openmm_helpers import (
     save_openmm_workflow,
     validate_workflow,
     workflow_step_label,
+    apply_openmm_workflow_to_system,
 )
 from gui.state import (
     clear_generated_openmm_script,
@@ -84,7 +85,9 @@ def _render_system_selection(
         "### Registered MD System"
     )
 
+
     if md_systems_df.empty:
+
         render_warning_box(
             "No molecular-dynamics systems are registered yet. "
             "Build and register a dry, solvated, ionised, or melt system first."
@@ -95,6 +98,7 @@ def _render_system_selection(
             None,
             None,
         )
+
 
     available_system_types = sorted(
         str(system_type)
@@ -108,6 +112,7 @@ def _render_system_selection(
         if str(system_type).strip()
     )
 
+
     type_filter = st.selectbox(
         "System type filter",
         [
@@ -117,12 +122,15 @@ def _render_system_selection(
         key="openmm_system_type_filter",
     )
 
+
     if type_filter == "All":
+
         filtered_systems_df = (
             md_systems_df.copy()
         )
 
     else:
+
         filtered_systems_df = (
             md_systems_df[
                 md_systems_df[
@@ -132,7 +140,9 @@ def _render_system_selection(
             ].copy()
         )
 
+
     if filtered_systems_df.empty:
+
         st.warning(
             "No systems match the selected type."
         )
@@ -143,13 +153,16 @@ def _render_system_selection(
             None,
         )
 
+
     selected_system_name = st.selectbox(
         "Prepared MD system",
         filtered_systems_df[
             "system_name"
         ].tolist(),
         key="openmm_selected_system",
+        on_change=clear_openmm_workflow,
     )
+
 
     selected_system_row = (
         filtered_systems_df[
@@ -161,17 +174,21 @@ def _render_system_selection(
         .iloc[0]
     )
 
+
     selected_system_type = str(
         selected_system_row[
             "system_type"
         ]
     )
 
+
     selected_system_files = None
     files_valid = False
     validation_error = None
 
+
     try:
+
         selected_system_files = (
             gui_data.paths.validate_md_system_files(
                 system_name=selected_system_name,
@@ -182,9 +199,13 @@ def _render_system_selection(
         files_valid = True
 
     except Exception as error:
-        validation_error = str(error)
+
+        validation_error = str(
+            error
+        )
 
         try:
+
             selected_system_files = (
                 gui_data.paths.get_md_system_files(
                     system_name=selected_system_name,
@@ -193,6 +214,7 @@ def _render_system_selection(
             )
 
         except Exception as resolution_error:
+
             selected_system_files = None
 
             validation_error = (
@@ -200,13 +222,16 @@ def _render_system_selection(
                 f"{resolution_error}"
             )
 
+
     atom_count = format_atom_count(
         selected_system_row[
             "number_of_atoms"
         ]
     )
 
+
     if selected_system_files is not None:
+
         input_format = infer_input_format(
             topology_file=(
                 selected_system_files[
@@ -221,12 +246,15 @@ def _render_system_selection(
         )
 
     else:
+
         input_format = "Unknown"
+
 
     st.markdown(
         '<div class="card">',
         unsafe_allow_html=True,
     )
+
 
     st.markdown(
         (
@@ -236,6 +264,7 @@ def _render_system_selection(
         ),
         unsafe_allow_html=True,
     )
+
 
     st.write(
         f"**System type:** `{selected_system_type}`"
@@ -249,7 +278,9 @@ def _render_system_selection(
         f"**Input format:** `{input_format}`"
     )
 
+
     if selected_system_files is not None:
+
         st.write(
             "**System directory:**"
         )
@@ -261,6 +292,7 @@ def _render_system_selection(
                 ]
             )
         )
+
 
         st.write(
             "**Topology file:**"
@@ -274,6 +306,7 @@ def _render_system_selection(
             )
         )
 
+
         st.write(
             "**Coordinate file:**"
         )
@@ -286,7 +319,9 @@ def _render_system_selection(
             )
         )
 
+
         if "simulations_dir" in selected_system_files:
+
             st.write(
                 "**Simulations directory:**"
             )
@@ -299,26 +334,32 @@ def _render_system_selection(
                 )
             )
 
+
     st.markdown(
         "</div>",
         unsafe_allow_html=True,
     )
 
+
     if files_valid:
+
         render_success_box(
             "The required topology and coordinate files were found."
         )
 
     else:
+
         render_error_box(
             "The registry entry exists, but one or more required "
             "files are missing."
         )
 
         if validation_error:
+
             st.code(
                 validation_error
             )
+
 
     return (
         selected_system_name,
@@ -585,15 +626,12 @@ def _render_workflow_file_actions(
 
     with action_columns[1]:
 
-        if st.button(
+        st.button(
             "✨ New workflow",
             use_container_width=True,
             key="new_openmm_workflow",
-        ):
-
-            clear_openmm_workflow()
-
-            st.rerun()
+            on_click=clear_openmm_workflow,
+        )
 
 
 def _render_minimization_controls():
@@ -1616,6 +1654,7 @@ def render_openmm_builder_tab(
         "## ⚛️ OpenMM Simulation Script Builder"
     )
 
+
     render_info_box(
         "Select any prepared system registered in md_systems.csv, "
         "construct an ordered OpenMM workflow, generate a Python script, "
@@ -1623,7 +1662,9 @@ def render_openmm_builder_tab(
         "to Slurm."
     )
 
+
     st.divider()
+
 
     settings_column, workflow_column = st.columns(
         [
@@ -1631,6 +1672,7 @@ def render_openmm_builder_tab(
             1.4,
         ]
     )
+
 
     # ======================================================
     # System selection and step creation
@@ -1658,6 +1700,21 @@ def render_openmm_builder_tab(
         # --------------------------------------------------
 
         _render_saved_workflow_controls(
+            gui_data=gui_data,
+            selected_system_name=(
+                selected_system_name
+            ),
+            selected_system_type=(
+                selected_system_type
+            ),
+        )
+
+
+        # --------------------------------------------------
+        # Reuse workflow from another compatible system
+        # --------------------------------------------------
+
+        _render_cross_system_workflow_controls(
             gui_data=gui_data,
             selected_system_name=(
                 selected_system_name
@@ -1758,6 +1815,7 @@ def render_openmm_builder_tab(
             "Generated scripts will be saved in:"
         )
 
+
         st.code(
             str(
                 MD_SCRIPT_DIR
@@ -1770,28 +1828,36 @@ def render_openmm_builder_tab(
 
         _render_step_creation_controls()
 
+
     # ======================================================
     # Workflow and script actions
     # ======================================================
 
     with workflow_column:
+
         _render_current_workflow()
+
 
         st.divider()
 
-        action_columns = st.columns(4)
+
+        action_columns = st.columns(
+            4
+        )
+
 
         with action_columns[0]:
-            if st.button(
+
+            st.button(
                 "🧹 Clear workflow",
                 use_container_width=True,
                 key="clear_openmm_workflow",
-            ):
-                clear_openmm_workflow()
+                on_click=clear_openmm_workflow,
+            )
 
-                st.rerun()
 
         with action_columns[1]:
+
             generate_clicked = st.button(
                 "📝 Generate script",
                 use_container_width=True,
@@ -1801,7 +1867,9 @@ def render_openmm_builder_tab(
                 key="generate_openmm_script",
             )
 
+
         with action_columns[2]:
+
             run_clicked = st.button(
                 "▶️ Run locally",
                 use_container_width=True,
@@ -1813,7 +1881,9 @@ def render_openmm_builder_tab(
                 key="run_openmm_script",
             )
 
+
         with action_columns[3]:
+
             submit_clicked = st.button(
                 "🚀 Submit to Slurm",
                 use_container_width=True,
@@ -1825,128 +1895,104 @@ def render_openmm_builder_tab(
                 key="submit_openmm_slurm_job",
             )
 
+
         if generate_clicked:
 
             try:
 
                 (
-
                     output_script,
-
                     script_text,
-
                 ) = _generate_openmm_script(
-
                     gui_data=gui_data,
-
                     selected_system_name=(
-
                         selected_system_name
-
                     ),
-
                     selected_system_type=(
-
                         selected_system_type
-
                     ),
-
                     run_name=run_name,
-                    workflow_name=workflow_name
-
+                    workflow_name=workflow_name,
                 )
+
 
                 st.session_state.generated_openmm_script = (
-
                     script_text
-
                 )
+
 
                 st.session_state.generated_openmm_script_path = (
-
-                    str(output_script)
-
+                    str(
+                        output_script
+                    )
                 )
+
 
                 st.session_state.generated_openmm_system_name = (
-
                     selected_system_name
-
                 )
+
 
                 st.session_state.generated_openmm_system_type = (
-
                     selected_system_type
+                )
 
-                )
-                
+
                 st.session_state.generated_openmm_workflow_name = (
-                    
                     workflow_name
-                    
                 )
+
 
                 st.session_state[
-
                     "openmm_script_generation_message"
-
                 ] = (
-
                     "Generated OpenMM simulation script:\n"
-
                     f"{output_script}"
-
                 )
+
 
                 st.rerun()
 
             except Exception as error:
 
                 st.error(
-
                     "Could not generate the OpenMM script."
-
                 )
 
                 st.code(
-
                     str(error)
-
                 )
 
-        generation_message = st.session_state.pop(
 
-            "openmm_script_generation_message",
-
-            None,
-
+        generation_message = (
+            st.session_state.pop(
+                "openmm_script_generation_message",
+                None,
+            )
         )
+
 
         if generation_message is not None:
 
             st.success(
-
                 "Generated OpenMM simulation script."
-
             )
 
             st.code(
-
                 generation_message.split(
-
                     "\n",
-
                     maxsplit=1,
-
                 )[-1]
-
             )
 
+
         _render_generated_script_preview()
+
 
         if run_clicked:
 
             _run_generated_script()
+
 
         if submit_clicked:
 
