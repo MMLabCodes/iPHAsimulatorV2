@@ -1997,3 +1997,166 @@ def render_openmm_builder_tab(
         if submit_clicked:
 
             _submit_generated_script_to_slurm()
+            
+def _render_cross_system_workflow_controls(
+    gui_data,
+    selected_system_name,
+    selected_system_type,
+):
+    """
+    Render controls for applying a workflow from another compatible system.
+    """
+
+    if (
+        selected_system_name is None
+        or selected_system_type is None
+    ):
+        return
+
+
+    with st.expander(
+        "♻️ Reuse workflow from another system"
+    ):
+
+        md_systems_df = (
+            gui_data.md_systems_df
+        )
+
+
+        compatible_systems = (
+            md_systems_df[
+                (
+                    md_systems_df[
+                        "system_type"
+                    ]
+                    == selected_system_type
+                )
+                & (
+                    md_systems_df[
+                        "system_name"
+                    ]
+                    != selected_system_name
+                )
+            ]
+        )
+
+
+        if compatible_systems.empty:
+
+            render_info_box(
+                "No other compatible systems are registered."
+            )
+
+            return
+
+
+        source_system_name = st.selectbox(
+            "Source system",
+            compatible_systems[
+                "system_name"
+            ].tolist(),
+            key=(
+                f"openmm_source_system_"
+                f"{selected_system_name}"
+            ),
+        )
+
+
+        try:
+
+            workflow_files = (
+                get_available_openmm_workflows(
+                    paths=gui_data.paths,
+                    system_name=source_system_name,
+                    system_type=selected_system_type,
+                )
+            )
+
+        except Exception as error:
+
+            render_error_box(
+                "Could not inspect workflows for the source system."
+            )
+
+            st.code(
+                str(error)
+            )
+
+            return
+
+
+        if not workflow_files:
+
+            render_info_box(
+                "The selected source system does not have "
+                "any saved workflows."
+            )
+
+            return
+
+
+        selected_workflow = st.selectbox(
+            "Source workflow",
+            workflow_files,
+            format_func=lambda path: (
+                Path(path)
+                .name
+                .replace(
+                    ".workflow.json",
+                    "",
+                )
+            ),
+            key=(
+                f"openmm_source_workflow_"
+                f"{selected_system_name}_"
+                f"{source_system_name}"
+            ),
+        )
+
+
+        if st.button(
+            "♻️ Apply to selected system",
+            use_container_width=True,
+            key=(
+                f"apply_openmm_workflow_"
+                f"{selected_system_name}"
+            ),
+        ):
+
+            try:
+
+                builder = (
+                    apply_openmm_workflow_to_system(
+                        workflow_path=(
+                            selected_workflow
+                        ),
+                        target_system_name=(
+                            selected_system_name
+                        ),
+                        target_system_type=(
+                            selected_system_type
+                        ),
+                    )
+                )
+
+
+                st.session_state[
+                    "openmm_workflow_load_message"
+                ] = (
+                    f"Applied workflow "
+                    f"'{builder.workflow_name}' "
+                    f"to {selected_system_name}."
+                )
+
+
+                st.rerun()
+
+            except Exception as error:
+
+                render_error_box(
+                    "Could not apply the workflow."
+                )
+
+                st.code(
+                    str(error)
+                )
