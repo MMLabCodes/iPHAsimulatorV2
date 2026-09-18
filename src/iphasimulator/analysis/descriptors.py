@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 Created on Wed Sep  9 16:49:33 2026
 
@@ -38,7 +39,20 @@ class ChainDistanceDescriptors:
     Attributes
     ----------
     segment_id : str
-        MDAnalysis segment identifier corresponding to the polymer chain.
+        Unique analysis identifier assigned to the polymer chain.
+
+        Example::
+
+            "chain_001"
+
+    segment_index : int
+        Zero-based MDAnalysis segment index corresponding to the polymer chain.
+
+    topology_segid : str
+        Original segment identifier stored in the topology.
+
+        This value is retained for reference only and is not assumed to be
+        unique.
 
     frame_indices : numpy.ndarray
         Original trajectory frame indices used to generate descriptors.
@@ -55,6 +69,8 @@ class ChainDistanceDescriptors:
     """
 
     segment_id: str
+    segment_index: int
+    topology_segid: str
     frame_indices: np.ndarray
     descriptors: np.ndarray
     n_heavy_atoms: int
@@ -130,16 +146,55 @@ def get_segment_heavy_atoms(
         If no heavy atoms are found.
     """
 
-    heavy_atoms = segment.atoms.select_atoms(
-        "not name H*"
+    heavy_atoms = (
+        segment.atoms.select_atoms(
+            "not name H*"
+        )
     )
 
     if heavy_atoms.n_atoms == 0:
         raise ValueError(
-            f"No heavy atoms found for segment '{segment.segid}'."
+            "No heavy atoms found for segment "
+            f"'{segment.segid}'."
         )
 
     return heavy_atoms
+
+
+# =============================================================================
+# Chain identifiers
+# =============================================================================
+
+def get_chain_analysis_id(
+    segment_index: int,
+) -> str:
+    """
+    Return a stable analysis identifier for a polymer chain.
+
+    Parameters
+    ----------
+    segment_index : int
+        Zero-based segment index.
+
+    Returns
+    -------
+    str
+        Chain identifier.
+
+        Example::
+
+            0 -> "chain_001"
+            1 -> "chain_002"
+    """
+
+    if segment_index < 0:
+        raise ValueError(
+            "segment_index must be greater than or equal to zero."
+        )
+
+    return (
+        f"chain_{segment_index + 1:03d}"
+    )
 
 
 # =============================================================================
@@ -148,7 +203,7 @@ def get_segment_heavy_atoms(
 
 def calculate_chain_distance_descriptors(
     simulation: LoadedSimulation,
-    segment_id: str,
+    segment_index: int,
     stride: int = 1,
 ) -> ChainDistanceDescriptors:
     """
@@ -157,17 +212,25 @@ def calculate_chain_distance_descriptors(
     Each sampled trajectory frame is represented by all unique pairwise
     distances between heavy atoms within the selected polymer chain.
 
+    Polymer chains are identified using their zero-based MDAnalysis segment
+    index rather than their topology segid. This avoids ambiguity when
+    topology segment identifiers are reused.
+
     Parameters
     ----------
     simulation : LoadedSimulation
         Loaded molecular dynamics simulation.
 
-    segment_id : str
-        Segment identifier corresponding to the polymer chain.
+    segment_index : int
+        Zero-based index of the polymer segment to analyse.
 
         Example::
 
-            "A"
+            0
+
+        corresponds to the first segment in::
+
+            simulation.universe.segments
 
     stride : int, optional
         Trajectory frame sampling stride.
@@ -186,8 +249,11 @@ def calculate_chain_distance_descriptors(
     Raises
     ------
     ValueError
-        If the stride is invalid, the requested segment cannot be found,
-        or the segment does not contain sufficient heavy atoms.
+        If stride or segment_index is invalid, or the selected segment
+        contains insufficient heavy atoms.
+
+    IndexError
+        If segment_index is outside the available segment range.
     """
 
     # -------------------------------------------------------------------------
@@ -199,51 +265,92 @@ def calculate_chain_distance_descriptors(
             "stride must be greater than zero."
         )
 
-    universe = simulation.universe
 
     # -------------------------------------------------------------------------
-    # Find requested polymer segment
+    # Resolve universe
     # -------------------------------------------------------------------------
 
-    matching_segments = [
-        segment
-        for segment in universe.segments
-        if segment.segid == segment_id
-    ]
+    universe = (
+        simulation.universe
+    )
 
-    if not matching_segments:
+    segments = (
+        universe.segments
+    )
+
+
+    # -------------------------------------------------------------------------
+    # Validate segment index
+    # -------------------------------------------------------------------------
+
+    if segment_index < 0:
         raise ValueError(
-            f"Segment '{segment_id}' was not found."
+            "segment_index must be greater than or equal to zero."
         )
 
-    if len(matching_segments) > 1:
-        raise ValueError(
-            f"Multiple segments with ID '{segment_id}' were found."
+    if segment_index >= len(
+        segments
+    ):
+        raise IndexError(
+            "Segment index is outside the available range:\n"
+            f"Requested index:   {segment_index}\n"
+            f"Available segments: {len(segments)}"
         )
 
-    segment = matching_segments[0]
+
+    # -------------------------------------------------------------------------
+    # Select requested segment
+    # -------------------------------------------------------------------------
+
+    segment = (
+        segments[
+            segment_index
+        ]
+    )
+
+    segment_id = (
+        get_chain_analysis_id(
+            segment_index
+        )
+    )
+
+    topology_segid = (
+        str(
+            segment.segid
+        )
+    )
+
 
     # -------------------------------------------------------------------------
     # Select heavy atoms
     # -------------------------------------------------------------------------
 
-    heavy_atoms = get_segment_heavy_atoms(
-        segment
+    heavy_atoms = (
+        get_segment_heavy_atoms(
+            segment
+        )
     )
 
-    n_heavy_atoms = heavy_atoms.n_atoms
+    n_heavy_atoms = (
+        heavy_atoms.n_atoms
+    )
 
     if n_heavy_atoms < 2:
         raise ValueError(
-            f"Segment '{segment_id}' contains fewer than two heavy atoms."
+            f"{segment_id} "
+            f"(topology segid '{topology_segid}') "
+            "contains fewer than two heavy atoms."
         )
+
 
     # -------------------------------------------------------------------------
     # Determine sampled frames
     # -------------------------------------------------------------------------
 
-    n_frames = len(
-        universe.trajectory
+    n_frames = (
+        len(
+            universe.trajectory
+        )
     )
 
     frame_indices = np.arange(
@@ -253,12 +360,17 @@ def calculate_chain_distance_descriptors(
         dtype=int,
     )
 
-    # Number of unique pairwise distances
+
+    # -------------------------------------------------------------------------
+    # Determine descriptor dimensionality
+    # -------------------------------------------------------------------------
+
     n_distances = (
         n_heavy_atoms
         * (n_heavy_atoms - 1)
         // 2
     )
+
 
     # -------------------------------------------------------------------------
     # Allocate descriptor array
@@ -266,28 +378,39 @@ def calculate_chain_distance_descriptors(
 
     descriptors = np.empty(
         (
-            len(frame_indices),
+            len(
+                frame_indices
+            ),
             n_distances,
         ),
         dtype=np.float64,
     )
 
+
     # -------------------------------------------------------------------------
     # Calculate descriptors
     # -------------------------------------------------------------------------
 
-    for output_index, frame_index in enumerate(
+    for (
+        output_index,
+        frame_index,
+    ) in enumerate(
         frame_indices
     ):
 
-        universe.trajectory[frame_index]
+        universe.trajectory[
+            frame_index
+        ]
 
-        descriptors[output_index] = (
+        descriptors[
+            output_index
+        ] = (
             self_distance_array(
                 heavy_atoms.positions,
                 box=universe.dimensions,
             )
         )
+
 
     # -------------------------------------------------------------------------
     # Return descriptor container
@@ -295,10 +418,17 @@ def calculate_chain_distance_descriptors(
 
     return ChainDistanceDescriptors(
         segment_id=segment_id,
+        segment_index=segment_index,
+        topology_segid=topology_segid,
         frame_indices=frame_indices,
         descriptors=descriptors,
         n_heavy_atoms=n_heavy_atoms,
     )
+
+
+# =============================================================================
+# All-chain descriptor generation
+# =============================================================================
 
 def calculate_all_chain_distance_descriptors(
     simulation: LoadedSimulation,
@@ -309,6 +439,15 @@ def calculate_all_chain_distance_descriptors(
 
     Each MDAnalysis segment is treated as an independent polymer chain and
     processed separately.
+
+    Chains are identified internally using stable analysis identifiers such as::
+
+        chain_001
+        chain_002
+        chain_003
+
+    The original topology segid is retained within each result object but is
+    not used as a unique key.
 
     Parameters
     ----------
@@ -327,13 +466,14 @@ def calculate_all_chain_distance_descriptors(
     Returns
     -------
     dict
-        Dictionary mapping segment IDs to ChainDistanceDescriptors objects.
+        Dictionary mapping unique analysis chain IDs to
+        ChainDistanceDescriptors objects.
 
         Example::
 
             {
-                "A": ChainDistanceDescriptors(...),
-                "B": ChainDistanceDescriptors(...),
+                "chain_001": ChainDistanceDescriptors(...),
+                "chain_002": ChainDistanceDescriptors(...),
                 ...
             }
 
@@ -343,27 +483,59 @@ def calculate_all_chain_distance_descriptors(
         If stride is not greater than zero or no polymer segments are found.
     """
 
+    # -------------------------------------------------------------------------
+    # Validate stride
+    # -------------------------------------------------------------------------
+
     if stride <= 0:
         raise ValueError(
             "stride must be greater than zero."
         )
 
-    segments = get_polymer_segments(
-        simulation
+
+    # -------------------------------------------------------------------------
+    # Discover polymer segments
+    # -------------------------------------------------------------------------
+
+    segments = (
+        get_polymer_segments(
+            simulation
+        )
     )
+
+
+    # -------------------------------------------------------------------------
+    # Generate descriptors
+    # -------------------------------------------------------------------------
 
     descriptors_by_segment = {}
 
-    for segment in segments:
 
-        segment_id = segment.segid
+    for segment_index in range(
+        len(
+            segments
+        )
+    ):
 
-        descriptors_by_segment[segment_id] = (
+        chain_id = (
+            get_chain_analysis_id(
+                segment_index
+            )
+        )
+
+        descriptors_by_segment[
+            chain_id
+        ] = (
             calculate_chain_distance_descriptors(
                 simulation=simulation,
-                segment_id=segment_id,
+                segment_index=segment_index,
                 stride=stride,
             )
         )
+
+
+    # -------------------------------------------------------------------------
+    # Return results
+    # -------------------------------------------------------------------------
 
     return descriptors_by_segment
