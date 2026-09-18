@@ -53,7 +53,7 @@ import pandas as pd
 from kneed import KneeLocator
 from sklearn.metrics import adjusted_rand_score
 
-from .descriptors import ChainDistanceDescriptors
+from ..descriptors import ChainDistanceDescriptors
 from ..pca import ChainPCAResult, calculate_chain_pca
 from .clustering import cluster_chain_pca
 
