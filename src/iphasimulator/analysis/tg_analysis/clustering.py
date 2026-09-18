@@ -20,7 +20,7 @@ from kneed import KneeLocator
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 
-from .pca import ChainPCAResult
+from ..pca import ChainPCAResult
 
 
 # =============================================================================
