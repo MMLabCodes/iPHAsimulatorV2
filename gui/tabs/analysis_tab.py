@@ -41,79 +41,70 @@ from gui.styles import (
 def get_analysis_root() -> Path:
     """
     Return the src/iphasimulator/analysis directory.
-
-    Returns
-    -------
-    pathlib.Path
-        Analysis package directory.
     """
 
     project_root = (
         Path(__file__)
         .resolve()
-        .parents[1]
+        .parents[2]
     )
 
-    return (
+    analysis_root = (
         project_root
         / "src"
         / "iphasimulator"
         / "analysis"
     )
 
+    return analysis_root
+
 
 def discover_analysis_workflows() -> dict[str, Path]:
     """
     Discover available analysis workflow.py files.
-
-    Expected structure
-    ------------------
-
-        src/
-            iphasimulator/
-                analysis/
-                    tg_analysis/
-                        workflow.py
-
-                    another_analysis/
-                        workflow.py
-
-    Returns
-    -------
-    dict[str, pathlib.Path]
-        Mapping from analysis workflow name to workflow.py filepath.
     """
 
     analysis_root = (
         get_analysis_root()
     )
 
+    workflows = {}
 
     if not analysis_root.is_dir():
 
-        return {}
-
-
-    workflows = {}
-
+        return workflows
 
     for workflow_path in sorted(
-        analysis_root.glob(
-            "*/workflow.py"
+        analysis_root.rglob(
+            "workflow.py"
         )
     ):
 
-        analysis_name = (
+        relative_parent = (
             workflow_path
             .parent
-            .name
+            .relative_to(
+                analysis_root
+            )
         )
 
+        workflow_name = (
+            str(
+                relative_parent
+            )
+            .replace(
+                "/",
+                "_",
+            )
+            .replace(
+                "\\",
+                "_",
+            )
+        )
 
         workflows[
-            analysis_name
+            workflow_name
         ] = workflow_path
-
 
     return workflows
 
