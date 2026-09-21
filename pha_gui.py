@@ -42,6 +42,10 @@ from gui.tabs.md_system_builder_tab import (
     render_md_system_builder_tab,
 )
 
+from gui.tabs.md_system_builder_tab import (
+    render_analysis_tab,
+)
+
 
 # ==========================================================
 # Application initialisation
@@ -265,6 +269,7 @@ with st.sidebar:
         "🤖 MD System Builder",
         "🧬 MD System Viewer",
         "⚛️ OpenMM Script Builder",
+        "Analysis"
     ]
 )
 
@@ -323,3 +328,12 @@ with openmm_builder_tab:
     render_openmm_builder_tab(
         gui_data
     )
+    
+# ==========================================================
+# Analysis
+# ==========================================================
+
+with analysis_tab:
+    render_analysis_tab(
+        gui_data
+    )  
