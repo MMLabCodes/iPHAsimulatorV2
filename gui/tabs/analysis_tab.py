@@ -4,12 +4,7 @@
 Created on Mon Sep 21 16:25:33 2026
 
 @author: daniel
-"""
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
 Analysis tab for the iPHAsimulatorV2 Streamlit GUI.
 
 This tab currently allows the user to:

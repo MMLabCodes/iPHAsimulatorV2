@@ -42,7 +42,7 @@ from gui.tabs.md_system_builder_tab import (
     render_md_system_builder_tab,
 )
 
-from gui.tabs.md_system_builder_tab import (
+from gui.tabs.analysis_tab import (
     render_analysis_tab,
 )
 
