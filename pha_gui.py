@@ -261,6 +261,7 @@ with st.sidebar:
     md_system_builder_tab,
     system_viewer_tab,
     openmm_builder_tab,
+    analysis_tab,
 ) = st.tabs(
     [
         "🧱 Polymer Builder",
