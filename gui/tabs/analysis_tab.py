@@ -34,6 +34,10 @@ from gui.styles import (
     render_warning_box,
 )
 
+from gui.subprocess_helpers import (
+    run_python_script_with_iphasimulator,
+)
+
 
 # =============================================================================
 # Analysis workflow discovery
@@ -599,6 +603,54 @@ def _render_simulation_selection(
         selected_simulation.name
     )
 
+def _workflow_path_to_module_name(
+    workflow_path: Path,
+) -> str:
+    """
+    Convert an analysis workflow filepath into its Python module name.
+
+    Example
+    -------
+    src/iphasimulator/analysis/tg_analysis/workflow.py
+
+    becomes
+
+    iphasimulator.analysis.tg_analysis.workflow
+    """
+
+    workflow_path = (
+        Path(workflow_path)
+        .expanduser()
+        .resolve()
+    )
+
+    project_root = (
+        Path(__file__)
+        .resolve()
+        .parents[2]
+    )
+
+    src_directory = (
+        project_root
+        / "src"
+    )
+
+    relative_path = (
+        workflow_path
+        .relative_to(
+            src_directory
+        )
+        .with_suffix("")
+    )
+
+    module_name = (
+        ".".join(
+            relative_path.parts
+        )
+    )
+
+    return module_name
+
 # =============================================================================
 # Workflow execution
 # =============================================================================
@@ -609,55 +661,164 @@ def run_selected_analysis_workflow(
     selected_simulation_name,
 ):
     """
-    Execute the selected replica-level analysis workflow.
+    Run the selected analysis workflow inside the iphasimulator environment.
 
-    Currently supported workflow entry point:
-
-        run_tg_analysis(...)
+    The Streamlit GUI itself runs inside the pha_gui environment, so the
+    scientific analysis is launched as a separate Python process using the
+    iphasimulator environment.
     """
 
-    module = (
-        load_analysis_workflow_module(
+    workflow_path = (
+        Path(workflow_path)
+        .expanduser()
+        .resolve()
+    )
+
+
+    # =========================================================================
+    # Resolve project paths
+    # =========================================================================
+
+    project_root = (
+        Path(__file__)
+        .resolve()
+        .parents[2]
+    )
+
+
+    temp_directory = (
+        project_root
+        / "temp"
+        / "gui_analysis"
+    )
+
+
+    temp_directory.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+
+    runner_script_path = (
+        temp_directory
+        / "analysis_runner.py"
+    )
+
+
+    # =========================================================================
+    # Resolve selected workflow module
+    # =========================================================================
+
+    module_name = (
+        _workflow_path_to_module_name(
             workflow_path
         )
     )
 
 
-    # -------------------------------------------------------------------------
-    # Tg analysis
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # Build runner script
+    # =========================================================================
 
-    if hasattr(
-        module,
-        "run_tg_analysis",
-    ):
+    runner_script = f'''#!/usr/bin/env python3
 
-        return (
-            module.run_tg_analysis(
-                system_name=(
-                    selected_system_name
-                ),
-                simulation_name=(
-                    selected_simulation_name
-                ),
-                generate_figures=True,
-            )
-        )
+"""
+Automatically generated iPHAsimulator analysis runner.
+"""
+
+import importlib
 
 
-    # -------------------------------------------------------------------------
-    # Unsupported workflow
-    # -------------------------------------------------------------------------
+MODULE_NAME = {module_name!r}
+SYSTEM_NAME = {selected_system_name!r}
+SIMULATION_NAME = {selected_simulation_name!r}
 
-    raise AttributeError(
-        "The selected workflow does not expose a supported "
-        "analysis entry point.\n\n"
-        "Expected one of:\n"
-        "    run_tg_analysis(...)"
+
+module = importlib.import_module(
+    MODULE_NAME
+)
+
+
+if hasattr(
+    module,
+    "run_analysis",
+):
+
+    result = module.run_analysis(
+        system_name=SYSTEM_NAME,
+        simulation_name=SIMULATION_NAME,
     )
 
+
+elif hasattr(
+    module,
+    "run_tg_analysis",
+):
+
+    result = module.run_tg_analysis(
+        system_name=SYSTEM_NAME,
+        simulation_name=SIMULATION_NAME,
+        generate_figures=True,
+    )
+
+
+else:
+
+    raise AttributeError(
+        "Selected analysis workflow does not expose a supported "
+        "entry point. Expected run_analysis(...) or run_tg_analysis(...)."
+    )
+
+
+print()
+print("=" * 80)
+print("GUI ANALYSIS RUNNER COMPLETE")
+print("=" * 80)
+
+if isinstance(
+    result,
+    dict,
+):
+
+    for key, value in result.items():
+
+        print(
+            f"{{key}}: {{value}}"
+        )
+
+else:
+
+    print(
+        result
+    )
+'''
+
+
+    # =========================================================================
+    # Save runner
+    # =========================================================================
+
+    runner_script_path.write_text(
+        runner_script,
+        encoding="utf-8",
+    )
+
+
+    # =========================================================================
+    # Execute using iphasimulator environment
+    # =========================================================================
+
+    result = (
+        run_python_script_with_iphasimulator(
+            runner_script_path
+        )
+    )
+
+
+    return result
+
 # =============================================================================
-# Main tab
+# Main analysis tab
 # =============================================================================
 
 def render_analysis_tab(
@@ -672,7 +833,7 @@ def render_analysis_tab(
     - select an available analysis workflow
     - select a simulation replica
     - execute the selected analysis workflow
-    - inspect the returned analysis result
+    - inspect the analysis process output
     """
 
     # =========================================================================
@@ -709,7 +870,7 @@ def render_analysis_tab(
 
 
     # -------------------------------------------------------------------------
-    # System selection
+    # System
     # -------------------------------------------------------------------------
 
     with system_column:
@@ -725,7 +886,7 @@ def render_analysis_tab(
 
 
     # -------------------------------------------------------------------------
-    # Analysis workflow selection
+    # Workflow
     # -------------------------------------------------------------------------
 
     with workflow_column:
@@ -742,7 +903,7 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # Simulation / replica selection
+    # Simulation / replica
     # =========================================================================
 
     selected_simulation_name = (
@@ -764,7 +925,7 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # Current analysis selection
+    # Current selection
     # =========================================================================
 
     st.markdown(
@@ -838,7 +999,7 @@ def render_analysis_tab(
 
 
     # -------------------------------------------------------------------------
-    # Selected analysis workflow
+    # Selected workflow
     # -------------------------------------------------------------------------
 
     with selection_columns[2]:
@@ -920,18 +1081,42 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # Execute selected workflow
+    # Execute analysis
     # =========================================================================
 
     if run_clicked:
 
         st.info(
-            "Running the selected analysis workflow. "
-            "This may take some time."
+            "Running the selected analysis workflow "
+            "inside the iphasimulator environment."
         )
 
 
+        progress = (
+            st.progress(
+                0
+            )
+        )
+
+
+        status = (
+            st.empty()
+        )
+
+
+        result = None
+
+
         try:
+
+            status.write(
+                "Launching analysis workflow..."
+            )
+
+            progress.progress(
+                20
+            )
+
 
             with st.spinner(
                 "Running analysis workflow..."
@@ -952,161 +1137,23 @@ def render_analysis_tab(
                 )
 
 
-            # =================================================================
-            # Successful analysis
-            # =================================================================
+            progress.progress(
+                90
+            )
 
-            st.success(
-                "Analysis completed successfully."
+            status.write(
+                "Analysis process finished."
             )
 
 
-            # -----------------------------------------------------------------
-            # Display Tg if available
-            # -----------------------------------------------------------------
-
-            if isinstance(
-                result,
-                dict,
-            ):
-
-                st.divider()
-
-                st.markdown(
-                    "### Analysis Result"
-                )
-
-
-                result_columns = (
-                    st.columns(
-                        [
-                            1,
-                            1,
-                            1,
-                        ]
-                    )
-                )
-
-
-                # -------------------------------------------------------------
-                # System
-                # -------------------------------------------------------------
-
-                with result_columns[0]:
-
-                    st.metric(
-                        "System",
-                        str(
-                            result.get(
-                                "system_name",
-                                selected_system_name,
-                            )
-                        ),
-                    )
-
-
-                # -------------------------------------------------------------
-                # Replica
-                # -------------------------------------------------------------
-
-                with result_columns[1]:
-
-                    st.metric(
-                        "Simulation",
-                        str(
-                            result.get(
-                                "simulation_name",
-                                selected_simulation_name,
-                            )
-                        ),
-                    )
-
-
-                # -------------------------------------------------------------
-                # Tg
-                # -------------------------------------------------------------
-
-                with result_columns[2]:
-
-                    tg_value = (
-                        result.get(
-                            "tg_K"
-                        )
-                    )
-
-
-                    if tg_value is not None:
-
-                        st.metric(
-                            "Estimated Tg",
-                            f"{float(tg_value):.2f} K",
-                        )
-
-                    else:
-
-                        st.metric(
-                            "Estimated Tg",
-                            "N/A",
-                        )
-
-
-                # -------------------------------------------------------------
-                # Output directory
-                # -------------------------------------------------------------
-
-                analysis_directory = (
-                    result.get(
-                        "analysis_directory"
-                    )
-                )
-
-
-                if analysis_directory is not None:
-
-                    st.write(
-                        "**Analysis output directory:**"
-                    )
-
-                    st.code(
-                        str(
-                            analysis_directory
-                        )
-                    )
-
-
-                # -------------------------------------------------------------
-                # Full returned result
-                # -------------------------------------------------------------
-
-                with st.expander(
-                    "Show full analysis result"
-                ):
-
-                    st.json(
-                        result
-                    )
-
-
-            else:
-
-                st.write(
-                    "The workflow completed but did not return "
-                    "a dictionary result."
-                )
-
-                st.write(
-                    result
-                )
-
-
-        # =====================================================================
-        # Failed analysis
-        # =====================================================================
-
         except Exception as error:
 
+            progress.progress(
+                100
+            )
+
             st.error(
-                "Analysis workflow failed."
+                "Could not launch the analysis workflow."
             )
 
             st.code(
@@ -1114,3 +1161,113 @@ def render_analysis_tab(
                     error
                 )
             )
+
+            return
+
+
+        progress.progress(
+            100
+        )
+
+
+        if result is None:
+
+            st.error(
+                "The analysis process did not return a result."
+            )
+
+            return
+
+
+        # =====================================================================
+        # Process result
+        # =====================================================================
+
+        if result.returncode == 0:
+
+            st.success(
+                "Analysis completed successfully."
+            )
+
+        else:
+
+            st.error(
+                "Analysis workflow failed."
+            )
+
+
+        # ---------------------------------------------------------------------
+        # Process summary
+        # ---------------------------------------------------------------------
+
+        result_columns = (
+            st.columns(
+                [
+                    1,
+                    1,
+                    1,
+                ]
+            )
+        )
+
+
+        result_columns[0].metric(
+            "Return code",
+            result.returncode,
+        )
+
+
+        result_columns[1].metric(
+            "STDOUT characters",
+            len(
+                result.stdout or ""
+            ),
+        )
+
+
+        result_columns[2].metric(
+            "STDERR characters",
+            len(
+                result.stderr or ""
+            ),
+        )
+
+
+        # ---------------------------------------------------------------------
+        # STDOUT
+        # ---------------------------------------------------------------------
+
+        if result.stdout:
+
+            with st.expander(
+                "Analysis output",
+                expanded=(
+                    result.returncode
+                    != 0
+                ),
+            ):
+
+                st.code(
+                    result.stdout,
+                    language="text",
+                )
+
+
+        # ---------------------------------------------------------------------
+        # STDERR
+        # ---------------------------------------------------------------------
+
+        if result.stderr:
+
+            with st.expander(
+                "Warnings / errors",
+                expanded=(
+                    result.returncode
+                    != 0
+                ),
+            ):
+
+                st.code(
+                    result.stderr,
+                    language="text",
+                )
