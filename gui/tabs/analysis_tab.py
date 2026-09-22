@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-Created on Mon Sep 21 16:25:33 2026
-
-@author: daniel
-
 Analysis tab for the iPHAsimulatorV2 Streamlit GUI.
 
-This tab currently allows the user to:
+This tab allows the user to:
 
 - select a registered molecular-dynamics system
 - discover available analysis workflows
 - select an analysis workflow
-- inspect the workflow filepath
+- select a completed simulation / replica
+- configure analysis options
+- execute the selected analysis workflow
+- inspect completed analysis outputs
 
 Analysis workflows are discovered automatically from:
 
     src/iphasimulator/analysis/<analysis_name>/workflow.py
 
-Workflow execution will be added later.
+Scientific analysis workflows are executed inside the dedicated
+iphasimulator Python environment rather than the pha_gui environment.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-import importlib.util
+import json
 
 import streamlit as st
 
@@ -67,6 +68,17 @@ def get_analysis_root() -> Path:
 def discover_analysis_workflows() -> dict[str, Path]:
     """
     Discover available analysis workflow.py files.
+
+    Any workflow.py found beneath:
+
+        src/iphasimulator/analysis/
+
+    is treated as an available analysis workflow.
+
+    Returns
+    -------
+    dict[str, pathlib.Path]
+        Mapping of workflow identifier to workflow.py path.
     """
 
     analysis_root = (
@@ -75,9 +87,11 @@ def discover_analysis_workflows() -> dict[str, Path]:
 
     workflows = {}
 
+
     if not analysis_root.is_dir():
 
         return workflows
+
 
     for workflow_path in sorted(
         analysis_root.rglob(
@@ -93,6 +107,7 @@ def discover_analysis_workflows() -> dict[str, Path]:
             )
         )
 
+
         workflow_name = (
             str(
                 relative_parent
@@ -107,9 +122,11 @@ def discover_analysis_workflows() -> dict[str, Path]:
             )
         )
 
+
         workflows[
             workflow_name
         ] = workflow_path
+
 
     return workflows
 
@@ -141,7 +158,7 @@ def _render_system_selection(
 
 
     st.markdown(
-        "### Registered MD System"
+        "### 1. Registered MD System"
     )
 
 
@@ -280,15 +297,15 @@ def _render_system_selection(
         )
 
 
-        st.write(
-            "**System directory:**"
-        )
+        with st.expander(
+            "Show system path"
+        ):
 
-        st.code(
-            str(
-                system_directory
+            st.code(
+                str(
+                    system_directory
+                )
             )
-        )
 
 
     except Exception as error:
@@ -299,7 +316,9 @@ def _render_system_selection(
         )
 
         st.code(
-            str(error)
+            str(
+                error
+            )
         )
 
 
@@ -324,7 +343,7 @@ def _render_analysis_workflow_selection():
     """
 
     st.markdown(
-        "### Analysis Workflow"
+        "### 2. Analysis Workflow"
     )
 
 
@@ -376,23 +395,20 @@ def _render_analysis_workflow_selection():
 
 
     st.write(
-        "**Workflow:**"
-    )
-
-    st.code(
-        selected_workflow_name
+        "**Selected workflow:** "
+        f"`{selected_workflow_name.replace('_', ' ').title()}`"
     )
 
 
-    st.write(
-        "**Workflow file:**"
-    )
+    with st.expander(
+        "Show workflow file"
+    ):
 
-    st.code(
-        str(
-            selected_workflow_path
+        st.code(
+            str(
+                selected_workflow_path
+            )
         )
-    )
 
 
     return (
@@ -400,80 +416,6 @@ def _render_analysis_workflow_selection():
         selected_workflow_path,
     )
 
-# =============================================================================
-# Workflow loading
-# =============================================================================
-
-def load_analysis_workflow_module(
-    workflow_path: Path,
-):
-    """
-    Dynamically load an analysis workflow.py module.
-
-    Parameters
-    ----------
-    workflow_path : pathlib.Path
-        Path to the selected workflow.py file.
-
-    Returns
-    -------
-    module
-        Imported Python module.
-    """
-
-    workflow_path = (
-        Path(workflow_path)
-        .expanduser()
-        .resolve()
-    )
-
-
-    if not workflow_path.is_file():
-
-        raise FileNotFoundError(
-            "Analysis workflow was not found:\n"
-            f"{workflow_path}"
-        )
-
-
-    module_name = (
-        "iphasimulator_gui_analysis_"
-        f"{workflow_path.parent.name}"
-    )
-
-
-    specification = (
-        importlib.util.spec_from_file_location(
-            module_name,
-            workflow_path,
-        )
-    )
-
-
-    if (
-        specification is None
-        or specification.loader is None
-    ):
-
-        raise ImportError(
-            "Could not construct an import specification for:\n"
-            f"{workflow_path}"
-        )
-
-
-    module = (
-        importlib.util.module_from_spec(
-            specification
-        )
-    )
-
-
-    specification.loader.exec_module(
-        module
-    )
-
-
-    return module
 
 # =============================================================================
 # Simulation selection
@@ -494,7 +436,7 @@ def _render_simulation_selection(
     """
 
     st.markdown(
-        "### Simulation / Replica"
+        "### 3. Simulation / Replica"
     )
 
 
@@ -541,7 +483,9 @@ def _render_simulation_selection(
         )
 
         st.code(
-            str(error)
+            str(
+                error
+            )
         )
 
         return None
@@ -588,20 +532,25 @@ def _render_simulation_selection(
     )
 
 
-    st.write(
-        "**Simulation directory:**"
-    )
+    with st.expander(
+        "Show simulation directory"
+    ):
 
-    st.code(
-        str(
-            selected_simulation
+        st.code(
+            str(
+                selected_simulation
+            )
         )
-    )
 
 
     return (
         selected_simulation.name
     )
+
+
+# =============================================================================
+# Workflow module resolution
+# =============================================================================
 
 def _workflow_path_to_module_name(
     workflow_path: Path,
@@ -611,6 +560,7 @@ def _workflow_path_to_module_name(
 
     Example
     -------
+
     src/iphasimulator/analysis/tg_analysis/workflow.py
 
     becomes
@@ -624,16 +574,19 @@ def _workflow_path_to_module_name(
         .resolve()
     )
 
+
     project_root = (
         Path(__file__)
         .resolve()
         .parents[2]
     )
 
+
     src_directory = (
         project_root
         / "src"
     )
+
 
     relative_path = (
         workflow_path
@@ -643,13 +596,216 @@ def _workflow_path_to_module_name(
         .with_suffix("")
     )
 
+
     module_name = (
         ".".join(
             relative_path.parts
         )
     )
 
+
     return module_name
+
+
+# =============================================================================
+# Selected simulation path
+# =============================================================================
+
+def _get_simulation_directory(
+    gui_data: GUIData,
+    selected_system_name,
+    selected_system_type,
+    selected_simulation_name,
+):
+    """
+    Resolve the selected simulation directory.
+    """
+
+    if (
+        selected_system_name is None
+        or selected_system_type is None
+        or selected_simulation_name is None
+    ):
+
+        return None
+
+
+    try:
+
+        system_files = (
+            gui_data.paths.get_md_system_files(
+                system_name=(
+                    selected_system_name
+                ),
+                system_type=(
+                    selected_system_type
+                ),
+            )
+        )
+
+
+        simulations_directory = (
+            Path(
+                system_files[
+                    "simulations_dir"
+                ]
+            )
+        )
+
+
+        simulation_directory = (
+            simulations_directory
+            / selected_simulation_name
+        )
+
+
+        return simulation_directory
+
+
+    except Exception:
+
+        return None
+
+
+# =============================================================================
+# Analysis output directory
+# =============================================================================
+
+def _get_analysis_output_directory(
+    gui_data: GUIData,
+    selected_system_name,
+    selected_system_type,
+    selected_simulation_name,
+    selected_workflow_name,
+):
+    """
+    Determine the expected replica-level output directory.
+
+    Analysis workflows currently follow:
+
+        <simulation>/analysis/<workflow_name>/
+    """
+
+    simulation_directory = (
+        _get_simulation_directory(
+            gui_data=(
+                gui_data
+            ),
+            selected_system_name=(
+                selected_system_name
+            ),
+            selected_system_type=(
+                selected_system_type
+            ),
+            selected_simulation_name=(
+                selected_simulation_name
+            ),
+        )
+    )
+
+
+    if (
+        simulation_directory is None
+        or selected_workflow_name is None
+    ):
+
+        return None
+
+
+    return (
+        simulation_directory
+        / "analysis"
+        / selected_workflow_name
+    )
+
+
+# =============================================================================
+# Existing analysis detection
+# =============================================================================
+
+def _analysis_summary_path(
+    analysis_output_directory,
+):
+    """
+    Return the expected analysis-summary path.
+    """
+
+    if analysis_output_directory is None:
+
+        return None
+
+
+    return (
+        Path(
+            analysis_output_directory
+        )
+        / "analysis_summary.json"
+    )
+
+
+def _analysis_already_exists(
+    analysis_output_directory,
+) -> bool:
+    """
+    Determine whether a completed analysis summary exists.
+    """
+
+    summary_path = (
+        _analysis_summary_path(
+            analysis_output_directory
+        )
+    )
+
+
+    return (
+        summary_path is not None
+        and summary_path.is_file()
+    )
+
+
+# =============================================================================
+# Load analysis summary
+# =============================================================================
+
+def _load_analysis_summary(
+    analysis_output_directory,
+):
+    """
+    Load analysis_summary.json if available.
+    """
+
+    summary_path = (
+        _analysis_summary_path(
+            analysis_output_directory
+        )
+    )
+
+
+    if (
+        summary_path is None
+        or not summary_path.is_file()
+    ):
+
+        return None
+
+
+    try:
+
+        with open(
+            summary_path,
+            "r",
+            encoding="utf-8",
+        ) as handle:
+
+            return json.load(
+                handle
+            )
+
+
+    except Exception:
+
+        return None
+
 
 # =============================================================================
 # Workflow execution
@@ -659,6 +815,7 @@ def run_selected_analysis_workflow(
     workflow_path,
     selected_system_name,
     selected_simulation_name,
+    generate_figures=True,
 ):
     """
     Run the selected analysis workflow inside the iphasimulator environment.
@@ -732,6 +889,7 @@ import importlib
 MODULE_NAME = {module_name!r}
 SYSTEM_NAME = {selected_system_name!r}
 SIMULATION_NAME = {selected_simulation_name!r}
+GENERATE_FIGURES = {generate_figures!r}
 
 
 module = importlib.import_module(
@@ -747,6 +905,7 @@ if hasattr(
     result = module.run_analysis(
         system_name=SYSTEM_NAME,
         simulation_name=SIMULATION_NAME,
+        generate_figures=GENERATE_FIGURES,
     )
 
 
@@ -758,7 +917,7 @@ elif hasattr(
     result = module.run_tg_analysis(
         system_name=SYSTEM_NAME,
         simulation_name=SIMULATION_NAME,
-        generate_figures=True,
+        generate_figures=GENERATE_FIGURES,
     )
 
 
@@ -774,6 +933,7 @@ print()
 print("=" * 80)
 print("GUI ANALYSIS RUNNER COMPLETE")
 print("=" * 80)
+
 
 if isinstance(
     result,
@@ -817,6 +977,191 @@ else:
 
     return result
 
+
+# =============================================================================
+# Analysis summary display
+# =============================================================================
+
+def _render_completed_analysis_summary(
+    analysis_summary,
+):
+    """
+    Display useful values from a completed analysis summary.
+
+    The function is intentionally defensive so that other workflow types can
+    still use the Analysis tab even if they do not contain Tg-specific data.
+    """
+
+    if not isinstance(
+        analysis_summary,
+        dict,
+    ):
+
+        return
+
+
+    st.markdown(
+        "### Analysis Results"
+    )
+
+
+    # -------------------------------------------------------------------------
+    # Tg result
+    # -------------------------------------------------------------------------
+
+    tg_data = (
+        analysis_summary.get(
+            "tg",
+            {},
+        )
+    )
+
+
+    pca_data = (
+        analysis_summary.get(
+            "pca",
+            {},
+        )
+    )
+
+
+    dbscan_data = (
+        analysis_summary.get(
+            "dbscan",
+            {},
+        )
+    )
+
+
+    tg_value = (
+        tg_data.get(
+            "tg_K"
+        )
+        if isinstance(
+            tg_data,
+            dict,
+        )
+        else None
+    )
+
+
+    selected_components = (
+        pca_data.get(
+            "selected_components"
+        )
+        if isinstance(
+            pca_data,
+            dict,
+        )
+        else None
+    )
+
+
+    selected_min_samples = (
+        dbscan_data.get(
+            "selected_min_samples"
+        )
+        if isinstance(
+            dbscan_data,
+            dict,
+        )
+        else None
+    )
+
+
+    median_noise_fraction = (
+        dbscan_data.get(
+            "median_noise_fraction"
+        )
+        if isinstance(
+            dbscan_data,
+            dict,
+        )
+        else None
+    )
+
+
+    metrics = []
+
+
+    if tg_value is not None:
+
+        metrics.append(
+            (
+                "Estimated Tg",
+                f"{float(tg_value):.2f} K",
+            )
+        )
+
+
+    if selected_components is not None:
+
+        metrics.append(
+            (
+                "Selected PCs",
+                str(
+                    selected_components
+                ),
+            )
+        )
+
+
+    if selected_min_samples is not None:
+
+        metrics.append(
+            (
+                "DBSCAN min_samples",
+                str(
+                    selected_min_samples
+                ),
+            )
+        )
+
+
+    if median_noise_fraction is not None:
+
+        metrics.append(
+            (
+                "Median noise fraction",
+                f"{float(median_noise_fraction):.3f}",
+            )
+        )
+
+
+    if metrics:
+
+        metric_columns = (
+            st.columns(
+                len(
+                    metrics
+                )
+            )
+        )
+
+
+        for column, (
+            label,
+            value,
+        ) in zip(
+            metric_columns,
+            metrics,
+        ):
+
+            column.metric(
+                label,
+                value,
+            )
+
+
+    with st.expander(
+        "Show full analysis summary"
+    ):
+
+        st.json(
+            analysis_summary
+        )
+
+
 # =============================================================================
 # Main analysis tab
 # =============================================================================
@@ -832,8 +1177,9 @@ def render_analysis_tab(
     - select a registered MD system
     - select an available analysis workflow
     - select a simulation replica
+    - configure analysis options
     - execute the selected analysis workflow
-    - inspect the analysis process output
+    - inspect completed analysis outputs
     """
 
     # =========================================================================
@@ -846,9 +1192,9 @@ def render_analysis_tab(
 
 
     render_info_box(
-        "Select a registered molecular-dynamics system, "
-        "choose an analysis workflow, select a simulation "
-        "replica, and run the analysis."
+        "Select a prepared molecular-dynamics system, "
+        "choose a simulation replica and analysis workflow, "
+        "configure the analysis options, and run the analysis."
     )
 
 
@@ -856,7 +1202,7 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # System and workflow selection
+    # System and workflow
     # =========================================================================
 
     system_column, workflow_column = (
@@ -869,10 +1215,6 @@ def render_analysis_tab(
     )
 
 
-    # -------------------------------------------------------------------------
-    # System
-    # -------------------------------------------------------------------------
-
     with system_column:
 
         (
@@ -884,10 +1226,6 @@ def render_analysis_tab(
             )
         )
 
-
-    # -------------------------------------------------------------------------
-    # Workflow
-    # -------------------------------------------------------------------------
 
     with workflow_column:
 
@@ -903,7 +1241,7 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # Simulation / replica
+    # Simulation
     # =========================================================================
 
     selected_simulation_name = (
@@ -925,11 +1263,81 @@ def render_analysis_tab(
 
 
     # =========================================================================
-    # Current selection
+    # Analysis options
     # =========================================================================
 
     st.markdown(
-        "### Current Analysis Selection"
+        "### 4. Analysis Options"
+    )
+
+
+    generate_figures = (
+        st.toggle(
+            "Generate analysis figures",
+            value=True,
+            help=(
+                "Generate and save the figures associated with "
+                "the selected analysis workflow."
+            ),
+            key="analysis_generate_figures",
+        )
+    )
+
+
+    if generate_figures:
+
+        st.caption(
+            "Figures will be generated and saved with the analysis outputs."
+        )
+
+    else:
+
+        st.caption(
+            "The analysis will run without generating new figures."
+        )
+
+
+    # =========================================================================
+    # Resolve output directory
+    # =========================================================================
+
+    analysis_output_directory = (
+        _get_analysis_output_directory(
+            gui_data=(
+                gui_data
+            ),
+            selected_system_name=(
+                selected_system_name
+            ),
+            selected_system_type=(
+                selected_system_type
+            ),
+            selected_simulation_name=(
+                selected_simulation_name
+            ),
+            selected_workflow_name=(
+                selected_workflow_name
+            ),
+        )
+    )
+
+
+    existing_analysis = (
+        _analysis_already_exists(
+            analysis_output_directory
+        )
+    )
+
+
+    st.divider()
+
+
+    # =========================================================================
+    # Current analysis selection
+    # =========================================================================
+
+    st.markdown(
+        "### 5. Current Analysis Selection"
     )
 
 
@@ -939,98 +1347,104 @@ def render_analysis_tab(
                 1,
                 1,
                 1,
+                1,
             ]
         )
     )
 
 
-    # -------------------------------------------------------------------------
-    # Selected system
-    # -------------------------------------------------------------------------
+    selection_columns[0].write(
+        "**System**"
+    )
 
-    with selection_columns[0]:
-
-        st.write(
-            "**System**"
-        )
-
-        st.code(
-            (
-                selected_system_name
-                if selected_system_name
-                is not None
-                else "Not selected"
-            )
-        )
-
-
-        st.write(
-            "**System type**"
-        )
-
-        st.code(
-            (
-                selected_system_type
-                if selected_system_type
-                is not None
-                else "Not selected"
-            )
-        )
-
-
-    # -------------------------------------------------------------------------
-    # Selected simulation
-    # -------------------------------------------------------------------------
-
-    with selection_columns[1]:
-
-        st.write(
-            "**Simulation / Replica**"
-        )
-
-        st.code(
-            (
-                selected_simulation_name
-                if selected_simulation_name
-                is not None
-                else "Not selected"
-            )
-        )
-
-
-    # -------------------------------------------------------------------------
-    # Selected workflow
-    # -------------------------------------------------------------------------
-
-    with selection_columns[2]:
-
-        st.write(
-            "**Analysis workflow**"
-        )
-
-        st.code(
-            (
-                selected_workflow_name
-                if selected_workflow_name
-                is not None
-                else "Not selected"
-            )
-        )
-
-
-        if (
-            selected_workflow_path
+    selection_columns[0].code(
+        (
+            selected_system_name
+            if selected_system_name
             is not None
-        ):
+            else "Not selected"
+        )
+    )
 
-            st.write(
-                "**Workflow file**"
+
+    selection_columns[1].write(
+        "**Simulation / Replica**"
+    )
+
+    selection_columns[1].code(
+        (
+            selected_simulation_name
+            if selected_simulation_name
+            is not None
+            else "Not selected"
+        )
+    )
+
+
+    selection_columns[2].write(
+        "**Analysis workflow**"
+    )
+
+    selection_columns[2].code(
+        (
+            selected_workflow_name
+            if selected_workflow_name
+            is not None
+            else "Not selected"
+        )
+    )
+
+
+    selection_columns[3].write(
+        "**Generate figures**"
+    )
+
+    selection_columns[3].code(
+        str(
+            generate_figures
+        )
+    )
+
+
+    # =========================================================================
+    # Output location / existing analysis
+    # =========================================================================
+
+    if analysis_output_directory is not None:
+
+        st.write(
+            "**Analysis output directory:**"
+        )
+
+        st.code(
+            str(
+                analysis_output_directory
+            )
+        )
+
+
+        if existing_analysis:
+
+            st.success(
+                "A completed analysis already exists for this "
+                "workflow and simulation."
             )
 
-            st.code(
-                str(
-                    selected_workflow_path
+
+            if not generate_figures:
+
+                st.warning(
+                    "Existing figure files are not automatically deleted. "
+                    "Running with figure generation disabled will prevent new "
+                    "figures from being created, but figures from an earlier "
+                    "analysis may remain in the output directory."
                 )
+
+        else:
+
+            st.info(
+                "No existing completed analysis was found for "
+                "this workflow and simulation."
             )
 
 
@@ -1042,7 +1456,7 @@ def render_analysis_tab(
     # =========================================================================
 
     st.markdown(
-        "### Run Analysis"
+        "### 6. Run Analysis"
     )
 
 
@@ -1068,9 +1482,22 @@ def render_analysis_tab(
         )
 
 
+    if existing_analysis:
+
+        run_button_label = (
+            "🔄 Re-run analysis"
+        )
+
+    else:
+
+        run_button_label = (
+            "▶️ Run analysis"
+        )
+
+
     run_clicked = (
         st.button(
-            "▶️ Run analysis",
+            run_button_label,
             use_container_width=True,
             disabled=(
                 not ready_to_run
@@ -1113,6 +1540,7 @@ def render_analysis_tab(
                 "Launching analysis workflow..."
             )
 
+
             progress.progress(
                 20
             )
@@ -1133,6 +1561,9 @@ def render_analysis_tab(
                         selected_simulation_name=(
                             selected_simulation_name
                         ),
+                        generate_figures=(
+                            generate_figures
+                        ),
                     )
                 )
 
@@ -1140,6 +1571,7 @@ def render_analysis_tab(
             progress.progress(
                 90
             )
+
 
             status.write(
                 "Analysis process finished."
@@ -1152,15 +1584,18 @@ def render_analysis_tab(
                 100
             )
 
+
             st.error(
                 "Could not launch the analysis workflow."
             )
+
 
             st.code(
                 str(
                     error
                 )
             )
+
 
             return
 
@@ -1180,10 +1615,15 @@ def render_analysis_tab(
 
 
         # =====================================================================
-        # Process result
+        # Successful / failed process
         # =====================================================================
 
         if result.returncode == 0:
+
+            status.write(
+                "Analysis complete."
+            )
+
 
             st.success(
                 "Analysis completed successfully."
@@ -1191,14 +1631,57 @@ def render_analysis_tab(
 
         else:
 
+            status.write(
+                "Analysis failed."
+            )
+
+
             st.error(
                 "Analysis workflow failed."
             )
 
 
-        # ---------------------------------------------------------------------
-        # Process summary
-        # ---------------------------------------------------------------------
+        # =====================================================================
+        # Load structured analysis output
+        # =====================================================================
+
+        if result.returncode == 0:
+
+            analysis_summary = (
+                _load_analysis_summary(
+                    analysis_output_directory
+                )
+            )
+
+
+            if analysis_summary is not None:
+
+                st.divider()
+
+
+                _render_completed_analysis_summary(
+                    analysis_summary
+                )
+
+            else:
+
+                st.info(
+                    "The workflow completed successfully, but no "
+                    "analysis_summary.json file was found."
+                )
+
+
+        # =====================================================================
+        # Process / debugging information
+        # =====================================================================
+
+        st.divider()
+
+
+        st.markdown(
+            "### Process Information"
+        )
+
 
         result_columns = (
             st.columns(
@@ -1240,7 +1723,7 @@ def render_analysis_tab(
         if result.stdout:
 
             with st.expander(
-                "Analysis output",
+                "Console output",
                 expanded=(
                     result.returncode
                     != 0
@@ -1271,3 +1754,37 @@ def render_analysis_tab(
                     result.stderr,
                     language="text",
                 )
+
+
+    # =========================================================================
+    # Existing analysis preview
+    # =========================================================================
+
+    elif existing_analysis:
+
+        existing_summary = (
+            _load_analysis_summary(
+                analysis_output_directory
+            )
+        )
+
+
+        if existing_summary is not None:
+
+            st.divider()
+
+
+            st.markdown(
+                "### Existing Analysis"
+            )
+
+
+            render_info_box(
+                "The results below were loaded from the existing "
+                "analysis for the currently selected simulation."
+            )
+
+
+            _render_completed_analysis_summary(
+                existing_summary
+            )
