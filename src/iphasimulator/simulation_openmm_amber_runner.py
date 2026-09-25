@@ -1,10 +1,8 @@
 """OpenMM runner for AMBER topology files."""
 
-"""
-Dan comments:
-  
-Once I refactor my openmm module, this will no longer be required
-"""
+# Dan comments:
+#
+# Once I refactor my openmm module, this will no longer be required
 
 from __future__ import annotations
 

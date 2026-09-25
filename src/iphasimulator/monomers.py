@@ -1,10 +1,8 @@
 """Curated PHA monomer definitions for the RDKit builder."""
 
-"""
-Dan comments
-
-This is not required anymore
-"""
+# Dan comments
+#
+# This is not required anymore
 
 from __future__ import annotations
 

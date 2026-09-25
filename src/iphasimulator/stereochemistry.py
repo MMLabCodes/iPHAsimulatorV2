@@ -1,10 +1,8 @@
 """Stereochemistry validation helpers."""
 
-"""
-Dan comments:
-  
-These functions would be nice to integrate in a validation section in build_pha.py
-"""
+# Dan comments:
+#
+# These functions would be nice to integrate in a validation section in build_pha.py
 
 from __future__ import annotations
 

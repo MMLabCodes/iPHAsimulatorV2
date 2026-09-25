@@ -1,14 +1,12 @@
 """Export helpers for RDKit PHA molecules."""
 
-"""
-Dan comments:
-    
-It would be useful to add this optimiser to the parameterization section of the PHA builder.
-
-We do not need to export rdkit mol objects to pdb files here - that is handled during building.
-
-We do not need sdf exporters, unless it is required for a specific thing I do not know about yet.
-"""
+# Dan comments:
+#
+# It would be useful to add this optimiser to the parameterization section of the PHA builder.
+#
+# We do not need to export rdkit mol objects to pdb files here - that is handled during building.
+#
+# We do not need sdf exporters, unless it is required for a specific thing I do not know about yet.
 
 from __future__ import annotations
 
