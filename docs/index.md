@@ -9,6 +9,14 @@ Python helpers for polyhydroxyalkanoates (PHAs).
 [trajectory preprocessing](workflows/trajectory.md) or
 [enzyme–PHA contacts](workflows/analysis.md).
 
+## Workflow overview
+
+![iPHASimulator v2 workflow: PHA design and validation, GAFF2 and CGenFF parameterisation, simulation and HPC execution, polymer and enzyme–PHA analysis, and planned database and machine-learning extensions.](_static/images/iphasimulator-v2-workflow.png)
+
+Numbered boxes correspond to the tutorial notebooks; dashed outlines indicate
+optional routes or planned extensions. See the [notebook catalogue](notebooks.md)
+for prerequisites and run order.
+
 ## Choose your workflow
 
 | Start with | Follow | Result |

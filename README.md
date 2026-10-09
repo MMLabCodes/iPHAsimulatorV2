@@ -53,6 +53,12 @@ DFT workflows are not documented as a current v2 capability.
 
 ## Workflow Overview
 
+![iPHASimulator v2 workflow: PHA design and validation, GAFF2 and CGenFF parameterisation, simulation and HPC execution, polymer and enzyme–PHA analysis, and planned database and machine-learning extensions.](docs/_static/images/iphasimulator-v2-workflow.png)
+
+Numbered boxes correspond to the tutorial notebooks; dashed outlines indicate
+optional routes or planned extensions. See the [notebook catalogue](docs/notebooks.md)
+for prerequisites and run order.
+
 ```text
 Design -> validation -> structure export -> parameterisation -> MD simulation
        -> trajectory preprocessing -> analysis -> PHA-enzyme docking
