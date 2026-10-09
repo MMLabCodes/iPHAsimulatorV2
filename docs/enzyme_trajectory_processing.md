@@ -14,7 +14,7 @@ contact-analysis instructions are maintained in the README below.
 ```{include} ../src/md_simulation_scripts/README.md
 :start-after: "# Simulation analysis scripts"
 :end-before: "## 5. Run enzyme-contact analysis"
-:relative-docs: docs/
+:relative-docs: trajectory_preparation/
 :relative-images:
 ```
 
